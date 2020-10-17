@@ -1,0 +1,84 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
+<Frame name="EasyDestroyEditBoxTemplate" virtual="true">
+	<Size>
+		<AbsDimension x="0" y="20"/>
+	</Size>
+	<Layers>
+		<Layer level="OVERLAY">
+			<FontString name="$parentLabel" parentKey="label" inherits="GameFontNormalSmall">
+				<Anchors>
+					<Anchor point="LEFT"/>
+				</Anchors>
+			</FontString>
+		</Layer>
+	</Layers>
+	<Frames>
+		<EditBox inherits="InputBoxTemplate" name="$parentEditBox" parentKey="input" autoFocus="false">
+		<Size>
+			<AbsDimension x="0" y="20"/>
+		</Size>
+			<Anchors>
+				<Anchor point="LEFT" relativeKey="$parent.label" relativePoint="RIGHT" x="10"/>
+				<Anchor point="RIGHT" x="-4"/>
+			</Anchors>
+		</EditBox>
+	</Frames>
+</Frame>
+
+<Frame name="EasyDestroyItemTemplate" virtual="true" enableMouse="true" inherits="BackdropTemplate">
+	<Layers>
+		<Layer level="OVERLAY">
+			<Texture name="$parentIcon" parentKey="Icon">
+				<Size>
+					<AbsDimension x="20" y="20"/>
+				</Size>
+				<Anchors>
+					<Anchor point="LEFT" x="12" y="0"/>
+				</Anchors>
+			</Texture>	
+			<FontString name="$parentItem" parentKey="Item" inherits="GameFontNormal">
+				<Anchors>
+					<Anchor point="LEFT" relativePoint="LEFT" x="40" y="0"/>
+				</Anchors>
+			</FontString>
+		</Layer>
+		<Layer level="HIGHLIGHT">
+			<Texture setAllPoints="true">
+				<Color r="1" g="1" b="1" a="0.15"/>
+			</Texture>
+		</Layer>
+	</Layers>
+	<Scripts>
+		<OnEnter>
+			local x, y = GetCursorPosition()
+			local width = GetScreenWidth() or 0
+			local anchor = "ANCHOR_RIGHT"
+			if x > (width/2) then anchor="ANCHOR_LEFT" end
+			GameTooltip:SetOwner(self, anchor)
+			GameTooltip:SetHyperlink(self.Item.itemLink)
+			GameTooltip:Show()
+		</OnEnter>
+		<OnLeave>
+			GameTooltip:Hide()
+		</OnLeave>
+	</Scripts>
+</Frame>
+
+<CheckButton name="EasyDestroyCheckboxTemplate" virtual="true" inherits="ChatConfigBaseCheckButtonTemplate">
+	<Size>
+		<AbsDimension x="24" y="24"/>
+	</Size>
+	<Layers>
+		<Layer level="OVERLAY">
+			<FontString name="$parentLabel" parentKey="label" inherits="GameFontNormalSmall">
+				<Anchors>
+					<Anchor point="LEFT" relativePoint="RIGHT"/>
+				</Anchors>
+			</FontString>
+		</Layer>
+	</Layers>
+</CheckButton>
+
+</Ui>

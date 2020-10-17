@@ -1,0 +1,194 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
+<Frame name="EasyDestroyFrame" inherits="UIPanelDialogTemplate" hidden="true" movable="true" parent="UIParent">
+	<Size>
+		<AbsDimension x="300" y ="480"/>
+	</Size>
+	<Anchors>
+		<Anchor point="CENTER"/>
+	</Anchors>
+	<Layers>
+	</Layers>
+	<Frames>
+		<Frame name="$parentTitleBar">
+			<Anchors>
+				<Anchor point="TOPLEFT" relativeTo="EasyDestroyFrameTitleBG"/>
+				<Anchor point="BOTTOMRIGHT" relativeTo="EasyDestroyFrameTitleBG"/>
+			</Anchors>
+		</Frame>
+		<ScrollFrame name="$parentScrollFrame" inherits="UIPanelScrollFrameTemplate" clipChildren="true"> <!--UIPanelScrollFrameTemplate-->
+			<Size>
+				<AbsDimension x="0" y="200"/>
+			</Size>
+			<Anchors>
+				<Anchor point="TOPLEFT" relativeTo="EasyDestroyFrameDialogBG" relativePoint="TOPLEFT" x="4" y="-8"/>
+				<Anchor point="TOPRIGHT" relativeTo="EasyDestroyFrameDialogBG" relativePoint="TOPRIGHT" x="-4"/>
+			</Anchors>	
+		</ScrollFrame>
+		<Frame name="$parentScrollChild">
+			<Size>
+				<AbsDimension x="0" y="600"/>
+			</Size>
+			<Scripts>
+				<OnLoad>
+					self:SetSize(EasyDestroyFrameScrollFrame:GetWidth(), 600)
+				</OnLoad>
+			</Scripts>
+		</Frame>
+		<Frame name="EasyDestroyFrameSearch">
+			<Anchors>
+				<Anchor point="TOPLEFT" relativeTo="EasyDestroyFrameScrollFrame" relativePoint="BOTTOMLEFT" x="-4"/>
+				<Anchor point="BOTTOMRIGHT" relativeTo="EasyDestroyFrameDialogBG"/>
+			</Anchors>
+			<Frames>
+				<Frame name="EasyDestroyDropDown" parentKey="DropDown" inherits="UIDropDownMenuTemplate">
+					<Anchors>
+						<Anchor point="TOPLEFT" x="8"  y="-8"/>
+						<Anchor point="TOPRIGHT" x="-8" y="-8"/>
+					</Anchors>
+				</Frame>
+				<Frame name="EasyDestroyFilterName" inherits="EasyDestroyEditBoxTemplate">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="EasyDestroyDropDown" relativePoint="BOTTOMLEFT" x="0" y="-8"/>
+						<Anchor point="RIGHT" x="-4" y="0"/>
+					</Anchors>
+				</Frame>
+				<Frame name="EasyDestroyNameSearch" inherits="EasyDestroyEditBoxTemplate">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="EasyDestroyFilterName" relativePoint="BOTTOMLEFT" x="0" y="-8"/>
+						<Anchor point="RIGHT" x="-4" y="0"/>
+					</Anchors>
+				</Frame>
+				<Frame name="EasyDestroyItemID" inherits="EasyDestroyEditBoxTemplate">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="EasyDestroyNameSearch" relativePoint="BOTTOMLEFT" x="0" y="-8"/>
+						<Anchor point="RIGHT" x="-4" y="0"/>
+					</Anchors>
+				</Frame>
+				<Frame name="EasyDestroyRarityContainer">
+					<Size>
+						<AbsDimension x="0" y="65"/>
+					</Size>
+					
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="EasyDestroyItemID" relativePoint="BOTTOMLEFT" x="8" y="-8"/>
+						<Anchor point="RIGHT" x="-16" y="0"/>
+					</Anchors>
+					<Layers>	
+						<Layer>
+							<Texture name="$parentTitle" parentKey="title">
+								<Size><AbsDimension x="80" y="10"/></Size>
+								<Color a="0" r="0" g="0" b="0"/>
+								<Anchors>
+									<Anchor point="CENTER" relativePoint="TOP"/>
+								</Anchors>
+							</Texture>
+							<FontString text="Item Quality" inherits="GameFontNormalSmall">
+								<Anchors>
+									<Anchor point="CENTER" relativeTo="$parentTitle"/>
+								</Anchors>
+							</FontString>
+						</Layer>
+					</Layers>
+					
+					<Frames>
+						<Frame name="EasyDestroyRarityColumn1">
+							<Anchors>
+								<Anchor point="TOPLEFT"/>
+								<Anchor point="BOTTOMLEFT"/>
+								<Anchor point="RIGHT" relativeTo="EasyDestroyRarityContainer" relativePoint="CENTER"/>
+							</Anchors>
+							<Frames>
+								<CheckButton name="EasyDestroyRarityCommon" inherits="EasyDestroyCheckboxTemplate">
+									<Anchors>
+										<Anchor point="TOPLEFT" x="10" y="-8"/>
+									</Anchors>
+								</CheckButton>
+								<CheckButton name="EasyDestroyRarityRare" inherits="EasyDestroyCheckboxTemplate">
+									<Anchors>
+										<Anchor point="TOPLEFT" relativeTo="EasyDestroyRarityCommon" relativePoint="BOTTOMLEFT"/>
+									</Anchors>
+								</CheckButton>
+							</Frames>
+						</Frame>
+						<Frame name="EasyDestroyRarityColumn2">
+							<Anchors>
+								<Anchor point="TOPRIGHT"/>
+								<Anchor point="BOTTOMRIGHT"/>
+								<Anchor point="LEFT" relativeTo="EasyDestroyRarityContainer" relativePoint="CENTER"/>
+							</Anchors>
+							<Frames>
+								<CheckButton name="EasyDestroyRarityUncommon" inherits="EasyDestroyCheckboxTemplate">
+									<Anchors>
+										<Anchor point="TOPLEFT" x="10" y="-8"/>
+									</Anchors>
+								</CheckButton>
+								<CheckButton name="EasyDestroyRarityEpic" inherits="EasyDestroyCheckboxTemplate">
+									<Anchors>
+										<Anchor point="TOPLEFT" relativeTo="EasyDestroyRarityUncommon" relativePoint="BOTTOMLEFT"/>
+									</Anchors>
+								</CheckButton>
+							</Frames>
+						</Frame>
+						<!-- Apparently SecureActionButtonTemplate doesnt' like being too many frames down as a child and refuses to show up
+						In order to get around this I had to use an InsecureActionButtonTemplate. Couldn't find any good documentation
+						of this functionality or limits on the SecureActionButtonTemplate so this is sort of bestguess as to why it didn't work. -->
+						<Button name="EasyDestroyButton" inherits="InsecureActionButtonTemplate,UIPanelButtonTemplate" text="Disenchant">
+							<Size>
+								<AbsDimension x="80" y="22"/>
+							</Size>
+							<Anchors>
+								<Anchor point="BOTTOMRIGHT" relativeTo="EasyDestroyFrameSearch" x="-10" y="10"/>
+							</Anchors>
+						</Button>
+						<Button name="EasyDestroySave" inherits="UIPanelButtonTemplate" text="Save Filter">
+							<Size>
+								<AbsDimension x="80" y="22"/>
+							</Size>
+							<Anchors>
+								<Anchor point="BOTTOMLEFT" relativeTo="EasyDestroyFrameSearch" x="10" y="10"/>
+							</Anchors>
+						</Button>
+						<Button name="EasyDestroyDelete" inherits="UIPanelButtonTemplate" text="X">
+							<Size>
+								<AbsDimension x="22" y="22"/>
+							</Size>
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeTo="EasyDestroySave" relativePoint="TOPRIGHT" x="4" y="0"/>
+							</Anchors>
+						</Button>
+					</Frames>
+					<Backdrop edgeFile="Interface\Buttons\WHITE8x8" tile="true">			
+						<EdgeSize val="2"/>
+						<BorderColor a="1" r="0.99" g="0.81" b="0"/>
+					</Backdrop>
+				</Frame>
+			</Frames>
+			<Backdrop bgFile="Interface\Tooltips\UI-Tooltip-Background"
+				edgeFile="Interface\Tooltips\UI-Tooltip-Border" tile="true">
+				<BackgroundInsets>
+					<AbsInset left="1" right="1" top="1" bottom="1"/>
+				</BackgroundInsets>
+				<EdgeSize val="18"/>
+				<TileSize val="16"/>
+				<Color a="1" r="0" g="0" b="0" />
+			</Backdrop>
+		</Frame>
+
+	</Frames>
+	<Scripts>
+		<OnLoad>
+			tinsert(UISpecialFrames, self:GetName())
+		</OnLoad>
+	</Scripts>
+</Frame>
+<GameTooltip name="EasyDestroyScanner" inherits="GameTooltipTemplate">
+	<Scripts>
+		<OnLoad>
+			self:SetOwner(WorldFrame, "ANCHOR_NONE")
+		</OnLoad>
+	</Scripts>
+</GameTooltip>
+
+</Ui>
