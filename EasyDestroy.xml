@@ -11,34 +11,50 @@
 	<Layers>
 	</Layers>
 	<Frames>
-		<Frame name="$parentTitleBar">
+		<Frame parentKey="TitleBar">
 			<Anchors>
 				<Anchor point="TOPLEFT" relativeTo="EasyDestroyFrameTitleBG"/>
 				<Anchor point="BOTTOMRIGHT" relativeTo="EasyDestroyFrameTitleBG"/>
 			</Anchors>
 		</Frame>
-		<ScrollFrame name="$parentScrollFrame" inherits="UIPanelScrollFrameTemplate" clipChildren="true"> <!--UIPanelScrollFrameTemplate-->
+		<Frame name="$parentScrollParent" inherits="BackdropTemplate">
 			<Size>
 				<AbsDimension x="0" y="200"/>
 			</Size>
 			<Anchors>
 				<Anchor point="TOPLEFT" relativeTo="EasyDestroyFrameDialogBG" relativePoint="TOPLEFT" x="4" y="-8"/>
 				<Anchor point="TOPRIGHT" relativeTo="EasyDestroyFrameDialogBG" relativePoint="TOPRIGHT" x="-4"/>
-			</Anchors>	
-		</ScrollFrame>
+			</Anchors>
+			<Frames>
+				<ScrollFrame name="EasyDestroyFrameScrollFrame" inherits="UIPanelScrollFrameCodeTemplate, BackdropTemplate" clipChildren="true"> <!--UIPanelScrollFrameTemplate-->
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="EasyDestroyFrameScrollParent" relativePoint="TOPLEFT" x="4" y="-4"/>
+						<Anchor point="BOTTOMRIGHT" relativeTo="EasyDestroyFrameScrollParent" relativePoint="BOTTOMRIGHT" x="-4" y="4"/>
+					</Anchors>	
+					<Frames>
+						<Slider name="$parentScrollBar" inherits="UIPanelScrollBarTrimTemplate" parentkey="ScrollBar">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativePoint="TOPRIGHT" x="-18" y="-16"/>
+								<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMRIGHT" x="-7" y="14"/>
+							</Anchors>
+						</Slider>
+					</Frames>
+				</ScrollFrame>
+			</Frames>
+		</Frame>
 		<Frame name="$parentScrollChild">
 			<Size>
 				<AbsDimension x="0" y="600"/>
 			</Size>
 			<Scripts>
 				<OnLoad>
-					self:SetSize(EasyDestroyFrameScrollFrame:GetWidth(), 600)
+					self:SetSize(EasyDestroyFrameScrollFrame:GetWidth()-20, 600)
 				</OnLoad>
 			</Scripts>
 		</Frame>
 		<Frame name="EasyDestroyFrameSearch">
 			<Anchors>
-				<Anchor point="TOPLEFT" relativeTo="EasyDestroyFrameScrollFrame" relativePoint="BOTTOMLEFT" x="-4"/>
+				<Anchor point="TOPLEFT" relativeTo="EasyDestroyFrameScrollParent" relativePoint="BOTTOMLEFT" x="-4"/>
 				<Anchor point="BOTTOMRIGHT" relativeTo="EasyDestroyFrameDialogBG"/>
 			</Anchors>
 			<Frames>
