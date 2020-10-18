@@ -128,7 +128,7 @@ EasyDestroyFilters_Delete:SetScript("OnClick", EasyDestroyFilters_DeleteFilter)
 EasyDestroyFilters_NewFromFilter:SetScript("OnClick", EasyDestroyFilters_CreateNewFromCurrent)
 EasyDestroyFilters_New:SetScript("OnClick", function() 
 	EasyDestroy_ClearFilterFrame() 
-	IDropDownMenu_SetSelectedValue(EasyDestroyDropDown, 0) 
+	DropDownMenu_SetSelectedValue(EasyDestroyDropDown, 0) 
 	EasyDestroy.FilterChanged = true end
 )
 
