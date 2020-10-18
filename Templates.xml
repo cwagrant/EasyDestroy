@@ -16,18 +16,69 @@
 	</Layers>
 	<Frames>
 		<EditBox inherits="InputBoxTemplate" name="$parentEditBox" parentKey="input" autoFocus="false">
-		<Size>
-			<AbsDimension x="0" y="20"/>
-		</Size>
+			<Size>
+				<AbsDimension x="0" y="20"/>
+			</Size>
 			<Anchors>
 				<Anchor point="LEFT" relativeKey="$parent.label" relativePoint="RIGHT" x="10"/>
 				<Anchor point="RIGHT" x="-4"/>
 			</Anchors>
+			<Scripts>
+				<OnEnterPressed>
+					self:ClearFocus()
+				</OnEnterPressed>		
+			</Scripts>
+		</EditBox>
+	</Frames>
+</Frame>
+
+<Frame name="EasyDestroyEditBoxRangeTemplate" virtual="true">
+	<Size>
+		<AbsDimension x="0" y="20"/>
+	</Size>
+	<Layers>
+		<Layer level="OVERLAY">
+			<FontString name="$parentLabel" parentKey="label" inherits="GameFontNormalSmall">
+				<Anchors>
+					<Anchor point="LEFT"/>
+				</Anchors>
+			</FontString>
+		</Layer>
+	</Layers>
+	<Frames>
+		<EditBox inherits="InputBoxTemplate" name="$parentEditBoxFrom" parentKey="inputfrom" autoFocus="false">
+			<Size>
+				<AbsDimension x="40" y="20"/>
+			</Size>
+			<Anchors>
+				<Anchor point="LEFT" relativeKey="$parent.label" relativePoint="RIGHT" x="30"/>
+			</Anchors>
+			<Scripts>
+				<OnEnterPressed>
+					self:ClearFocus()
+				</OnEnterPressed>		
+			</Scripts>
+		</EditBox>
+		<EditBox inherits="InputBoxTemplate" name="$parentEditBoxTo" parentKey="inputto" autoFocus="false">
+			<Size>
+				<AbsDimension x="40" y="20"/>
+			</Size>
+			<Anchors>
+				<Anchor point="LEFT" relativeKey="$parent.inputfrom" relativePoint="RIGHT" x="30"/>
+			</Anchors>
+			<Scripts>
+				<OnEnterPressed>
+					self:ClearFocus()
+				</OnEnterPressed>		
+			</Scripts>
 		</EditBox>
 	</Frames>
 </Frame>
 
 <Frame name="EasyDestroyItemTemplate" virtual="true" enableMouse="true" inherits="BackdropTemplate">
+	<Size>
+		<AbsDimension x="0" y="24"/>
+	</Size>
 	<Layers>
 		<Layer level="OVERLAY">
 			<Texture name="$parentIcon" parentKey="Icon">
@@ -80,5 +131,6 @@
 		</Layer>
 	</Layers>
 </CheckButton>
+
 
 </Ui>

@@ -1,10 +1,15 @@
 EasyDestroy = {}
 EasyDestroy.Version =  1
-EasyDestroy.DebugActive = true
+EasyDestroy.DebugActive = false
 EasyDestroy.AddonName = "EasyDestroy"
 EasyDestroy.AddonLoaded = false
 EasyDestroy.CurrentFilter = {}
 EasyDestroy.FilterChanged = false
+EasyDestroy.FilterSaveWarned = false
+EasyDestroy.Errors = {}
+EasyDestroy.Errors.None = nil
+EasyDestroy.Errors.Name ="ED_ERROR_NAME"
+EasyDestroy.Errors.Favorite = "ED_ERROR_FAVORITE"
 
 EasyDestroy.DestroyTypes = {}
 EasyDestroy.DestroyTypes.DISENCHANT = "DISENCHANT"
@@ -42,6 +47,10 @@ EasyDestroy.DataLoaded = false
 EasyDestroy.Data = {}
 EasyDestroy.FilterCount = 0
 EasyDestroy.EmptyFilter = {filter={}, properties={}}
+EasyDestroy.Spells = {
+	13262, --Disenchant
+
+}
 
 function pprint(tbl, level)
 	local newlevel = level or 0
@@ -70,5 +79,29 @@ function EasyDestroy:CreateBG(frame, r, g, b)
 	local bg = frame:CreateTexture(nil, "BACKGROUND");
 	bg:SetAllPoints(true);
 	bg:SetColorTexture(r, g, b, 0.5);
+end
+
+-- borrowed from https://stackoverflow.com/questions/15706270/sort-a-table-in-lua
+function EasyDestroy.spairs(t, order)
+    -- collect the keys
+    local keys = {}
+    for k in pairs(t) do keys[#keys+1] = k end
+
+    -- if order function given, sort by it by passing the table and keys a, b,
+    -- otherwise just sort the keys 
+    if order then
+        table.sort(keys, function(a,b) return order(t, a, b) end)
+    else
+        table.sort(keys)
+    end
+
+    -- return the iterator function
+    local i = 0
+    return function()
+        i = i + 1
+        if keys[i] then
+            return keys[i], t[keys[i]]
+        end
+    end
 end
 

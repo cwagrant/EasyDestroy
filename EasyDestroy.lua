@@ -63,10 +63,16 @@ E.g.
 SLASH_OPENUI1 = "/edestroy";
 SLASH_OPENUI2 = "/ed";
 function SlashCmdList.OPENUI(msg)
-	if EasyDestroyFrame:IsVisible() then
-		EasyDestroyFrame:Hide()
+	if msg == "list" then
+		for key, item in ipairs(EasyDestroy.ItemPool) do
+			print(string.format("%i,%i,%i,%s", key, item.info.bag, item.info.slot, C_Item.GetItemNameByID(item.info.itemlink)))
+		end
 	else
-		EasyDestroyFrame:Show()
+		if EasyDestroyFrame:IsVisible() then
+			EasyDestroyFrame:Hide()
+		else
+			EasyDestroyFrame:Show()
+		end
 	end
 end
 
@@ -76,20 +82,20 @@ function EasyDestroy:Initialize()
 	EasyDestroyFrame.Title:SetText("Easy Destroy");		
 	
 	--[[ Frame Movement Information ]]--
-	EasyDestroyFrameTitleBar:EnableMouse(true)
-	EasyDestroyFrameTitleBar:SetScript("OnMouseDown", function(self, button)
+	EasyDestroyFrame.TitleBar:EnableMouse(true)
+	EasyDestroyFrame.TitleBar:SetScript("OnMouseDown", function(self, button)
 	  if button == "LeftButton" and not EasyDestroyFrame.isMoving then
 	   EasyDestroyFrame:StartMoving();
 	   EasyDestroyFrame.isMoving = true;
 	  end
 	end)
-	EasyDestroyFrameTitleBar:SetScript("OnMouseUp", function(self, button)
+	EasyDestroyFrame.TitleBar:SetScript("OnMouseUp", function(self, button)
 	  if button == "LeftButton" and EasyDestroyFrame.isMoving then
 	   EasyDestroyFrame:StopMovingOrSizing();
 	   EasyDestroyFrame.isMoving = false;
 	  end
 	end)
-	EasyDestroyFrameTitleBar:SetScript("OnHide", function(self)
+	EasyDestroyFrame.TitleBar:SetScript("OnHide", function(self)
 	  if ( EasyDestroyFrame.isMoving ) then
 	   EasyDestroyFrame:StopMovingOrSizing();
 	   EasyDestroyFrame.isMoving = false;
@@ -97,29 +103,21 @@ function EasyDestroy:Initialize()
 	end)
 	
 	--[[ Item View Scrolling Area ]]--
-	EasyDestroyFrameScrollFrame:SetScrollChild(EasyDestroyFrameScrollChild);
-	--self.scrollBar = CreateFrame("Slider", "EasyDestroyFrameScrollFrameScrollBarBG", self, "UIPanelScrollBarTrimTemplate")
-	EasyDestroyFrameScrollFrame.ScrollBar:ClearAllPoints();
-	EasyDestroyFrameScrollFrame.ScrollBar:SetPoint("TOPLEFT", EasyDestroyFrameScrollFrame, "TOPRIGHT", -12, -18);
-	EasyDestroyFrameScrollFrame.ScrollBar:SetPoint("BOTTOMRIGHT", EasyDestroyFrameScrollFrame, "BOTTOMRIGHT", -7, 18);
-	EasyDestroy.ItemPool = {}
+	--EasyDestroyFrameScrollFrame:SetScrollChild(EasyDestroyFrameScrollChild);
+	EasyDestroyItems:SetBackdrop({
+		bgFile="Interface\\Tooltips\\UI-Tooltip-Background",
+		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
+		edgeSize=16,
+		tile=true, 
+		tileEdge=false, 
+		insets={left=4, right=4, top=4, bottom=4}
+	})
+	EasyDestroyItems:SetBackdropColor(0,0,0,0.5)
 	
-	local scrollbg = EasyDestroyFrameScrollFrame.ScrollBar:CreateTexture("EasyDestroyFrameScrollFrameScrollBarBG", "BACKGROUND")
-    scrollbg:SetVertTile(true) 
-	scrollbg:SetHorizTile(true)
-    scrollbg:SetAllPoints()
-    scrollbg:SetTexture("Interface\\Tooltips\\UI-Tooltip-Background")
+	EasyDestroy.ItemPool = {}
 	
 	--[[ Filter View Area ]]--
 	UIDropDownMenu_SetWidth(EasyDestroyDropDown, EasyDestroyDropDown:GetWidth()-40)
-	EasyDestroyFilterName.label:SetText("Filter Name:")
-	EasyDestroyNameSearch.label:SetText("Item Name:")
-	EasyDestroyItemID.label:SetText("Item ID:")
-	EasyDestroyItemID.input:SetNumeric(true)
-	EasyDestroyRarityCommon.label:SetText("|c11ffffff" .. "Common" .. "|r")
-	EasyDestroyRarityRare.label:SetText("|c110070dd" .. "Rare" .. "|r")
-	EasyDestroyRarityUncommon.label:SetText("|c111eff00" .. "Uncommon" .. "|r")
-	EasyDestroyRarityEpic.label:SetText("|c11a335ee" .. "Epic" .. "|r")
 		
 	--[[ Test Button for debugging various information ]]--
 	EasyDestroy.EasyDestroyTest = CreateFrame("Button", "EDTest", EasyDestroyFrame, "UIPanelButtonTemplate")
@@ -127,13 +125,12 @@ function EasyDestroy:Initialize()
 	EasyDestroy.EasyDestroyTest:SetPoint("BOTTOMLEFT", EasyDestroyFrame, "TOPLEFT", 0, 4)
 	EasyDestroy.EasyDestroyTest:SetText("Test")
 	EasyDestroy.EasyDestroyTest:SetScript("OnClick", function(self)
-		print("SizeOfFramePool", #EDFramePool['EasyDestroyItemTemplate'] or 0)
-		print("SizeOfItemPool", #EasyDestroy.ItemPool or 0)
-		print("CommonCheckbox", EasyDestroyRarityCommon:GetChecked())
-		print("UncommonCheckbox", EasyDestroyRarityUncommon:GetChecked())
-		print("RareCheckbox", EasyDestroyRarityRare:GetChecked())
-		print("EpicCheckbox", EasyDestroyRarityEpic:GetChecked())
-		print("Filter")
+		print("CountItemsFound", #EasyDestroy:FindItemsToDestroy(EasyDestroy.CurrentFilter['filter']) or 0)
+		print("CommonCheckbox", EasyDestroyFilters_RarityCommon:GetChecked())
+		print("UncommonCheckbox", EasyDestroyFilters_RarityUncommon:GetChecked())
+		print("RareCheckbox", EasyDestroyFilters_RarityRare:GetChecked())
+		print("EpicCheckbox", EasyDestroyFilters_RarityEpic:GetChecked())
+		print("Filter", UIDropDownMenu_GetSelectedValue(EasyDestroyDropDown))
 		pprint(EasyDestroy.CurrentFilter)
 	end)
 	
@@ -142,55 +139,27 @@ function EasyDestroy:Initialize()
 	else
 		EasyDestroy.EasyDestroyTest:Hide()
 	end
+
+	EasyDestroy.InitFilters()
 end
 
 function EasyDestroy_InitDropDown()
 	local info = UIDropDownMenu_CreateInfo()
-	info.text, info.value, info.checked, info.func = "New Filter...", 0, false, EasyDestroy_DropDownSelect
+	info.text, info.value, info.checked, info.func, info.owner = "New Filter...", 0, false, EasyDestroy_DropDownSelect, EasyDestroyDropDown
 	UIDropDownMenu_AddButton(info)
 	
-	for fid, filter in pairs(EasyDestroy.Data.Filters) do
-		info.text, info.value, info.checked, info.func = filter.properties.name, fid, false, EasyDestroy_DropDownSelect
+	for fid, filter in EasyDestroy.spairs(EasyDestroy.Data.Filters, function(t, a, b) return t[a].properties.name < t[b].properties.name end) do
+		info.text, info.value, info.checked, info.func, info.owner = filter.properties.name, fid, false, EasyDestroy_DropDownSelect, EasyDestroyDropDown
 		UIDropDownMenu_AddButton(info)
 	end
 end
 
-function EasyDestroy:CreateItemFrame(parent, itemLink)
-	local frame = EasyDestroy:GetFrameFromPool("EasyDestroyItemFrame"..FP_UID, parent, "EasyDestroyItemTemplate")
-	FP_UID = FP_UID + 1
+function EasyDestroy_UpdateItemFrame(frame, itemLink)
 	frame.Icon:SetTexture(GetItemIcon(itemLink))
 	frame.Item:SetText(GetItemInfo(itemLink))
 	frame.Item.itemLink = itemLink
 	
 	return frame
-end
-
-function EasyDestroy:GetFrameFromPool(name, parent, template)
-	local pool
-	if template then
-		if not EDFramePool[template] then
-			EDFramePool[template] = {}
-		end
-		pool = EDFramePool[template]
-	else
-		pool = EDFramePool
-	end
-	
-	for _, frame in ipairs(pool) do
-		if frame.inuse == false then
-			frame.inuse = true
-			frame:SetParent(parent)
-			frame:Show();
-			return frame
-		end
-	end
-	
-	local frame
-	frame = CreateFrame("FRAME", name, parent, template)
-	frame.inuse = true
-	tinsert(pool, frame)
-	return frame
-
 end
 
 --[[
@@ -235,19 +204,13 @@ function EasyDestroy:FindItemsToDestroy(filter)
 				
 				
 				for k, v in pairs(filter) do
-					if k == "quality" then 
-						if not tContains(v, item[k]) then
+					if not EasyDestroyFilters[k] then
+						print("Unsupported filter:" .. k)
+					else
+						if not EasyDestroyFilters[k](v, item[k]) then
 							matchfound = false
 							break
 						end
-					elseif k == "name" then
-						if not string.find(string.lower(item[k]), string.lower(v)) then
-							matchfound = false
-							break
-						end
-					elseif v ~= item[k] then
-						matchfound = false
-						break
 					end
 					matchfound = true
 				end
@@ -276,50 +239,15 @@ function EasyDestroy:FindItemsToDestroy(filter)
 	return items
 end
 
-function EasyDestroy:ItemInFilter(item, filter)
-	if filter.multifilter then
-		
-	end
-end
-
-function EasyDestroy.ItemInEquipmentSet(bag, slot)
-	local sets = C_EquipmentSet.GetEquipmentSetIDs();
-	
-	for _, setid in pairs(sets) do
-		local items = C_EquipmentSet.GetItemLocations(setid)
-		if items then
-			for _, locid in pairs(items) do
-				equipped, bank, bags, void, slotnum, bagnum = EquipmentManager_UnpackLocation(locid);
-				if bagnum==bag and slotnum==slot then
-					return true
-				end
-			end
-		end
-	end
-	return false
-end
-
-function EasyDestroy.HaveTransmog(itemlink)
-	local appearance = C_TransmogCollection.GetItemInfo(itemlink);
-	if apperance then 
-		local sources = C_TransmogCollection.GetAppearanceSources(appearance);
-		if sources then
-			for k, v in pairs(sources) do
-				if v.isCollected then
-					return true
-				end
-			end
-		end
-	end
-	return false
-end
-
 function EasyDestroy:DisenchantItem()
-	local key = #EasyDestroy.ItemPool
-	local frame = EasyDestroy.ItemPool[key]
-	local bag, slot = frame.info.bag, frame.info.slot
-		
-		if EasyDestroy.Debug then
+	local iteminfo = EasyDestroyItemsFrameItem1.info or nil
+	local bag, slot
+	
+	if iteminfo ~= nil then
+		bag, slot = iteminfo.bag, iteminfo.slot	
+	end
+	
+	if EasyDestroy.Debug then
 		print('Disenchanting...')
 		print(key, bag, slot)
 	end
@@ -344,139 +272,43 @@ function EasyDestroy:DisenchantItem()
 	)
 end
 
-function EasyDestroy.ClearItem(key)
-	frame = EasyDestroy.ItemPool[key]
-	frame:Hide()
-	frame.inuse = false
-	table.remove(EasyDestroy.ItemPool, key)
-end
-
-function EasyDestroy:ClearItems()
-	--[[ TODO, figure out why the ItemPool appears to be resetting
-	in the middle of loading. It makes it so that the framepool
-	has to be completely reset rather than just the itempool
-	]]--
-	for key, frame in ipairs(EasyDestroy.ItemPool) do
-		EasyDestroy.ClearItem(key)
+function EasyDestroyItemsScrollBar_Update()
+	local filter = EasyDestroy.CurrentFilter["filter"]
+	itemList = EasyDestroy:FindItemsToDestroy(filter)
+	FauxScrollFrame_Update(EasyDestroyItemsFrameScrollFrame, #itemList, 8, 24)
+	
+	if #itemList > 8 then
+		EasyDestroyItems:SetPoint("TOPRIGHT", EasyDestroyFrameDialogBG, "TOPRIGHT",  -28, 0)
+	else
+		EasyDestroyItems:SetPoint("TOPRIGHT", EasyDestroyFrameDialogBG, "TOPRIGHT", -4, 0)
 	end
 	
-	if EDFramePool['EasyDestroyItemTemplate'] then
-		for key,frame in ipairs(EDFramePool['EasyDestroyItemTemplate']) do
-			frame:Hide()
-			frame.inuse = false
-		end
-	end
-end
-
-function EasyDestroy:PopulateSearch(filterObject)	
-	if EasyDestroy.Debug then
-		print("Populating...")
-	end
-	local anchor, counter
-	local filter = filterObject["filter"] or EasyDestroy.EmptyFilter
-	
-	counter = 1
-	for _, info in ipairs(EasyDestroy:FindItemsToDestroy(filter)) do
-		local frame = EasyDestroy:CreateItemFrame(EasyDestroyFrameScrollChild, info.itemlink)
-		if anchor then
-			frame:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT")
-			frame:SetPoint("TOPRIGHT", anchor, "BOTTOMRIGHT")
+	offset = FauxScrollFrame_GetOffset(EasyDestroyItemsFrameScrollFrame)
+	for i=1, 8, 1 do
+		local index = offset+i
+		local frame = _G['EasyDestroyItemsFrameItem'..i]
+		if index <= #itemList then
+			local item = itemList[index]
+			EasyDestroy_UpdateItemFrame(frame, item.itemlink)
+			local r,g,b = GetItemQualityColor(C_Item.GetItemQualityByID(item.itemlink))
+			frame:SetBackdrop({bgFile="Interface\\Tooltips\\UI-Tooltip-Background",})
+			frame:SetBackdropColor(r,g,b, 0.5)
+			frame.info = item
+			tinsert(EasyDestroy.ItemPool, frame)
+			frame:Show()
 		else
-			frame:SetPoint("TOPLEFT", EasyDestroyFrameScrollChild)
-			frame:SetPoint("TOPRIGHT", EasyDestroyFrameScrollChild, 0, 0)
+			frame:Hide()
 		end
-		frame:SetHeight(24)
-		local r,g,b = GetItemQualityColor(C_Item.GetItemQualityByID(info.itemlink))
-		frame:SetBackdrop({bgFile="Interface\\Tooltips\\UI-Tooltip-Background",})
-		frame:SetBackdropColor(r,g,b, 0.5)
-		frame.info = info
-		tinsert(EasyDestroy.ItemPool, frame)
-		anchor = frame
-		counter = counter+1
-	end
-	
-	EasyDestroyFrameScrollChild:SetHeight((counter*20)+5) -- For some reason even though height is set to 24, if i multiply by 24 I get a lot of extra space
-end
-
-function EasyDestroy:GenerateFilter()
-	local filterObj = {}
-	filterObj.properties = {}
-	filterObj.filter = {}
-	local filter_name = EasyDestroyFilterName.input:GetText()
-	local entry_id = EasyDestroyItemID.input:GetNumber()
-	local entry_name = strtrim(EasyDestroyNameSearch.input:GetText())
-	
-	if not filter_name or filter_name == "" then 
-		filter_name = "Filter" .. tostring(EasyDestroy.FilterCount + 1)
-	end
-		
-	filterObj.properties.name = filter_name
-	filterObj.properties.favorite = false
-	
-	if entry_id > 0 then filterObj.filter.id = entry_id end
-	if entry_name ~= "" then filterObj.filter.name = entry_name end
-	
-	if(EasyDestroyRarityCommon:GetChecked() or EasyDestroyRarityUncommon:GetChecked() or EasyDestroyRarityRare:GetChecked() or EasyDestroyRarityEpic:GetChecked()) then
-		filterObj.filter.quality = {}
-		if EasyDestroyRarityCommon:GetChecked() then tinsert(filterObj.filter.quality, LE_ITEM_QUALITY_COMMON) end
-		if EasyDestroyRarityUncommon:GetChecked() then tinsert(filterObj.filter.quality, LE_ITEM_QUALITY_UNCOMMON) end
-		if EasyDestroyRarityRare:GetChecked() then tinsert(filterObj.filter.quality, LE_ITEM_QUALITY_RARE) end
-		if EasyDestroyRarityEpic:GetChecked() then tinsert(filterObj.filter.quality, LE_ITEM_QUALITY_EPIC) end
-	end
-	
-	return filterObj
-end
-
-function EasyDestroy_SaveFilter()
-	local FilterID = UIDropDownMenu_GetSelectedValue(EasyDestroyDropDown)
-	EasyDestroy.FilterCount = 0
-	
-	for _, v in pairs(EasyDestroy.Data.Filters) do
-		EasyDestroy.FilterCount = EasyDestroy.FilterCount + 1
-	end
-	
-	if FilterID == 0 then
-		FilterID = "FilterID" .. EasyDestroy.FilterCount + 1
-	end
-	EasyDestroy:Debug("Saving Filter", FilterID)
-	EasyDestroy.Data.Filters[FilterID] = EasyDestroy:GenerateFilter()
-end
-
-function EasyDestroy_DeleteFilter()
-	local FilterID = UIDropDownMenu_GetSelectedValue(EasyDestroyDropDown)
-	EasyDestroy:Debug("Deleting Filter", FilterID)
-	
-	EasyDestroy.Data.Filters[FilterID] = nil
-end
-
-function EasyDestroy_ClearFilterFrame()
-	EasyDestroyFilterName.input:SetText("")
-	EasyDestroyItemID.input:SetText("")
-	EasyDestroyNameSearch.input:SetText("")
-	local quality = {EasyDestroyRarityCommon, EasyDestroyRarityUncommon, EasyDestroyRarityRare, EasyDestroyRarityEpic}
-	for _, v in ipairs(quality) do
-		v:SetChecked(false)
 	end
 end
 
-function EasyDestroy_LoadFilter(fid)
-	EasyDestroy:Debug("Loading Filter", fid)
-	local filter = EasyDestroy.Data.Filters[fid]
-	EasyDestroyFilterName.input:SetText(filter.properties.name)
-	EasyDestroyItemID.input:SetText(filter.filter.id or "")
-	EasyDestroyNameSearch.input:SetText(filter.filter.name or "")
-	
-	local quality = {EasyDestroyRarityCommon, EasyDestroyRarityUncommon, EasyDestroyRarityRare, EasyDestroyRarityEpic}
-	for _, v in ipairs(quality) do
-		v:SetChecked(false)
+function EasyDestroy_ToggleFilters()
+	if EasyDestroyFilters:IsVisible() then
+		EasyDestroyFilters:Hide()
+		EasyDestroy_OpenFilters:SetText("Show Filters")
+	else
+		EasyDestroyFilters:Show()
+		EasyDestroy_OpenFilters:SetText("Hide Filters")
 	end
-	if tContains(filter.filter.quality or {}, LE_ITEM_QUALITY_COMMON) then EasyDestroyRarityCommon:SetChecked(true) end
-	if tContains(filter.filter.quality or {}, LE_ITEM_QUALITY_UNCOMMON) then EasyDestroyRarityUncommon:SetChecked(true) end
-	if tContains(filter.filter.quality or {}, LE_ITEM_QUALITY_RARE) then EasyDestroyRarityRare:SetChecked(true) end
-	if tContains(filter.filter.quality or {}, LE_ITEM_QUALITY_EPIC) then EasyDestroyRarityEpic:SetChecked(true) end
-
-	--Set the drop down box to show the currently selected filter
-
 end
 
-    
