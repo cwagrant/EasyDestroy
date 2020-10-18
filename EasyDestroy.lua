@@ -145,12 +145,14 @@ end
 
 function EasyDestroy_InitDropDown()
 	local info = UIDropDownMenu_CreateInfo()
-	info.text, info.value, info.checked, info.func, info.owner = "New Filter...", 0, false, EasyDestroy_DropDownSelect, EasyDestroyDropDown
+	info.text, info.value, info.checked, info.func = "New Filter...", 0, false, EasyDestroy_DropDownSelect, EasyDestroyDropDown
 	UIDropDownMenu_AddButton(info)
 	
-	for fid, filter in EasyDestroy.spairs(EasyDestroy.Data.Filters, function(t, a, b) return t[a].properties.name < t[b].properties.name end) do
-		info.text, info.value, info.checked, info.func, info.owner = filter.properties.name, fid, false, EasyDestroy_DropDownSelect, EasyDestroyDropDown
-		UIDropDownMenu_AddButton(info)
+	if EasyDestroy.Data.Filters then
+		for fid, filter in EasyDestroy.spairs(EasyDestroy.Data.Filters, function(t, a, b) return t[a].properties.name < t[b].properties.name end) do
+			info.text, info.value, info.checked, info.func = filter.properties.name, fid, false, EasyDestroy_DropDownSelect, EasyDestroyDropDown
+			UIDropDownMenu_AddButton(info)
+		end
 	end
 end
 
@@ -248,12 +250,12 @@ function EasyDestroy:DisenchantItem()
 	end
 	
 	if EasyDestroy.Debug then
-		print('Disenchanting...')
+		EasyDestroy.Debug("Disenchanting...")
 		print(key, bag, slot)
 	end
 	
 	if(GetContainerItemInfo(bag, slot) ~= nil) then
-		print(format("Disenchanting item at (bag, slot): %d %d", bag, slot))
+		EasyDestroy.Debug(format("Disenchanting item at (bag, slot): %d %d", bag, slot))
 		EasyDestroyButton:SetAttribute("type1", "macro")
 		EasyDestroyButton:SetAttribute("macrotext", format("/cast Disenchant\n/use %d %d", bag, slot))
 	end	

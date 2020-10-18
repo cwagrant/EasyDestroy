@@ -135,7 +135,7 @@ function EasyDestroy.GenerateFilter()
 	local itemLevels = EasyDestroyFilters.GetItemLevels()
 	
 	if not filter_name or filter_name == "" then 
-		filter_name = "Filter" .. tostring(EasyDestroy.FilterCount + 1)
+		filter_name = "Filter" .. tostring(EasyDestroyFilters_GetNextFilterID(true))
 	end
 		
 	filterObj.properties.name = filter_name
@@ -159,7 +159,7 @@ function EasyDestroy.GenerateFilter()
 	return filterObj
 end
 
-function EasyDestroyFilters_GetNextFilterID()
+function EasyDestroyFilters_GetNextFilterID(noiterate)
 
 	nextID = EasyDestroy.Data.Options.NextFilterID or 0
 	if nextID <= 0 then 
@@ -168,7 +168,9 @@ function EasyDestroyFilters_GetNextFilterID()
 		end
 		nextID = nextID + 100
 	end
-	nextID = nextID + 1
+	if not noiterate then
+		nextID = nextID + 1
+	end
 	EasyDestroy.Data.Options.NextFilterID = nextID
 	return nextID
 
@@ -182,7 +184,7 @@ function EasyDestroyFilters_SaveFilter()
 
 	-- if we are creating a new filter, then give it an ID
 	if FilterID == 0 then
-		FilterID = "FilterID" .. EasyDestroyFilteres_GetNextFilterID()
+		FilterID = "FilterID" .. EasyDestroyFilters_GetNextFilterID()
 	end
 
 	local filter = EasyDestroy:GenerateFilter()
@@ -289,30 +291,32 @@ function EasyDestroyFilters_SaveValidation(newFilterID, filter, skipFavoriteChec
 end
 
 function EasyDestroyFilters_FindFilterWithName(filterName)
+	if EasyDestroy.Data.Filters then
+		for fid, filter in pairs(EasyDestroy.Data.Filters) do
 
-	for fid, filter in pairs(EasyDestroy.Data.Filters) do
+			if filter.properties.name == filterName then
 
-		if filter.properties.name == filterName then
+				return fid, filter
 
-			return fid, filter
+			end
 
 		end
-
 	end
 
 	return nil
 end
 
 function EasyDestroyFilters_FindFavorite()
+	if EasyDestroy.Data.Filters then 
+		for fid, filter in pairs(EasyDestroy.Data.Filters) do
 
-	for fid, filter in pairs(EasyDestroy.Data.Filters) do
+			if filter.properties.favorite then
 
-		if filter.properties.favorite then
+				return fid, filter
 
-			return fid, filter
+			end
 
 		end
-
 	end
 
 	return nil

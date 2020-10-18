@@ -163,6 +163,14 @@
                     <Anchor point="BOTTOMRIGHT" relativeTo="EasyDestroyFilters" x="-18" y="18"/>
                 </Anchors>
             </Button>
+            <Button name="EasyDestroyFilters_New" inherits="UIPanelButtonTemplate" text="New Filter">
+                <Size>
+                    <AbsDimension x="80" y="22"/>
+                </Size>
+                <Anchors>
+                    <Anchor point="BOTTOMRIGHT" relativeTo="EasyDestroyFilters_Save" relativePoint="TOPRIGHT" x="0" y="8"/>
+                </Anchors>
+            </Button>
             <Button name="EasyDestroyFilters_Delete" inherits="UIPanelButtonTemplate" text="Delete Filter">
                 <Size>
                     <AbsDimension x="80" y="22"/>

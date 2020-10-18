@@ -69,7 +69,7 @@ function pprint(tbl, level)
 	end
 end
 
-function EasyDestroy:Debug(...)
+function EasyDestroy.Debug(...)
 	if EasyDestroy.DebugActive then
 		print(...)
 	end

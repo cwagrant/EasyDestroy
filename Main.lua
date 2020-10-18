@@ -32,12 +32,17 @@ function EasyDestroy_EventHandler(self, event, ...)
 			if EasyDestroyData then 
 				EasyDestroy.Data = EasyDestroyData
 				EasyDestroy.DataLoaded = true
-				EasyDestroy.Data.Filters = EasyDestroy.Data.Filters or {}
-				EasyDestroy.Data.Options = EasyDestroy.Data.Options or {}
-		
-				EasyDestroy.CurrentFilter = EasyDestroy.EmptyFilter
-				UIDropDownMenu_Initialize(EasyDestroyDropDown, EasyDestroy_InitDropDown)
-				
+			else
+				EasyDestroy.Data = {}
+				EasyDestroy.DataLoaded = true
+			end
+			EasyDestroy.Data.Filters = EasyDestroy.Data.Filters or {}
+			EasyDestroy.Data.Options = EasyDestroy.Data.Options or {}
+	
+			EasyDestroy.CurrentFilter = EasyDestroy.EmptyFilter
+			UIDropDownMenu_Initialize(EasyDestroyDropDown, EasyDestroy_InitDropDown)
+			
+			if EasyDestroy.Data.Filters and table.getn(EasyDestroy.Data.Filters)>0 then
 				for k, filterObj in pairs(EasyDestroy.Data.Filters) do
 					if filterObj.properties.favorite then
 						UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, k)
@@ -45,7 +50,8 @@ function EasyDestroy_EventHandler(self, event, ...)
 						EasyDestroy.FilterChanged = true
 					end
 				end
-
+			else
+				UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, 0)
 				--UIDropDownMenu_Initialize(EasyDestroyDestroyType, EasyDestroy_InitFilterDestroySpells)
 			end
 		end
@@ -120,4 +126,9 @@ EasyDestroy_OpenFilters:SetScript("OnClick", EasyDestroy_ToggleFilters)
 EasyDestroyFilters_Save:SetScript("OnClick", EasyDestroyFilters_SaveFilter)
 EasyDestroyFilters_Delete:SetScript("OnClick", EasyDestroyFilters_DeleteFilter)
 EasyDestroyFilters_NewFromFilter:SetScript("OnClick", EasyDestroyFilters_CreateNewFromCurrent)
+EasyDestroyFilters_New:SetScript("OnClick", function() 
+	EasyDestroy_ClearFilterFrame() 
+	IDropDownMenu_SetSelectedValue(EasyDestroyDropDown, 0) 
+	EasyDestroy.FilterChanged = true end
+)
 
