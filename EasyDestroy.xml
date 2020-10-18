@@ -1,9 +1,10 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/"
  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
  xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
+ 
 <Frame name="EasyDestroyFrame" inherits="UIPanelDialogTemplate" hidden="true" movable="true" parent="UIParent">
 	<Size>
-		<AbsDimension x="300" y ="480"/>
+		<AbsDimension x="300" y ="320"/>
 	</Size>
 	<Anchors>
 		<Anchor point="CENTER"/>
@@ -17,44 +18,96 @@
 				<Anchor point="BOTTOMRIGHT" relativeTo="EasyDestroyFrameTitleBG"/>
 			</Anchors>
 		</Frame>
-		<Frame name="$parentScrollParent" inherits="BackdropTemplate">
+		<Frame name="EasyDestroyItems" inherits="BackdropTemplate">
 			<Size>
 				<AbsDimension x="0" y="200"/>
 			</Size>
 			<Anchors>
 				<Anchor point="TOPLEFT" relativeTo="EasyDestroyFrameDialogBG" relativePoint="TOPLEFT" x="4" y="-8"/>
-				<Anchor point="TOPRIGHT" relativeTo="EasyDestroyFrameDialogBG" relativePoint="TOPRIGHT" x="-4"/>
+				<Anchor point="TOPRIGHT" relativeTo="EasyDestroyFrameDialogBG" relativePoint="TOPRIGHT" x="-24"/>
 			</Anchors>
+			
+			<!-- Scroll Frame Buttons -->
 			<Frames>
-				<ScrollFrame name="EasyDestroyFrameScrollFrame" inherits="UIPanelScrollFrameCodeTemplate, BackdropTemplate" clipChildren="true"> <!--UIPanelScrollFrameTemplate-->
+				<Frame name="EasyDestroyItemsFrame" inherits="BackdropTemplate">
 					<Anchors>
-						<Anchor point="TOPLEFT" relativeTo="EasyDestroyFrameScrollParent" relativePoint="TOPLEFT" x="4" y="-4"/>
-						<Anchor point="BOTTOMRIGHT" relativeTo="EasyDestroyFrameScrollParent" relativePoint="BOTTOMRIGHT" x="-4" y="4"/>
-					</Anchors>	
+						<Anchor point="TOPLEFT" x="4"/>
+						<Anchor point="BOTTOMRIGHT" x="-4"/>
+					</Anchors>
 					<Frames>
-						<Slider name="$parentScrollBar" inherits="UIPanelScrollBarTrimTemplate" parentkey="ScrollBar">
+						<ScrollFrame name="$parentScrollFrame" inherits="FauxScrollFrameTemplate">
 							<Anchors>
-								<Anchor point="TOPLEFT" relativePoint="TOPRIGHT" x="-18" y="-16"/>
-								<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMRIGHT" x="-7" y="14"/>
+								<Anchor point="TOPLEFT" RelativeTo="EasyDestroyItems" x="0" y="-5"/>
+								<Anchor point="BOTTOMRIGHT" RelativeTo="EasyDestroyItems" x="0" y="5"/>
 							</Anchors>
-						</Slider>
+							<Scripts>
+								<OnVerticalScroll>
+									FauxScrollFrame_OnVerticalScroll(self, offset, 24, EasyDestroyItemsScrollBar_Update);
+								</OnVerticalScroll>
+							</Scripts>
+							<Size>
+								<AbsDimension x="31" y="239"/>
+							</Size>
+						</ScrollFrame>
+						<Button name="$parentItem1" inherits="EasyDestroyItemTemplate">
+							<Anchors>
+								<Anchor point="TOPRIGHT" RelativePoint="TOPRIGHT" RelativeTo="$parent">
+									<Offset>
+										<AbsDimension x="0" y="-4" />
+									</Offset>
+								</Anchor>
+								<Anchor point="LEFT" RelativePoint="LEFT" RelativeTo="$parent" />
+							</Anchors>
+						</Button>
+						<Button name="$parentItem2" inherits="EasyDestroyItemTemplate">
+							<Anchors>
+								<Anchor point="TOPLEFT" RelativePoint="BOTTOMLEFT" RelativeTo="$parentItem1" />
+								<Anchor point="TOPRIGHT" RelativePoint="BOTTOMRIGHT" RelativeTo="$parentItem1" />
+							</Anchors>
+						</Button>
+						<Button name="$parentItem3" inherits="EasyDestroyItemTemplate">
+							<Anchors>
+								<Anchor point="TOPLEFT" RelativePoint="BOTTOMLEFT" RelativeTo="$parentItem2" />
+								<Anchor point="TOPRIGHT" RelativePoint="BOTTOMRIGHT" RelativeTo="$parentItem2" />
+							</Anchors>
+						</Button>
+						<Button name="$parentItem4" inherits="EasyDestroyItemTemplate">
+							<Anchors>
+								<Anchor point="TOPLEFT" RelativePoint="BOTTOMLEFT" RelativeTo="$parentItem3" />
+								<Anchor point="TOPRIGHT" RelativePoint="BOTTOMRIGHT" RelativeTo="$parentItem3" />
+							</Anchors>
+						</Button>
+						<Button name="$parentItem5" inherits="EasyDestroyItemTemplate">
+							<Anchors>
+								<Anchor point="TOPLEFT" RelativePoint="BOTTOMLEFT" RelativeTo="$parentItem4" />
+								<Anchor point="TOPRIGHT" RelativePoint="BOTTOMRIGHT" RelativeTo="$parentItem4" />
+							</Anchors>
+						</Button>
+						<Button name="$parentItem6" inherits="EasyDestroyItemTemplate">
+							<Anchors>
+								<Anchor point="TOPLEFT" RelativePoint="BOTTOMLEFT" RelativeTo="$parentItem5" />
+								<Anchor point="TOPRIGHT" RelativePoint="BOTTOMRIGHT" RelativeTo="$parentItem5" />
+							</Anchors>
+						</Button>
+						<Button name="$parentItem7" inherits="EasyDestroyItemTemplate">
+							<Anchors>
+								<Anchor point="TOPLEFT" RelativePoint="BOTTOMLEFT" RelativeTo="$parentItem6" />
+								<Anchor point="TOPRIGHT" RelativePoint="BOTTOMRIGHT" RelativeTo="$parentItem6" />
+							</Anchors>
+						</Button>
+						<Button name="$parentItem8" inherits="EasyDestroyItemTemplate">
+							<Anchors>
+								<Anchor point="TOPLEFT" RelativePoint="BOTTOMLEFT" RelativeTo="$parentItem7" />
+								<Anchor point="TOPRIGHT" RelativePoint="BOTTOMRIGHT" RelativeTo="$parentItem7" />
+							</Anchors>
+						</Button>
 					</Frames>
-				</ScrollFrame>
+				</Frame>
 			</Frames>
-		</Frame>
-		<Frame name="$parentScrollChild">
-			<Size>
-				<AbsDimension x="0" y="600"/>
-			</Size>
-			<Scripts>
-				<OnLoad>
-					self:SetSize(EasyDestroyFrameScrollFrame:GetWidth()-20, 600)
-				</OnLoad>
-			</Scripts>
 		</Frame>
 		<Frame name="EasyDestroyFrameSearch">
 			<Anchors>
-				<Anchor point="TOPLEFT" relativeTo="EasyDestroyFrameScrollParent" relativePoint="BOTTOMLEFT" x="-4"/>
+				<Anchor point="TOPLEFT" relativeTo="EasyDestroyItems" relativePoint="BOTTOMLEFT" x="-4"/>
 				<Anchor point="BOTTOMRIGHT" relativeTo="EasyDestroyFrameDialogBG"/>
 			</Anchors>
 			<Frames>
@@ -63,122 +116,6 @@
 						<Anchor point="TOPLEFT" x="8"  y="-8"/>
 						<Anchor point="TOPRIGHT" x="-8" y="-8"/>
 					</Anchors>
-				</Frame>
-				<Frame name="EasyDestroyFilterName" inherits="EasyDestroyEditBoxTemplate">
-					<Anchors>
-						<Anchor point="TOPLEFT" relativeTo="EasyDestroyDropDown" relativePoint="BOTTOMLEFT" x="0" y="-8"/>
-						<Anchor point="RIGHT" x="-4" y="0"/>
-					</Anchors>
-				</Frame>
-				<Frame name="EasyDestroyNameSearch" inherits="EasyDestroyEditBoxTemplate">
-					<Anchors>
-						<Anchor point="TOPLEFT" relativeTo="EasyDestroyFilterName" relativePoint="BOTTOMLEFT" x="0" y="-8"/>
-						<Anchor point="RIGHT" x="-4" y="0"/>
-					</Anchors>
-				</Frame>
-				<Frame name="EasyDestroyItemID" inherits="EasyDestroyEditBoxTemplate">
-					<Anchors>
-						<Anchor point="TOPLEFT" relativeTo="EasyDestroyNameSearch" relativePoint="BOTTOMLEFT" x="0" y="-8"/>
-						<Anchor point="RIGHT" x="-4" y="0"/>
-					</Anchors>
-				</Frame>
-				<Frame name="EasyDestroyRarityContainer">
-					<Size>
-						<AbsDimension x="0" y="65"/>
-					</Size>
-					
-					<Anchors>
-						<Anchor point="TOPLEFT" relativeTo="EasyDestroyItemID" relativePoint="BOTTOMLEFT" x="8" y="-8"/>
-						<Anchor point="RIGHT" x="-16" y="0"/>
-					</Anchors>
-					<Layers>	
-						<Layer>
-							<Texture name="$parentTitle" parentKey="title">
-								<Size><AbsDimension x="80" y="10"/></Size>
-								<Color a="0" r="0" g="0" b="0"/>
-								<Anchors>
-									<Anchor point="CENTER" relativePoint="TOP"/>
-								</Anchors>
-							</Texture>
-							<FontString text="Item Quality" inherits="GameFontNormalSmall">
-								<Anchors>
-									<Anchor point="CENTER" relativeTo="$parentTitle"/>
-								</Anchors>
-							</FontString>
-						</Layer>
-					</Layers>
-					
-					<Frames>
-						<Frame name="EasyDestroyRarityColumn1">
-							<Anchors>
-								<Anchor point="TOPLEFT"/>
-								<Anchor point="BOTTOMLEFT"/>
-								<Anchor point="RIGHT" relativeTo="EasyDestroyRarityContainer" relativePoint="CENTER"/>
-							</Anchors>
-							<Frames>
-								<CheckButton name="EasyDestroyRarityCommon" inherits="EasyDestroyCheckboxTemplate">
-									<Anchors>
-										<Anchor point="TOPLEFT" x="10" y="-8"/>
-									</Anchors>
-								</CheckButton>
-								<CheckButton name="EasyDestroyRarityRare" inherits="EasyDestroyCheckboxTemplate">
-									<Anchors>
-										<Anchor point="TOPLEFT" relativeTo="EasyDestroyRarityCommon" relativePoint="BOTTOMLEFT"/>
-									</Anchors>
-								</CheckButton>
-							</Frames>
-						</Frame>
-						<Frame name="EasyDestroyRarityColumn2">
-							<Anchors>
-								<Anchor point="TOPRIGHT"/>
-								<Anchor point="BOTTOMRIGHT"/>
-								<Anchor point="LEFT" relativeTo="EasyDestroyRarityContainer" relativePoint="CENTER"/>
-							</Anchors>
-							<Frames>
-								<CheckButton name="EasyDestroyRarityUncommon" inherits="EasyDestroyCheckboxTemplate">
-									<Anchors>
-										<Anchor point="TOPLEFT" x="10" y="-8"/>
-									</Anchors>
-								</CheckButton>
-								<CheckButton name="EasyDestroyRarityEpic" inherits="EasyDestroyCheckboxTemplate">
-									<Anchors>
-										<Anchor point="TOPLEFT" relativeTo="EasyDestroyRarityUncommon" relativePoint="BOTTOMLEFT"/>
-									</Anchors>
-								</CheckButton>
-							</Frames>
-						</Frame>
-						<!-- Apparently SecureActionButtonTemplate doesnt' like being too many frames down as a child and refuses to show up
-						In order to get around this I had to use an InsecureActionButtonTemplate. Couldn't find any good documentation
-						of this functionality or limits on the SecureActionButtonTemplate so this is sort of bestguess as to why it didn't work. -->
-						<Button name="EasyDestroyButton" inherits="InsecureActionButtonTemplate,UIPanelButtonTemplate" text="Disenchant">
-							<Size>
-								<AbsDimension x="80" y="22"/>
-							</Size>
-							<Anchors>
-								<Anchor point="BOTTOMRIGHT" relativeTo="EasyDestroyFrameSearch" x="-10" y="10"/>
-							</Anchors>
-						</Button>
-						<Button name="EasyDestroySave" inherits="UIPanelButtonTemplate" text="Save Filter">
-							<Size>
-								<AbsDimension x="80" y="22"/>
-							</Size>
-							<Anchors>
-								<Anchor point="BOTTOMLEFT" relativeTo="EasyDestroyFrameSearch" x="10" y="10"/>
-							</Anchors>
-						</Button>
-						<Button name="EasyDestroyDelete" inherits="UIPanelButtonTemplate" text="X">
-							<Size>
-								<AbsDimension x="22" y="22"/>
-							</Size>
-							<Anchors>
-								<Anchor point="TOPLEFT" relativeTo="EasyDestroySave" relativePoint="TOPRIGHT" x="4" y="0"/>
-							</Anchors>
-						</Button>
-					</Frames>
-					<Backdrop edgeFile="Interface\Buttons\WHITE8x8" tile="true">			
-						<EdgeSize val="2"/>
-						<BorderColor a="1" r="0.99" g="0.81" b="0"/>
-					</Backdrop>
 				</Frame>
 			</Frames>
 			<Backdrop bgFile="Interface\Tooltips\UI-Tooltip-Background"
@@ -191,7 +128,22 @@
 				<Color a="1" r="0" g="0" b="0" />
 			</Backdrop>
 		</Frame>
-
+		<Button name="EasyDestroyButton" inherits="InsecureActionButtonTemplate,UIPanelButtonTemplate" text="Disenchant">
+			<Size>
+				<AbsDimension x="80" y="22"/>
+			</Size>
+			<Anchors>
+				<Anchor point="BOTTOMLEFT" relativeTo="EasyDestroyFrameSearch" x="10" y="10"/>
+			</Anchors>
+		</Button>
+		<Button name="EasyDestroy_OpenFilters" inherits="UIPanelButtonTemplate" text="Show Filters">
+			<Size>
+				<AbsDimension x="80" y="22"/>
+			</Size>
+			<Anchors>
+				<Anchor point="BOTTOMRIGHT" relativeTo="EasyDestroyFrameSearch" x="-10" y="10"/>
+			</Anchors>
+		</Button>
 	</Frames>
 	<Scripts>
 		<OnLoad>

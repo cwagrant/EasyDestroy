@@ -1,0 +1,188 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
+
+    <Frame name="EasyDestroyFilters" inherits="UIPanelDialogTemplate" parent="EasyDestroyFrame" hidden="true">
+        <Size>
+            <AbsDimension x="300" y="320"/>
+        </Size>
+        <Anchors>
+            <Anchor point="TOPLEFT" relativeTo="EasyDestroyFrame" relativePoint="TOPRIGHT"/>
+        </Anchors>
+        <Frames>
+            <CheckButton name="$parent_FavoriteIcon" motionScriptsWhileDisabled="true">
+                <Size x="16" y="16"/>
+                <Anchors>
+                    <Anchor point="TOPRIGHT" relativeTo="$parentDialogBG" x="-4" y="-4"/>
+                </Anchors>
+                <NormalTexture file="Interface\Common\ReputationStar">
+					<TexCoords left="0.5" right="1" top="0" bottom="0.5"/>
+				</NormalTexture>
+				<HighlightTexture file="Interface\Common\ReputationStar">
+					<TexCoords left="0" right="0.5" top="0.5" bottom="1"/>
+				</HighlightTexture>
+				<CheckedTexture file="Interface\Common\ReputationStar">
+					<TexCoords left="0" right="0.5" top="0" bottom="0.5"/>
+                </CheckedTexture>
+            </CheckButton>
+            <Frame name="$parent_FilterName" inherits="EasyDestroyEditBoxTemplate">
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeTo="$parentDialogBG" x="4" y="-4"/>
+                    <Anchor point="RIGHT" relativeTo="$parent_FavoriteIcon" relativePoint="LEFT" x="-4" y="0"/>
+                </Anchors>
+            </Frame>
+            <Frame name="$parent_ItemName" inherits="EasyDestroyEditBoxTemplate">
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeTo="$parent_FilterName" relativePoint="BOTTOMLEFT" x="0" y="-8"/>
+                    <Anchor point="RIGHT" x="-4" y="0"/>
+                </Anchors>
+            </Frame>
+            <Frame name="$parent_ItemID" inherits="EasyDestroyEditBoxTemplate">
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeTo="$parent_ItemName" relativePoint="BOTTOMLEFT" x="0" y="-8"/>
+                    <Anchor point="RIGHT" x="-4" y="0"/>
+                </Anchors>
+            </Frame>
+            <Frame name="$parent_ItemLevel" inherits="EasyDestroyEditBoxRangeTemplate">
+                <Size>
+                    <AbsDimension x="0" y="20"/>
+                </Size>
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeTo="$parent_ItemID" relativePoint="BOTTOMLEFT" x="0" y="-8"/>
+                    <Anchor point="RIGHT" x="-4" y="0"/>
+                </Anchors>
+            </Frame>
+
+            <Frame name="$parent_Rarity">
+                <Size>
+                    <AbsDimension x="0" y="65"/>
+                </Size>
+                
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeTo="$parent_ItemLevel" relativePoint="BOTTOMLEFT" x="8" y="-8"/>
+                    <Anchor point="RIGHT" x="-16" y="0"/>
+                </Anchors>
+                <Layers>	
+                    <Layer>
+                        <Texture name="$parentTitle" parentArray="title">
+                            <Size><AbsDimension x="80" y="10"/></Size>
+                            <Color a="0" r="0" g="0" b="0"/>
+                            <Anchors>
+                                <Anchor point="CENTER" relativePoint="TOP"/>
+                            </Anchors>
+                        </Texture>
+                        <FontString text="Item Quality" inherits="GameFontNormalSmall">
+                            <Anchors>
+                                <Anchor point="CENTER" relativeTo="$parentTitle"/>
+                            </Anchors>
+                        </FontString>
+                    </Layer>
+                </Layers>
+                
+                <Frames>
+                
+                    <CheckButton name="$parentCommon" parentKey="common" parentArray="Rarity" inherits="EasyDestroyCheckboxTemplate">
+                        <Anchors>
+                            <Anchor point="TOPLEFT" x="20" y="-8"/>
+                        </Anchors>
+                    </CheckButton>
+                    <CheckButton name="$parentUncommon" inherits="EasyDestroyCheckboxTemplate" parentKey="uncommon" parentArray="Rarity" >
+                        <Anchors>
+                            <Anchor point="TOPLEFT" relativePoint="TOP" x="30" y="-8"/>
+                        </Anchors>
+                    </CheckButton>
+                    <CheckButton name="$parentRare" inherits="EasyDestroyCheckboxTemplate" parentKey="rare" parentArray="Rarity" >
+                        <Anchors>
+                            <Anchor point="TOPLEFT" relativeTo="$parentCommon" relativePoint="BOTTOMLEFT"/>
+                        </Anchors>
+                    </CheckButton>
+                    <CheckButton name="$parentEpic" inherits="EasyDestroyCheckboxTemplate" parentKey="epic" parentArray="Rarity" >
+                        <Anchors>
+                            <Anchor point="TOPLEFT" relativeTo="$parentUncommon" relativePoint="BOTTOMLEFT"/>
+                        </Anchors>
+                    </CheckButton>
+                    
+                    <!-- Apparently SecureActionButtonTemplate doesnt' like being too many frames down as a child and refuses to show up
+                    In order to get around this I had to use an InsecureActionButtonTemplate. Couldn't find any good documentation
+                    of this functionality or limits on the SecureActionButtonTemplate so this is sort of bestguess as to why it didn't work. -->
+                </Frames>
+                <Backdrop edgeFile="Interface\Buttons\WHITE8x8" tile="true">			
+                    <EdgeSize val="2"/>
+                    <BorderColor a="1" r="0.99" g="0.81" b="0"/>
+                </Backdrop>
+            </Frame>
+            <!--<Frame name="$parent_Favorite">
+                <Size>
+                    <AbsDimension x="100"  y="20"/>
+                </Size>
+                <Anchors>
+                    <Anchor point="BOTTOM" relativeTo="EasyDestroyFilters" relativePoint="BOTTOM" x="0" y="60"/>
+                </Anchors>
+                <Frames>
+                    <CheckButton name="$parentCheckbox" parentkey="checkbox" inherits="EasyDestroyCheckboxTemplate">
+                        <Anchors>
+                            <Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT"/>
+                        </Anchors>
+                    </CheckButton>
+                </Frames>
+            </Frame>-->
+            <Frame name="EasyDestroyFilterDestroySpell" hidden="true">
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeTo="$parent_Rarity" relativePoint="BOTTOMLEFT"/>
+                    <Anchor point="TOPRIGHT" relativeTo="$parent_Rarity" relativePoint="BOTTOMRIGHT"/>
+                </Anchors>
+                <Size>
+                    <AbsDimension x="0" y="40"/>
+                </Size>
+                <Layers>
+                    <Layer level="OVERLAY">
+                        <FontString name="$parentLabel" parentKey="label" inherits="GameFontNormalSmall">
+                            <Anchors>
+                                <Anchor point="LEFT" x="-8"/>
+                            </Anchors>
+                        </FontString>
+                    </Layer>
+                </Layers>
+                <Frames>
+                    <Frame name="EasyDestroyDestroyType" inherits="UIDropDownMenuTemplate">
+                        <Anchors>
+                            <Anchor point="TOPLEFT" relativeTo="$parentLabel" relativePoint="TOPRIGHT" x="-12" y="8"/>
+                            <Anchor point="TOPRIGHT" relativePoint="RIGHT"/>
+                        </Anchors>
+                        <Size>
+                            <AbsDimension x="0" y="40"/>
+                        </Size>
+                    </Frame>
+                </Frames>
+            </Frame>
+            <Button name="EasyDestroyFilters_Save" inherits="UIPanelButtonTemplate" text="Save Filter">
+                <Size>
+                    <AbsDimension x="80" y="22"/>
+                </Size>
+                <Anchors>
+                    <Anchor point="BOTTOMRIGHT" relativeTo="EasyDestroyFilters" x="-18" y="18"/>
+                </Anchors>
+            </Button>
+            <Button name="EasyDestroyFilters_Delete" inherits="UIPanelButtonTemplate" text="Delete Filter">
+                <Size>
+                    <AbsDimension x="80" y="22"/>
+                </Size>
+                <Anchors>
+                    <Anchor point="BOTTOMLEFT" relativeTo="EasyDestroyFilters" x="18" y="18"/>
+                </Anchors>
+            </Button>
+            <Button name="EasyDestroyFilters_NewFromFilter" inherits="UIPanelButtonTemplate" text="New From Current">
+                <Size>
+                    <AbsDimension x="100" y="22"/>
+                </Size>
+                <Anchors>
+                    <Anchor point="BOTTOM" relativeTo="EasyDestroyFilters" x="0" y="18"/>
+                </Anchors>
+            </Button>
+        </Frames>
+        <Scripts>
+            <OnHide>EasyDestroy_OpenFilters:SetText('Show Filters')</OnHide>
+            <OnShow>EasyDestroy_OpenFilters:SetText('Hide Filters')</OnShow>
+        </Scripts>
+    </Frame>
+</Ui>
