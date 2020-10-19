@@ -41,6 +41,10 @@ the plan
 	So it would be FilterGroups that have filters inside them and all items that match at least 1 of the filters would be included.
 	Might be a bit excessive? Still need to do a drop down and allow saving a filter.
 
+	-- Thought, instead make things comma separate-able? Or how do I handle filters in both an and and or state.
+	-- Might be easier to allow the creation of "Combo Filters" where a person creates multiple filters and then
+	-- is able to combine them together (will act as OR statements)
+
 - Idea - Filter 2.0
 Opens new window
 Allows for multiple entries, user can search for an item and add it to the filter.
@@ -63,10 +67,13 @@ E.g.
 SLASH_OPENUI1 = "/edestroy";
 SLASH_OPENUI2 = "/ed";
 function SlashCmdList.OPENUI(msg)
-	if msg == "list" then
+	if msg == "list" and EasyDestroy.DebugActive then
 		for key, item in ipairs(EasyDestroy.ItemPool) do
 			print(string.format("%i,%i,%i,%s", key, item.info.bag, item.info.slot, C_Item.GetItemNameByID(item.info.itemlink)))
 		end
+	elseif msg=="reset" then
+		-- reset position to center of screen
+		EasyDestroyFrame:SetPoint("RIGHT", UIParent, "CENTER", 0, 0)
 	else
 		if EasyDestroyFrame:IsVisible() then
 			EasyDestroyFrame:Hide()
@@ -248,12 +255,7 @@ function EasyDestroy:DisenchantItem()
 	if iteminfo ~= nil then
 		bag, slot = iteminfo.bag, iteminfo.slot	
 	end
-	
-	if EasyDestroy.Debug then
-		EasyDestroy.Debug("Disenchanting...")
-		print(key, bag, slot)
-	end
-	
+		
 	if(GetContainerItemInfo(bag, slot) ~= nil) then
 		EasyDestroy.Debug(format("Disenchanting item at (bag, slot): %d %d", bag, slot))
 		EasyDestroyButton:SetAttribute("type1", "macro")
