@@ -1,11 +1,10 @@
-## Interface: 70300
+## Interface: 90001
 ## Title: EasyDestroy
 ## Notes: Grabs bugs for the bug sack.
 ## Author: Cwagrant
 ## X-License: GPL v2 or later.
 ## X-Category: Development Tools
 ## SavedVariables: EasyDestroyData
-## OptionalDeps: BugSack, !BugGrabber
 
 Core.lua
 Templates.xml

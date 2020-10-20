@@ -1,5 +1,24 @@
 EasyDestroy = EasyDestroy
 
+--[[
+filters = {
+	Armor Type = Cloth, Leather, Mail, Plate
+	Bags = Backpack, Bags 1-4
+	Bind Type = BOE, BOP
+	Equipment Set = true/false
+	Item Level = Min, Max
+	Item Name = string
+	Item Quality = Common, Uncommon, Rare, Epic
+	Item Slot = Equip slots
+	Item Type = Armor, Weapon, Trade Good
+	Sell Price = Min, Max
+	Item ID = integer to lookup
+	Transmog = (have or not, true/false)
+	Weapon Type = Axe, Sword, Bow, etc.
+	}
+	
+]] 
+
 function EasyDestroy.RegisterFilters()
 	EasyDestroyFilters['name'] = function(inputname, itemname) if string.find(string.lower(itemname), string.lower(inputname)) then return true end return false end
 	EasyDestroyFilters['quality'] = function(inputquality, itemquality) if tContains(inputquality, itemquality) then return true end return false end
@@ -76,8 +95,6 @@ function EasyDestroy.InitFilters()
 	EasyDestroyFilters_ItemLevel.label:SetText("Item Level:")
 	EasyDestroyFilters_ItemLevel.inputfrom:SetNumeric(true)
 	EasyDestroyFilters_ItemLevel.inputto:SetNumeric(true)
-	--EasyDestroyFilters_Favorite.checkbox.label:SetText("Favorite")
-	--EasyDestroyFilters_FavoriteIcon:SetShown(canBeLFGBonus);
 	EasyDestroyFilters_FavoriteIcon:SetChecked(false);
 end
 

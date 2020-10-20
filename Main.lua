@@ -1,7 +1,9 @@
 EasyDestroy = EasyDestroy
-
 local testfilter = {filter={quality={3}, id=161984}, properties={name="TEST"}}
 
+--[[ This file is the file to initialize the addon, will call relevant functions from other files,
+register events, set scripts on buttons and handle the loading and saving/unloading of data. Will
+call this file last so that everything else should be set up and ready to be started.]]--
 
 EasyDestroyFrame:RegisterEvent("ADDON_LOADED")
 EasyDestroyFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
@@ -10,10 +12,17 @@ EasyDestroyFrame:RegisterEvent("PLAYER_LOGIN")
 EasyDestroyFrame:RegisterEvent("BAG_UPDATE_DELAYED")
 
 --[[ 
+Note1: Considering looking at events to handle the enable/disable of the disenchant button
 Need to look at registering LOOT_OPENED, LOOT_CLOSED, UNIT_SPELLCAST_START, UNIT_SPELLCAST_STOP, UNIT_SPELLCAST_SUCCEEDED
-
 Disable on UNIT_SPELLCAST_START
 Reenable on LOOT_CLOSED, UNIT_SPELLCAST_STOP, or after 2 seconds.
+
+Currently this is just done with a timer. I know that the fast loot addons can cause some issues and so
+I think for now that is what I will stick with.  May come down to registering events or hitting a
+timer cap (2s) to reenable the Disenchant button.
+
+Note2: As a thought, might look into allowing the user to set a bag limit so that if for any reason they
+have less than X bag slots they won't disenchant. 
 ]]--
 
 function EasyDestroy_EventHandler(self, event, ...)
@@ -27,6 +36,7 @@ function EasyDestroy_EventHandler(self, event, ...)
 		if name == EasyDestroy.AddonName then
 			EasyDestroy.AddonLoaded = true
 			EasyDestroy:Initialize()
+			EasyDestroy:InitFilters()
 			EasyDestroy.RegisterFilters()
 
 			if EasyDestroyData then 
@@ -88,6 +98,23 @@ end
 function EasyDestroy_DestroySpellSelect(self, arg1, arg2, checked)
 	EasyDestroy.Debug("SetSelectedValue", self.value)
 	UIDropDownMenu_SetSelectedValue(EasyDestroyDestroyType, self.value)
+end
+
+SLASH_OPENUI1 = "/edestroy";
+SLASH_OPENUI2 = "/ed";
+SLASH_OPENUI3 = "/easydestroy"
+
+function SlashCmdList.OPENUI(msg)
+	if msg=="reset" then
+		-- reset position to center of screen
+		EasyDestroyFrame:SetPoint("RIGHT", UIParent, "CENTER", 0, 0)
+	else
+		if EasyDestroyFrame:IsVisible() then
+			EasyDestroyFrame:Hide()
+		else
+			EasyDestroyFrame:Show()
+		end
+	end
 end
 
 EasyDestroyFrame:SetScript("OnShow", function()

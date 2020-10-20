@@ -64,24 +64,6 @@ E.g.
 	filter.blacklist.filter1.
  
 ]]--
-SLASH_OPENUI1 = "/edestroy";
-SLASH_OPENUI2 = "/ed";
-function SlashCmdList.OPENUI(msg)
-	if msg == "list" and EasyDestroy.DebugActive then
-		for key, item in ipairs(EasyDestroy.ItemPool) do
-			print(string.format("%i,%i,%i,%s", key, item.info.bag, item.info.slot, C_Item.GetItemNameByID(item.info.itemlink)))
-		end
-	elseif msg=="reset" then
-		-- reset position to center of screen
-		EasyDestroyFrame:SetPoint("RIGHT", UIParent, "CENTER", 0, 0)
-	else
-		if EasyDestroyFrame:IsVisible() then
-			EasyDestroyFrame:Hide()
-		else
-			EasyDestroyFrame:Show()
-		end
-	end
-end
 
 function EasyDestroy:Initialize()
 	--[[ Title Bar ]]--
@@ -110,7 +92,6 @@ function EasyDestroy:Initialize()
 	end)
 	
 	--[[ Item View Scrolling Area ]]--
-	--EasyDestroyFrameScrollFrame:SetScrollChild(EasyDestroyFrameScrollChild);
 	EasyDestroyItems:SetBackdrop({
 		bgFile="Interface\\Tooltips\\UI-Tooltip-Background",
 		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
@@ -120,9 +101,7 @@ function EasyDestroy:Initialize()
 		insets={left=4, right=4, top=4, bottom=4}
 	})
 	EasyDestroyItems:SetBackdropColor(0,0,0,0.5)
-	
-	EasyDestroy.ItemPool = {}
-	
+		
 	--[[ Filter View Area ]]--
 	UIDropDownMenu_SetWidth(EasyDestroyDropDown, EasyDestroyDropDown:GetWidth()-40)
 		
@@ -147,7 +126,6 @@ function EasyDestroy:Initialize()
 		EasyDestroy.EasyDestroyTest:Hide()
 	end
 
-	EasyDestroy.InitFilters()
 end
 
 function EasyDestroy_InitDropDown()
@@ -170,27 +148,6 @@ function EasyDestroy_UpdateItemFrame(frame, itemLink)
 	
 	return frame
 end
-
---[[
-want to have filters that users create similar to Easy Scrap.
-
-filters = {
-	Armor Type = Cloth, Leather, Mail, Plate
-	Bags = Backpack, Bags 1-4
-	Bind Type = BOE, BOP
-	Equipment Set = true/false
-	Item Level = Min, Max
-	Item Name = string
-	Item Quality = Common, Uncommon, Rare, Epic
-	Item Slot = Equip slots
-	Item Type = Armor, Weapon, Trade Good
-	Sell Price = Min, Max
-	Item ID = integer to lookup
-	Transmog = (have or not, true/false)
-	Weapon Type = Axe, Sword, Bow, etc.
-	}
-	
-]] 
 
 function EasyDestroy:FindItemsToDestroy(filter)
 	-- item = {keyinteger, bag, slot, itemlink}
@@ -298,7 +255,6 @@ function EasyDestroyItemsScrollBar_Update()
 			frame:SetBackdrop({bgFile="Interface\\Tooltips\\UI-Tooltip-Background",})
 			frame:SetBackdropColor(r,g,b, 0.5)
 			frame.info = item
-			tinsert(EasyDestroy.ItemPool, frame)
 			frame:Show()
 		else
 			frame:Hide()

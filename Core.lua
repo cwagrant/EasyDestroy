@@ -37,19 +37,12 @@ EasyDestroy.DestroyAction = EasyDestroy.DestroyTypes.DISENCHANT
 local ADDON_NAME = "EasyDestroy";
 local ADDON_IS_LOADED = false;
 
-EasyDestroy.Quality = {}
-EasyDestroy.Quality.COMMON = 1
-EasyDestroy.Quality.UNCOMMON = 2
-EasyDestroy.Quality.RARE = 3
-EasyDestroy.Quality.EPIC = 4
-
 EasyDestroy.DataLoaded = false
 EasyDestroy.Data = {}
 EasyDestroy.FilterCount = 0
 EasyDestroy.EmptyFilter = {filter={}, properties={}}
 EasyDestroy.Spells = {
 	13262, --Disenchant
-
 }
 
 function pprint(tbl, level)
