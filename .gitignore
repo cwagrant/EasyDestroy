@@ -1,3 +1,4 @@
 # Ignore
 ParagonTracker.lua
 classes/*
+*.code-workspace
