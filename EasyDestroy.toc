@@ -1,9 +1,9 @@
 ## Interface: 90001
 ## Title: EasyDestroy
-## Notes: Grabs bugs for the bug sack.
+## Notes: Makes disenchanting easy!
 ## Author: Cwagrant
-## X-License: GPL v2 or later.
-## X-Category: Development Tools
+## X-License: MIT License
+## X-Category: Professions
 ## SavedVariables: EasyDestroyData
 
 Core.lua
