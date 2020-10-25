@@ -98,3 +98,15 @@ function EasyDestroy.spairs(t, order)
     end
 end
 
+-- table.getn doesn't work if the table has non-integer keys
+function GetTableSize(t)
+	local count = 0
+	for k, v in pairs(t) do
+		if k ~= nil and v ~= nil then
+			count = count + 1
+		end
+	end
+	return count
+end
+
+

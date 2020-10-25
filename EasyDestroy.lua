@@ -212,6 +212,15 @@ function EasyDestroy:DisenchantItem()
 	if iteminfo ~= nil then
 		bag, slot = iteminfo.bag, iteminfo.slot	
 	end
+	
+	if not IsSpellKnown(13262) then
+		print ("You must have disenchanting to disenchant this item.")
+		return
+	elseif not IsUsableSpell(13262) then
+		print("You cannot disenchant that item right now.")
+		return
+	end
+
 		
 	if(GetContainerItemInfo(bag, slot) ~= nil) then
 		EasyDestroy.Debug(format("Disenchanting item at (bag, slot): %d %d", bag, slot))

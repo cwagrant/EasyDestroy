@@ -27,14 +27,14 @@ function EasyDestroy.RegisterFilters()
 end
 
 function EasyDestroyFilters.FilterItemLevel(inputlevel, itemlevel)
-	if type(inputlevel) ~= "table" then
+	if itemlevel == nil then
+		return false
+	elseif type(inputlevel) ~= "table" then
 		if inputlevel == itemlevel then
 			return true
 		end
-	else
-		if itemlevel >=  inputlevel['levelfrom'] and itemlevel <= inputlevel['levelto'] then
-			return true
-		end
+	elseif itemlevel >=  inputlevel['levelfrom'] and itemlevel <= inputlevel['levelto'] then
+		return true
 	end
 	return false
 end
@@ -44,7 +44,7 @@ function EasyDestroyFilters.GetItemLevels()
 	inputto = EasyDestroyFilters_ItemLevel.inputto:GetNumber() or 0
 
 	if inputto ~= 0 and inputto ~= nil then
-		if inputfrom ~= 0 and inputfrom ~= nil then
+		if inputfrom ~= nil then
 			return {levelfrom=inputfrom, levelto=inputto}
 		end
 	end

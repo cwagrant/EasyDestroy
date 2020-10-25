@@ -48,11 +48,11 @@ function EasyDestroy_EventHandler(self, event, ...)
 			end
 			EasyDestroy.Data.Filters = EasyDestroy.Data.Filters or {}
 			EasyDestroy.Data.Options = EasyDestroy.Data.Options or {}
-	
+			EasyDestroy.Test = {}
 			EasyDestroy.CurrentFilter = EasyDestroy.EmptyFilter
 			UIDropDownMenu_Initialize(EasyDestroyDropDown, EasyDestroy_InitDropDown)
-			
-			if EasyDestroy.Data.Filters and table.getn(EasyDestroy.Data.Filters)>0 then
+			if GetTableSize(EasyDestroy.Data.Filters)>0 then
+				tinsert(EasyDestroy.Test, "Loaded filters, count > 0")
 				for k, filterObj in pairs(EasyDestroy.Data.Filters) do
 					if filterObj.properties.favorite then
 						UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, k)
@@ -62,7 +62,6 @@ function EasyDestroy_EventHandler(self, event, ...)
 				end
 			else
 				UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, 0)
-				--UIDropDownMenu_Initialize(EasyDestroyDestroyType, EasyDestroy_InitFilterDestroySpells)
 			end
 		end
 	elseif event=="PLAYER_LOGOUT" then
@@ -155,6 +154,7 @@ EasyDestroyFilters_Delete:SetScript("OnClick", EasyDestroyFilters_DeleteFilter)
 EasyDestroyFilters_NewFromFilter:SetScript("OnClick", EasyDestroyFilters_CreateNewFromCurrent)
 EasyDestroyFilters_New:SetScript("OnClick", function() 
 	EasyDestroy_ClearFilterFrame() 
+	EasyDestroy_InitDropDown()
 	UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, 0) 
 	EasyDestroy.FilterChanged = true end
 )
