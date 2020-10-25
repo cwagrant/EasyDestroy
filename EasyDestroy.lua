@@ -221,11 +221,12 @@ function EasyDestroy:DisenchantItem()
 		return
 	end
 
+	local spellname = GetSpellInfo(13262)
 		
 	if(GetContainerItemInfo(bag, slot) ~= nil) then
 		EasyDestroy.Debug(format("Disenchanting item at (bag, slot): %d %d", bag, slot))
 		EasyDestroyButton:SetAttribute("type1", "macro")
-		EasyDestroyButton:SetAttribute("macrotext", format("/cast Disenchant\n/use %d %d", bag, slot))
+		EasyDestroyButton:SetAttribute("macrotext", format("/cast %s\n/use %d %d", spellname, bag, slot))
 	end	
 	EasyDestroyButton:Disable()
 	
