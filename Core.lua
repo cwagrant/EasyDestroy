@@ -1,5 +1,5 @@
 EasyDestroy = {}
-EasyDestroy.Version =  "1.0.2"
+EasyDestroy.Version =  "1.0.3"
 EasyDestroy.DebugActive = false
 EasyDestroy.AddonName = "EasyDestroy"
 EasyDestroy.AddonLoaded = false
