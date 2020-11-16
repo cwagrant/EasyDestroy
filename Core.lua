@@ -102,7 +102,7 @@ end
 function GetTableSize(t)
 	local count = 0
 	for k, v in pairs(t) do
-		if k ~= nil and v ~= nil then
+		if k ~= nil then
 			count = count + 1
 		end
 	end

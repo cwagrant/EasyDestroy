@@ -132,7 +132,7 @@ function EasyDestroyFilters:ItemType(...)
 		error("No item type provided for comparison.")
 	end
 	
-	if type(itemQuality) ~= "number" then
+	if type(itemType) ~= "number" then
 		error("Item type is not a number")
 	end
 	
@@ -147,7 +147,7 @@ function EasyDestroyFilters:ItemType(...)
 			error("Item quality is not a number")
 		end
 		
-		if itemQuality and itemQuality == arg then
+		if itemType and itemType == arg then
 			return true
 		end
 	end
@@ -157,11 +157,11 @@ end
 
 
 
-
+-[[
 EasyDestroyFilters.Environment = {
 	itemid = EasyDestroyFilters.ItemID,
 	itemname = EasyDestroyFilters.ItemName,
 	quality = EasyDestroyFilters.ItemQuality,
 	type = EasyDestroyFilters.ItemType,
 	subtype = EasyDestroyFilters.ItemSubType
-}
+}]]--

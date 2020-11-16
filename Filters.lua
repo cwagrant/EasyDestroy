@@ -379,7 +379,7 @@ function EasyDestroy_LoadFilter(fid)
 	
 	for iqname, iqvalue in pairs(Enum.ItemQuality) do
 		if tContains(filter.filter.quality or {}, iqvalue) then 
-			quality = string.lower(iqname)
+			local quality = string.lower(iqname)
 			if EasyDestroyFilters_Rarity[quality] then
 				EasyDestroyFilters_Rarity[quality]:SetChecked(true)
 			end

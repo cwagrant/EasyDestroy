@@ -89,9 +89,10 @@
 					<Anchor point="LEFT" x="12" y="0"/>
 				</Anchors>
 			</Texture>	
-			<FontString name="$parentItem" parentKey="Item" inherits="GameFontNormal">
+			<FontString name="$parentItem" parentKey="Item" inherits="GameFontNormal" wordwrap="true" maxLines="2" justifyH="LEFT" indented="true">
 				<Anchors>
 					<Anchor point="LEFT" relativePoint="LEFT" x="40" y="0"/>
+					<Anchor point="RIGHT"/>
 				</Anchors>
 			</FontString>
 		</Layer>
