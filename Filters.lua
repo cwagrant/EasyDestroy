@@ -40,8 +40,8 @@ function EasyDestroyFilters.FilterItemLevel(inputlevel, itemlevel)
 end
 
 function EasyDestroyFilters.GetItemLevels()
-	inputfrom = EasyDestroyFilters_ItemLevel.inputfrom:GetNumber() or 0
-	inputto = EasyDestroyFilters_ItemLevel.inputto:GetNumber() or 0
+	local inputfrom = EasyDestroyFilters_ItemLevel.inputfrom:GetNumber() or 0
+	local inputto = EasyDestroyFilters_ItemLevel.inputto:GetNumber() or 0
 
 	if inputto ~= 0 and inputto ~= nil then
 		if inputfrom ~= nil then
@@ -117,7 +117,7 @@ function EasyDestroy.ItemInEquipmentSet(bag, slot)
 		local items = C_EquipmentSet.GetItemLocations(setid)
 		if items then
 			for _, locid in pairs(items) do
-				equipped, bank, bags, void, slotnum, bagnum = EquipmentManager_UnpackLocation(locid);
+				local equipped, bank, bags, void, slotnum, bagnum = EquipmentManager_UnpackLocation(locid);
 				if bagnum==bag and slotnum==slot then
 					return true
 				end
@@ -178,7 +178,7 @@ end
 
 function EasyDestroyFilters_GetNextFilterID(noiterate)
 
-	nextID = EasyDestroy.Data.Options.NextFilterID or 0
+	local nextID = EasyDestroy.Data.Options.NextFilterID or 0
 	if nextID <= 0 then 
 		for _, v in pairs(EasyDestroy.Data.Filters) do
 			nextID = nextID + 1
@@ -239,7 +239,7 @@ function EasyDestroyFilters_CreateNewFromCurrent()
 
 	local CurrentFilterID = UIDropDownMenu_GetSelectedValue(EasyDestroyDropDown)
 
-	FilterID = "FilterID" .. EasyDestroyFilters_GetNextFilterID()
+	local FilterID = "FilterID" .. EasyDestroyFilters_GetNextFilterID()
 
 	local filter = EasyDestroy:GenerateFilter()
 	local valid, validationErrorType, validationMessage = EasyDestroyFilters_SaveValidation(FilterID, filter, true)
@@ -391,7 +391,7 @@ function EasyDestroyFilters_FavoriteIconOnClick()
 	if EasyDestroyFilters_FavoriteIcon:GetChecked() then
 		EasyDestroyFilters_FavoriteIcon:SetChecked(false)
 	else
-		existingFavorite = EasyDestroyFilters_FindFavorite()
+		local existingFavorite = EasyDestroyFilters_FindFavorite()
 		if existingFavorite then
 			EasyDestroy.Data.Filters[existingFavorite].properties.favorite = false
 		end

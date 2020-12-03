@@ -1,10 +1,14 @@
 ## Interface: 90002
+## Version: 1.0.4
 ## Title: EasyDestroy
 ## Notes: Makes disenchanting easy!
 ## Author: Cwagrant
 ## X-License: MIT License
 ## X-Category: Professions
 ## SavedVariables: EasyDestroyData
+
+## X-Curse-Project-ID: 414637
+## X-Website: https://github.com/cwagrant/EasyDestroy
 
 Core.lua
 Templates.xml

@@ -156,7 +156,7 @@ function EasyDestroy:FindItemsToDestroy(filter)
 	local itemkey = 0
 	for bag = 0, NUM_BAG_SLOTS do
 		for slot=1, GetContainerNumSlots(bag) do
-			item = {};
+			local item = {};
 			item.link = select(7, GetContainerItemInfo(bag, slot));
 			if item.link then 
 				item.name, _, item.quality, item.level, _, item._type, item._subtype, item.stack, item.slot, item.icon, item.price, item.type, item.subtype = GetItemInfo(item.link);
@@ -245,7 +245,7 @@ end
 
 function EasyDestroyItemsScrollBar_Update()
 	local filter = EasyDestroy.CurrentFilter["filter"]
-	itemList = EasyDestroy:FindItemsToDestroy(filter)
+	local itemList = EasyDestroy:FindItemsToDestroy(filter)
 	FauxScrollFrame_Update(EasyDestroyItemsFrameScrollFrame, #itemList, 8, 24)
 	
 	if #itemList > 8 then
@@ -254,7 +254,7 @@ function EasyDestroyItemsScrollBar_Update()
 		EasyDestroyItems:SetPoint("TOPRIGHT", EasyDestroyFrameDialogBG, "TOPRIGHT", -4, 0)
 	end
 	
-	offset = FauxScrollFrame_GetOffset(EasyDestroyItemsFrameScrollFrame)
+	local offset = FauxScrollFrame_GetOffset(EasyDestroyItemsFrameScrollFrame)
 	for i=1, 8, 1 do
 		local index = offset+i
 		local frame = _G['EasyDestroyItemsFrameItem'..i]
