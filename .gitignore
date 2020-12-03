@@ -3,3 +3,4 @@ ParagonTracker.lua
 classes/*
 *.code-workspace
 EasyDestroy_Filters.lua
+ignoreme/*
