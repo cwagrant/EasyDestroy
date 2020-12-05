@@ -1,5 +1,5 @@
 EasyDestroy = {}
-EasyDestroy.Version =  "1.0.4"
+EasyDestroy.Version =  "1.0.5"
 EasyDestroy.DebugActive = false
 EasyDestroy.AddonName = "EasyDestroy"
 EasyDestroy.AddonLoaded = false
@@ -15,7 +15,7 @@ EasyDestroy.DestroyTypes = {}
 EasyDestroy.DestroyTypes.DISENCHANT = "DISENCHANT"
 EasyDestroy.DestroyTypes.MILL = "MILL"
 EasyDestroy.DestroyTypes.PROSPECT = "PROSPECT"
-
+EasyDestroy.WarnedLootOpen = false
 EasyDestroy.DestroyFilters = {}
 EasyDestroy.DestroyFilters[EasyDestroy.DestroyTypes.DISENCHANT] = {{itype=LE_ITEM_CLASS_WEAPON, stype=nil}, {itype=LE_ITEM_CLASS_ARMOR, stype=nil}}
 

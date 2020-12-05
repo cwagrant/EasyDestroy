@@ -206,6 +206,12 @@ function EasyDestroy:FindItemsToDestroy(filter)
 end
 
 function EasyDestroy:DisenchantItem()
+
+	if not EasyDestroyFrame:IsVisible() then
+		EasyDestroyFrame:Show()
+		return
+	end
+
 	local iteminfo = EasyDestroyItemsFrameItem1.info or nil
 	local bag, slot
 	
@@ -219,11 +225,27 @@ function EasyDestroy:DisenchantItem()
 	elseif not IsUsableSpell(13262) then
 		print("You cannot disenchant that item right now.")
 		return
+	elseif #GetLootInfo() > 0 then
+		if not EasyDestroy.WarnedLootOpen then
+			print("Unable to disenchant while loot window is open.")
+			EasyDestroy.WarnedLootOpen = true
+			-- lets only warn people every so often, don't want to fill their chat logs if they spam click.
+			C_Timer.After(30, function()
+				EasyDestroy.WarnedLootOpen = false
+			end
+			)
+		end
+		return
+	elseif IsCurrentSpell(13262) then
+		-- fail quietly as they are already casting
+		return
+	elseif iteminfo == nil then
+		return
 	end
 
 	local spellname = GetSpellInfo(13262)
 		
-	if(GetContainerItemInfo(bag, slot) ~= nil) then
+	if(GetContainerItemInfo(bag, slot) ~= nil)then
 		EasyDestroy.Debug(format("Disenchanting item at (bag, slot): %d %d", bag, slot))
 		EasyDestroyButton:SetAttribute("type1", "macro")
 		EasyDestroyButton:SetAttribute("macrotext", format("/cast %s\n/use %d %d", spellname, bag, slot))
@@ -235,12 +257,12 @@ function EasyDestroy:DisenchantItem()
 	--happened.
 	-- As an alternative could maybe bind this to events for LOOT_OPENED and LOOT_CLOSED which might work pretty well.
 	-- That would be a decent way to make sure the user couldn't click disenchant when loot is pending.
-	local _, _, _, castTime, _, _ = GetSpellInfo(13262)
+	--[[local _, _, _, castTime, _, _ = GetSpellInfo(13262)
 	castTime = castTime/1000 --convert to seconds
 	C_Timer.After(castTime+2, function() 
 		EasyDestroyButton:Enable() 
 		end
-	)
+	)]]--
 end
 
 function EasyDestroyItemsScrollBar_Update()
@@ -268,6 +290,7 @@ function EasyDestroyItemsScrollBar_Update()
 			frame:Show()
 		else
 			frame:Hide()
+			frame.info = nil
 		end
 	end
 end

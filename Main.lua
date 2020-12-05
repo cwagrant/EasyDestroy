@@ -10,6 +10,8 @@ EasyDestroyFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 EasyDestroyFrame:RegisterEvent("PLAYER_LOGOUT")
 EasyDestroyFrame:RegisterEvent("PLAYER_LOGIN")
 EasyDestroyFrame:RegisterEvent("BAG_UPDATE_DELAYED")
+EasyDestroyFrame:RegisterEvent("ITEM_PUSH")
+EasyDestroyFrame:RegisterEvent("UNIT_SPELLCAST_INTERRUPTED")
 
 --[[ 
 Note1: Considering looking at events to handle the enable/disable of the disenchant button
@@ -31,6 +33,17 @@ function EasyDestroy_EventHandler(self, event, ...)
 	elseif event=="PLAYER_ENTERING_WORLD" and EasyDestroy.AddonLoaded then
 		EasyDestroy.CurrentFilter=testfilter
 		EasyDestroyItemsScrollBar_Update()
+	elseif event == "ITEM_PUSH" then
+		-- seems to be safe to reenable after this event fires
+		-- at least a fraction of a second after the event fires, that is...
+		C_Timer.After(0.2, function()
+			EasyDestroyButton:Enable()
+		end
+		)
+	elseif event == "UNIT_SPELLCAST_INTERRUPTED" then
+		if select(1, ...) == "player" then
+			EasyDestroyButton:Enable()
+		end
 	elseif event=="ADDON_LOADED" then
 		local name = ...
 		if name == EasyDestroy.AddonName then
@@ -107,6 +120,8 @@ function SlashCmdList.OPENUI(msg)
 	if msg=="reset" then
 		-- reset position to center of screen
 		EasyDestroyFrame:SetPoint("RIGHT", UIParent, "CENTER", 0, 0)
+	elseif msg=="macro" then
+		CreateMacro("ED_Disenchant", 236557, "/click EasyDestroyButton", nil)
 	else
 		if EasyDestroyFrame:IsVisible() then
 			EasyDestroyFrame:Hide()
