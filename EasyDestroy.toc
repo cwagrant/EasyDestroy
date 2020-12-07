@@ -1,5 +1,5 @@
 ## Interface: 90002
-## Version: 1.0.5
+## Version: 1.0.5b2
 ## Title: EasyDestroy
 ## Notes: Makes disenchanting easy!
 ## Author: Cwagrant

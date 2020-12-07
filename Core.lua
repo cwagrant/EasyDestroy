@@ -1,5 +1,5 @@
 EasyDestroy = {}
-EasyDestroy.Version =  "1.0.5"
+EasyDestroy.Version =  "1.0.5b2"
 EasyDestroy.DebugActive = false
 EasyDestroy.AddonName = "EasyDestroy"
 EasyDestroy.AddonLoaded = false
@@ -108,5 +108,16 @@ function GetTableSize(t)
 	end
 	return count
 end
+
+-- function to give me something more akin to python's "in" operator.
+function _in_(checkTable, checkValue)
+	for k, v in pairs(checkTable) do
+		if k == checkValue then
+			return true
+		end
+	end
+	return false
+end
+
 
 

@@ -250,22 +250,13 @@ function EasyDestroy:DisenchantItem()
 		EasyDestroyButton:SetAttribute("type1", "macro")
 		EasyDestroyButton:SetAttribute("macrotext", format("/cast %s\n/use %d %d", spellname, bag, slot))
 	end	
+	-- Disable the button while we process the item being destroyed.
+	-- We'll reenable it when we update the item scroll frame via a
+	-- callback
 	EasyDestroyButton:Disable()
-	
-	--Note: Used 2 second timer because that seemed to be the best
-	--way to make sure that everything that needed to happen has
-	--happened.
-	-- As an alternative could maybe bind this to events for LOOT_OPENED and LOOT_CLOSED which might work pretty well.
-	-- That would be a decent way to make sure the user couldn't click disenchant when loot is pending.
-	--[[local _, _, _, castTime, _, _ = GetSpellInfo(13262)
-	castTime = castTime/1000 --convert to seconds
-	C_Timer.After(castTime+2, function() 
-		EasyDestroyButton:Enable() 
-		end
-	)]]--
 end
 
-function EasyDestroyItemsScrollBar_Update()
+function EasyDestroyItemsScrollBar_Update(callbackFunction)
 	local filter = EasyDestroy.CurrentFilter["filter"]
 	local itemList = EasyDestroy:FindItemsToDestroy(filter)
 	FauxScrollFrame_Update(EasyDestroyItemsFrameScrollFrame, #itemList, 8, 24)
@@ -293,6 +284,11 @@ function EasyDestroyItemsScrollBar_Update()
 			frame.info = nil
 		end
 	end
+
+	if callbackFunction ~= nil and type(callbackFunction) == "function" then
+		callbackFunction()
+	end
+
 end
 
 function EasyDestroy_ToggleFilters()

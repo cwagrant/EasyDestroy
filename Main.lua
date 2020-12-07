@@ -10,7 +10,6 @@ EasyDestroyFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 EasyDestroyFrame:RegisterEvent("PLAYER_LOGOUT")
 EasyDestroyFrame:RegisterEvent("PLAYER_LOGIN")
 EasyDestroyFrame:RegisterEvent("BAG_UPDATE_DELAYED")
-EasyDestroyFrame:RegisterEvent("ITEM_PUSH")
 EasyDestroyFrame:RegisterEvent("UNIT_SPELLCAST_INTERRUPTED")
 
 --[[ 
@@ -29,17 +28,13 @@ have less than X bag slots they won't disenchant.
 
 function EasyDestroy_EventHandler(self, event, ...)
 	if event == "BAG_UPDATE_DELAYED" and EasyDestroy.AddonLoaded and EasyDestroyFrame:IsVisible() then 
-		EasyDestroyItemsScrollBar_Update()
+		-- Originally reenabled the button via a timer, however by doing it as a callback this makes it so
+		-- that we don't have to worry about it ever somehow being re-enabled before the bags and
+		-- item list have been properly processed.
+		EasyDestroyItemsScrollBar_Update(function() EasyDestroyButton:Enable() end)
 	elseif event=="PLAYER_ENTERING_WORLD" and EasyDestroy.AddonLoaded then
 		EasyDestroy.CurrentFilter=testfilter
 		EasyDestroyItemsScrollBar_Update()
-	elseif event == "ITEM_PUSH" then
-		-- seems to be safe to reenable after this event fires
-		-- at least a fraction of a second after the event fires, that is...
-		C_Timer.After(0.2, function()
-			EasyDestroyButton:Enable()
-		end
-		)
 	elseif event == "UNIT_SPELLCAST_INTERRUPTED" then
 		if select(1, ...) == "player" then
 			EasyDestroyButton:Enable()
