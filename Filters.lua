@@ -1,5 +1,6 @@
 EasyDestroy = EasyDestroy
-
+EasyDestroyFilters.Registry = {}
+EasyDestroyFilters.FilterStack = {}
 --[[
 filters = {
 	Armor Type = Cloth, Leather, Mail, Plate
@@ -19,88 +20,20 @@ filters = {
 	
 ]] 
 
-function EasyDestroy.RegisterFilters()
-	EasyDestroyFilters['name'] = function(inputname, itemname) if string.find(string.lower(itemname), string.lower(inputname)) then return true end return false end
-	EasyDestroyFilters['quality'] = function(inputquality, itemquality) if tContains(inputquality, itemquality) then return true end return false end
-	EasyDestroyFilters['level'] = EasyDestroyFilters.FilterItemLevel
-	EasyDestroyFilters['id'] = function(inputid, itemid) if inputid == itemid then return true end return false end
-end
-
-function EasyDestroyFilters.FilterItemLevel(inputlevel, itemlevel)
-	if itemlevel == nil then
-		return false
-	elseif type(inputlevel) ~= "table" then
-		if inputlevel == itemlevel then
-			return true
-		end
-	elseif itemlevel >=  inputlevel['levelfrom'] and itemlevel <= inputlevel['levelto'] then
-		return true
-	end
-	return false
-end
-
-function EasyDestroyFilters.GetItemLevels()
-	local inputfrom = EasyDestroyFilters_ItemLevel.inputfrom:GetNumber() or 0
-	local inputto = EasyDestroyFilters_ItemLevel.inputto:GetNumber() or 0
-
-	if inputto ~= 0 and inputto ~= nil then
-		if inputfrom ~= nil then
-			return {levelfrom=inputfrom, levelto=inputto}
-		end
-	end
-
-	if inputfrom ~=0 and inputfrom ~= nil then
-		return inputfrom
-	end
-
-	return nil
-
-end
-
 function EasyDestroyFilters.GetFilterName()
 	return EasyDestroyFilters_FilterName.input:GetText()
-end
-
-function EasyDestroyFilters.GetItemName()
-	return EasyDestroyFilters_ItemName.input:GetText()
-end
-
-function EasyDestroyFilters.GetItemID()
-	return EasyDestroyFilters_ItemID.input:GetNumber()
-end
-
-function EasyDestroyFilters.GetRarityChecked(rarityType)
-	rarityType = string.lower(rarityType)
-	if EasyDestroyFilters_Rarity[rarityType] then
-		if EasyDestroyFilters_Rarity[rarityType]:GetChecked() then
-			return true
-		end
-	end
-	return false
 end
 
 function EasyDestroy.InitFilters()
 	EasyDestroyFilters.Title:SetFontObject("GameFontHighlight");
 	EasyDestroyFilters.Title:SetText("Filters");		
-	--EasyDestroyFilterDestroySpell.label:SetText("Destroy Spell:")
-	--UIDropDownMenu_SetWidth(EasyDestroyDestroyType, (EasyDestroyDestroyType:GetWidth()-EasyDestroyFilterDestroySpellLabel:GetWidth()+25))
 	EasyDestroyFilters_FilterName.label:SetText("Filter Name:")
-	EasyDestroyFilters_ItemName.label:SetText("Item Name:")
-	EasyDestroyFilters_ItemID.label:SetText("Item ID:")
-	EasyDestroyFilters_ItemID.input:SetNumeric(true)
-	EasyDestroyFilters_Rarity.common.label:SetText("|c11ffffff" .. "Common" .. "|r")
-	EasyDestroyFilters_Rarity.rare.label:SetText("|c110070dd" .. "Rare" .. "|r")
-	EasyDestroyFilters_Rarity.uncommon.label:SetText("|c111eff00" .. "Uncommon" .. "|r")
-	EasyDestroyFilters_Rarity.epic.label:SetText("|c11a335ee" .. "Epic" .. "|r")
-	EasyDestroyFilters_ItemLevel.label:SetText("Item Level:")
-	EasyDestroyFilters_ItemLevel.inputfrom:SetNumeric(true)
-	EasyDestroyFilters_ItemLevel.inputto:SetNumeric(true)
-	EasyDestroyFilters_FavoriteIcon:SetChecked(false);
+	EasyDestroyFilters_FavoriteIcon:SetChecked(false);		
 end
-
+--[[
 function EasyDestroy_InitFilterDestroySpells()
 	local info = UIDropDownMenu_CreateInfo()
-	info.text, info.value, info.checked, info.func, info.owner = "Pick a spell...", 0, false, EasyDestroy_DestroySpellSelect, EasyDestroyDestroySpell --EasyDestroy_DropDownSelect
+	info.text, info.value, info.checked, info.func, info.owner = "Pick a spell...", 0, false, EasyDestroy_DestroySpellSelect, EasyDestroyDestroySpell
 	UIDropDownMenu_AddButton(info)
 
 	for _, spell in ipairs(EasyDestroy.Spells) do
@@ -108,23 +41,61 @@ function EasyDestroy_InitFilterDestroySpells()
 		info.text, info.value, info.checked, info.func, info.owner = spellname, spell, false, EasyDestroy_DestroySpellSelect, EasyDestroyDestroySpell
 		UIDropDownMenu_AddButton(info)
 	end
+end]]
+
+function EasyDestroy_InitFilterTypes()
+	local info = UIDropDownMenu_CreateInfo()
+	info.text, info.value, info.func, info.owner, info.isTitle, info.notCheckable = 
+	"Select filters ...", 0, nil, EasyDestroyFilterTypes, true, true
+	UIDropDownMenu_AddButton(info)
+	--refresh info w/o any of the above settings
+	info =  UIDropDownMenu_CreateInfo()
+	for k, v in pairs(EasyDestroyFilters.Registry) do
+		info.text, info.value, info.checked, info.func, info.owner, info.keepShownOnClick =
+		v.name, v.key, v.IsShown(), EasyDestroy_FilterSelect, EasyDestroyFilterTypes, true
+		UIDropDownMenu_AddButton(info)
+	end
+	UIDropDownMenu_SetText(EasyDestroyFilterTypes, "Select filters...")
+	UIDropDownMenu_SetWidth(EasyDestroyFilterTypes, EasyDestroyFilters:GetWidth()-60)
 end
 
-function EasyDestroy.ItemInEquipmentSet(bag, slot)
-	local sets = C_EquipmentSet.GetEquipmentSetIDs();
-	
-	for _, setid in pairs(sets) do
-		local items = C_EquipmentSet.GetItemLocations(setid)
-		if items then
-			for _, locid in pairs(items) do
-				local equipped, bank, bags, void, slotnum, bagnum = EquipmentManager_UnpackLocation(locid);
-				if bagnum==bag and slotnum==slot then
-					return true
-				end
+function EasyDestroy_FilterSelect(self, arg1, arg2, checked)
+	local selectedValue = self.value
+	local selectedFilter = EasyDestroyFilters.Registry[selectedValue]
+	UIDropDownMenu_SetText(EasyDestroyFilterTypes, "Select filters...")
+
+	if checked then 
+		local frame = selectedFilter.GetFilterFrame()
+		local lastFrame = nil
+		if EasyDestroyFilters.FilterStack[#EasyDestroyFilters.FilterStack] and EasyDestroyFilters.FilterStack[#EasyDestroyFilters.FilterStack].frame then
+			lastFrame = EasyDestroyFilters.FilterStack[#EasyDestroyFilters.FilterStack].frame
+		else
+			lastFrame = EasyDestroyFilters_AddFilterType
+		end
+		frame:SetPoint("LEFT", EasyDestroyFiltersDialogBG, "LEFT", 4, 0)
+		frame:SetPoint("RIGHT", EasyDestroyFiltersDialogBG, "RIGHT", -4, 0)
+		frame:SetPoint("TOP", lastFrame, "BOTTOM")
+		frame:SetHeight(selectedFilter.height)
+		frame:Show()
+		tinsert(EasyDestroyFilters.FilterStack, selectedFilter)
+	else
+		local frame = selectedFilter.GetFilterFrame()
+		for k, v in ipairs(EasyDestroyFilters.FilterStack) do
+			if v.key == selectedFilter.key then
+				v.frame:Hide()
+				tremove(EasyDestroyFilters.FilterStack, k)
 			end
 		end
 	end
-	return false
+	EasyDestroy_RestackFilters()
+end
+
+function EasyDestroy_RestackFilters()
+	local lastFrame = EasyDestroyFilters_AddFilterType
+	for k, v in ipairs(EasyDestroyFilters.FilterStack) do
+		v.frame:SetPoint("TOP", lastFrame, "BOTTOM")
+		lastFrame = v.frame
+	end
 end
 
 function EasyDestroy.HaveTransmog(itemlink)
@@ -146,33 +117,22 @@ function EasyDestroy.GenerateFilter()
 	local filterObj = {}
 	filterObj.properties = {}
 	filterObj.filter = {}
-	local filter_name = EasyDestroyFilters.GetFilterName()
-	local entry_id = EasyDestroyFilters.GetItemID()
-	local entry_name = EasyDestroyFilters.GetItemName()
-	local itemLevels = EasyDestroyFilters.GetItemLevels()
-	
+
+	for key, registeredFilter in pairs(EasyDestroyFilters.Registry) do
+		local val = registeredFilter:GetValues()
+		if val ~= nil then 
+			filterObj.filter[key] = val
+		end
+	end
+
+	local filter_name = EasyDestroyFilters.GetFilterName()	
 	if not filter_name or filter_name == "" then 
 		filter_name = "Filter" .. tostring(EasyDestroyFilters_GetNextFilterID(true))
 	end
 		
 	filterObj.properties.name = filter_name
 	filterObj.properties.favorite = EasyDestroyFilters_FavoriteIcon:GetChecked()
-	
-	if entry_id > 0 then filterObj.filter.id = entry_id end
-	if entry_name ~= "" then filterObj.filter.name = entry_name end
-
-	if itemLevels ~= nil then filterObj.filter.level = itemLevels end
-	
-	for key, value in pairs(Enum.ItemQuality) do
-		if EasyDestroyFilters.GetRarityChecked(key) then 
-			if filterObj.filter.quality == nil then
-				filterObj.filter.quality = {}
-			end
-			tinsert(filterObj.filter.quality, value)
-		end
-	end
-
-	
+		
 	return filterObj
 end
 
@@ -352,37 +312,46 @@ end
 
 function EasyDestroy_ClearFilterFrame()
 	EasyDestroyFilters_FilterName.input:SetText("")
-	EasyDestroyFilters_ItemID.input:SetText("")
-	EasyDestroyFilters_ItemName.input:SetText("")
-	EasyDestroyFilters_ItemLevel.inputfrom:SetText("")
-	EasyDestroyFilters_ItemLevel.inputto:SetText("")
 	EasyDestroyFilters_FavoriteIcon:SetChecked(false);
-	for _, v in pairs(EasyDestroyFilters_Rarity.Rarity) do
-		v:SetChecked(false)
+end
+
+function EasyDestroy_ResetFilterStack()
+	for k, v in ipairs(EasyDestroyFilters.FilterStack) do
+		v.frame:Hide()
+		EasyDestroyFilters.FilterStack[k] = nil
+	end
+
+	for k,v in pairs(EasyDestroyFilters.Registry) do
+		v:Clear()
 	end
 end
 
 function EasyDestroy_LoadFilter(fid)
 	EasyDestroy_ClearFilterFrame()
+	EasyDestroy_ResetFilterStack()
 	EasyDestroy:Debug("Loading Filter", fid)
 	local filter = EasyDestroy.Data.Filters[fid]
+
 	EasyDestroyFilters_FilterName.input:SetText(filter.properties.name)
-	EasyDestroyFilters_ItemID.input:SetText(filter.filter.id or "")
-	EasyDestroyFilters_ItemName.input:SetText(filter.filter.name or "")
 	EasyDestroyFilters_FavoriteIcon:SetChecked(filter.properties.favorite)
-	if type(filter.filter.level) == "table" then
-		EasyDestroyFilters_ItemLevel.inputfrom:SetText(filter.filter.level.levelfrom or "")
-		EasyDestroyFilters_ItemLevel.inputto:SetText(filter.filter.level.levelto or "")
-	else
-		EasyDestroyFilters_ItemLevel.inputfrom:SetText(filter.filter.level or "")
-	end
-	
-	for iqname, iqvalue in pairs(Enum.ItemQuality) do
-		if tContains(filter.filter.quality or {}, iqvalue) then 
-			local quality = string.lower(iqname)
-			if EasyDestroyFilters_Rarity[quality] then
-				EasyDestroyFilters_Rarity[quality]:SetChecked(true)
+
+	for key, registeredFilter in pairs(EasyDestroyFilters.Registry) do
+		registeredFilter:Clear()
+		if filter.filter[key] ~= nil then
+			local frame = registeredFilter.GetFilterFrame()
+			local lastFrame = nil
+			if EasyDestroyFilters.FilterStack[#EasyDestroyFilters.FilterStack] and EasyDestroyFilters.FilterStack[#EasyDestroyFilters.FilterStack].frame then
+				lastFrame = EasyDestroyFilters.FilterStack[#EasyDestroyFilters.FilterStack].frame
+			else
+				lastFrame = EasyDestroyFilters_AddFilterType
 			end
+			frame:SetPoint("LEFT", EasyDestroyFiltersDialogBG, "LEFT", 4, 0)
+			frame:SetPoint("RIGHT", EasyDestroyFiltersDialogBG, "RIGHT", -4, 0)
+			frame:SetPoint("TOP", lastFrame, "BOTTOM")
+			frame:SetHeight(registeredFilter.height)
+			frame:Show()
+			tinsert(EasyDestroyFilters.FilterStack, registeredFilter)
+			registeredFilter:SetValues(filter.filter[key] or "")
 		end
 	end
 end

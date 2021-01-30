@@ -45,7 +45,6 @@ function EasyDestroy_EventHandler(self, event, ...)
 			EasyDestroy.AddonLoaded = true
 			EasyDestroy:Initialize()
 			EasyDestroy:InitFilters()
-			EasyDestroy.RegisterFilters()
 
 			if EasyDestroyData then 
 				EasyDestroy.Data = EasyDestroyData
@@ -71,6 +70,7 @@ function EasyDestroy_EventHandler(self, event, ...)
 			else
 				UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, 0)
 			end
+			UIDropDownMenu_Initialize(EasyDestroyFilterTypes, EasyDestroy_InitFilterTypes)
 		end
 	elseif event=="PLAYER_LOGOUT" then
 		if EasyDestroy.DataLoaded then
@@ -126,6 +126,10 @@ function SlashCmdList.OPENUI(msg)
 	end
 end
 
+function EasyDestroy_Refresh()
+	EasyDestroy.FilterChanged = true
+end
+
 EasyDestroyFrame:SetScript("OnShow", function()
 	EasyDestroyFrame:RegisterEvent("BAG_UPDATE_DELAYED")
 	EasyDestroy.FilterChanged = true -- This will force the search to repopulate on load
@@ -138,16 +142,6 @@ end)
 
 EasyDestroyFrame:SetScript("OnEvent", EasyDestroy_EventHandler)
 EasyDestroyFrame:SetScript("OnUpdate", EasyDestroy_OnUpdate)
-
-EasyDestroyFilters_ItemName.input:SetScript("OnEditFocusLost", function() EasyDestroy.FilterChanged = true end)
-EasyDestroyFilters_ItemID.input:SetScript("OnEditFocusLost", function() EasyDestroy.FilterChanged = true end)
-EasyDestroyFilters_ItemLevel.inputfrom:SetScript("OnEditFocusLost", function() EasyDestroy.FilterChanged = true end)
-EasyDestroyFilters_ItemLevel.inputto:SetScript("OnEditFocusLost", function() EasyDestroy.FilterChanged = true end)
-
-EasyDestroyFilters_RarityCommon:SetScript("OnClick", function() EasyDestroy.FilterChanged = true end)
-EasyDestroyFilters_RarityUncommon:SetScript("OnClick", function() EasyDestroy.FilterChanged = true end)
-EasyDestroyFilters_RarityRare:SetScript("OnClick", function() EasyDestroy.FilterChanged = true end)
-EasyDestroyFilters_RarityEpic:SetScript("OnClick", function() EasyDestroy.FilterChanged = true end)
 
 EasyDestroyButton:SetScript("PreClick", function(self)
 	EasyDestroy:DisenchantItem()
@@ -165,6 +159,7 @@ EasyDestroyFilters_NewFromFilter:SetScript("OnClick", EasyDestroyFilters_CreateN
 EasyDestroyFilters_New:SetScript("OnClick", function() 
 	EasyDestroy_ClearFilterFrame() 
 	EasyDestroy_InitDropDown()
+	EasyDestroy_ResetFilterStack()
 	UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, 0) 
 	EasyDestroy.FilterChanged = true end
 )

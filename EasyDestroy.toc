@@ -1,5 +1,5 @@
 ## Interface: 90002
-## Version: 1.0.6
+## Version: 1.2.0
 ## Title: EasyDestroy
 ## Notes: Makes disenchanting easy!
 ## Author: Cwagrant
@@ -17,3 +17,10 @@ Filters.xml
 EasyDestroy.lua
 Filters.lua
 Main.lua
+
+filters\ilvl.lua
+filters\itemname.lua
+filters\itemid.lua
+filters\rarity.lua
+filters\iteminset.lua
+filters\soulbound.lua

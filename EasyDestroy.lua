@@ -112,10 +112,6 @@ function EasyDestroy:Initialize()
 	EasyDestroy.EasyDestroyTest:SetText("Test")
 	EasyDestroy.EasyDestroyTest:SetScript("OnClick", function(self)
 		print("CountItemsFound", #EasyDestroy:FindItemsToDestroy(EasyDestroy.CurrentFilter['filter']) or 0)
-		print("CommonCheckbox", EasyDestroyFilters_RarityCommon:GetChecked())
-		print("UncommonCheckbox", EasyDestroyFilters_RarityUncommon:GetChecked())
-		print("RareCheckbox", EasyDestroyFilters_RarityRare:GetChecked())
-		print("EpicCheckbox", EasyDestroyFilters_RarityEpic:GetChecked())
 		print("Filter", UIDropDownMenu_GetSelectedValue(EasyDestroyDropDown))
 		pprint(EasyDestroy.CurrentFilter)
 	end)
@@ -130,21 +126,27 @@ end
 
 function EasyDestroy_InitDropDown()
 	local info = UIDropDownMenu_CreateInfo()
-	info.text, info.value, info.checked, info.func = "New Filter...", 0, false, EasyDestroy_DropDownSelect, EasyDestroyDropDown
+	info.text, info.value, info.checked, info.func, info.owner = "New Filter...", 0, false, EasyDestroy_DropDownSelect, EasyDestroyDropDown
 	UIDropDownMenu_AddButton(info)
 	
 	if EasyDestroy.Data.Filters then
 		for fid, filter in EasyDestroy.spairs(EasyDestroy.Data.Filters, function(t, a, b) return t[a].properties.name < t[b].properties.name end) do
-			info.text, info.value, info.checked, info.func = filter.properties.name, fid, false, EasyDestroy_DropDownSelect, EasyDestroyDropDown
+			info.text, info.value, info.checked, info.func, info.owner = filter.properties.name, fid, false, EasyDestroy_DropDownSelect, EasyDestroyDropDown
 			UIDropDownMenu_AddButton(info)
 		end
 	end
 end
 
-function EasyDestroy_UpdateItemFrame(frame, itemLink)
-	frame.Icon:SetTexture(GetItemIcon(itemLink))
-	frame.Item:SetText(GetItemInfo(itemLink))
-	frame.Item.itemLink = itemLink
+function EasyDestroy_UpdateItemFrame(frame, item)
+	frame.Icon:SetTexture(GetItemIcon(item.itemlink))
+	frame.Item:SetText(GetItemInfo(item.itemlink))
+	frame.Item.itemLink = item.itemlink
+	local ilvl = select(1, GetDetailedItemLevelInfo(item.itemlink))
+	if ilvl then
+		frame.ItemLevel:SetText("(" .. ilvl .. ")")
+	else
+		frame.ItemLevel:SetText("")
+	end
 	
 	return frame
 end
@@ -156,24 +158,33 @@ function EasyDestroy:FindItemsToDestroy(filter)
 	local itemkey = 0
 	for bag = 0, NUM_BAG_SLOTS do
 		for slot=1, GetContainerNumSlots(bag) do
+			matchfound = nil
 			local item = {};
 			item.link = select(7, GetContainerItemInfo(bag, slot));
 			if item.link then 
 				item.name, _, item.quality, item.level, _, item._type, item._subtype, item.stack, item.slot, item.icon, item.price, item.type, item.subtype = GetItemInfo(item.link);
-				item.eqset = EasyDestroy.ItemInEquipmentSet(bag, slot);
+				--item.eqset = EasyDestroy.ItemInEquipmentSet(bag, slot);
 				item.mog = EasyDestroy.HaveTransmog(item.link);
 				item.id = GetContainerItemID(bag, slot);
-				
+				item.bindtype = select(14, GetItemInfo(item.link))
+
+				--item.level = GetDetailedItemLevelInfo(item.link)
 				if not item.name then -- Because unlike Jim Croce, Mythic Keystones do not, in fact, have a name.
 					item.name = "NO_NAME_ITEM"
+				end
+
+				for k, v in pairs(EasyDestroyFilters.Registry) do
+					if v.getiteminfo and type(v.getiteminfo) == 'function' then 
+						item[k] = v.getiteminfo(item.link, bag, slot)
+					end
 				end
 				
 				
 				for k, v in pairs(filter) do
-					if not EasyDestroyFilters[k] then
+					if not EasyDestroyFilters.Registry[k] then
 						print("Unsupported filter:" .. k)
 					else
-						if not EasyDestroyFilters[k](v, item[k]) then
+						if not EasyDestroyFilters.Registry[k]:Check(v, item) then
 							matchfound = false
 							break
 						end
@@ -193,6 +204,12 @@ function EasyDestroy:FindItemsToDestroy(filter)
 							end
 						end
 					end
+				end
+				
+				-- can't typically disenchant cosmetic items. This filters them out (hopefully)
+				-- Not sure about cosmetic weapons...
+				if item.type==LE_ITEM_CLASS_ARMOR and item.stype == LE_ITEM_ARMOR_COSMETIC then
+					matchfound = false
 				end
 				
 				if matchfound and typematch then
@@ -273,7 +290,7 @@ function EasyDestroyItemsScrollBar_Update(callbackFunction)
 		local frame = _G['EasyDestroyItemsFrameItem'..i]
 		if index <= #itemList then
 			local item = itemList[index]
-			EasyDestroy_UpdateItemFrame(frame, item.itemlink)
+			EasyDestroy_UpdateItemFrame(frame, item)
 			local r,g,b = GetItemQualityColor(C_Item.GetItemQualityByID(item.itemlink))
 			frame:SetBackdrop({bgFile="Interface\\Tooltips\\UI-Tooltip-Background",})
 			frame:SetBackdropColor(r,g,b, 0.5)

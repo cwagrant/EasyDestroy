@@ -2,9 +2,9 @@
  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
  xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
  
-<Frame name="EasyDestroyFrame" inherits="UIPanelDialogTemplate" hidden="true" movable="true" parent="UIParent">
+<Frame name="EasyDestroyFrame" inherits="UIPanelDialogTemplate" hidden="false" movable="true" parent="UIParent">
 	<Size>
-		<AbsDimension x="300" y ="320"/>
+		<AbsDimension x="340" y ="320"/>
 	</Size>
 	<Anchors>
 		<Anchor point="CENTER"/>

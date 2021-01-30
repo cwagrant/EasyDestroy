@@ -26,7 +26,10 @@
 			<Scripts>
 				<OnEnterPressed>
 					self:ClearFocus()
-				</OnEnterPressed>		
+				</OnEnterPressed>	
+				<OnEditFocusLost>
+					EasyDestroy.FilterChanged = true
+				</OnEditFocusLost>	
 			</Scripts>
 		</EditBox>
 	</Frames>
@@ -56,7 +59,10 @@
 			<Scripts>
 				<OnEnterPressed>
 					self:ClearFocus()
-				</OnEnterPressed>		
+				</OnEnterPressed>	
+				<OnEditFocusLost>
+					EasyDestroy.FilterChanged = true
+				</OnEditFocusLost>	
 			</Scripts>
 		</EditBox>
 		<EditBox inherits="InputBoxTemplate" name="$parentEditBoxTo" parentKey="inputto" autoFocus="false">
@@ -69,10 +75,21 @@
 			<Scripts>
 				<OnEnterPressed>
 					self:ClearFocus()
-				</OnEnterPressed>		
+				</OnEnterPressed>	
+				<OnEditFocusLost>
+					EasyDestroy.FilterChanged = true
+				</OnEditFocusLost>	
 			</Scripts>
 		</EditBox>
 	</Frames>
+	<Scripts>
+		<OnLoad>
+			local d = self:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+			d:SetText("—")
+			d:SetPoint("LEFT", self.inputfrom, "RIGHT", -4, 0)
+			d:SetPoint("RIGHT", self.inputto, "LEFT")
+		</OnLoad>
+	</Scripts>
 </Frame>
 
 <Frame name="EasyDestroyItemTemplate" virtual="true" enableMouse="true" inherits="BackdropTemplate">
@@ -88,11 +105,17 @@
 				<Anchors>
 					<Anchor point="LEFT" x="12" y="0"/>
 				</Anchors>
-			</Texture>	
+			</Texture>
+			<FontString name="$parentItemLevel" parentKey="ItemLevel" inherits="GameFontNormal" justifyH="LEFT">
+				<Anchors>
+					<Anchor point="RIGHT"/>
+					<Anchor point="LEFT" relativePoint="RIGHT" x="-34" y="0"/>>
+				</Anchors>
+			</FontString>
 			<FontString name="$parentItem" parentKey="Item" inherits="GameFontNormal" wordwrap="true" maxLines="2" justifyH="LEFT" indented="true">
 				<Anchors>
 					<Anchor point="LEFT" relativePoint="LEFT" x="40" y="0"/>
-					<Anchor point="RIGHT"/>
+					<Anchor point="RIGHT" relativePoint="LEFT" relativeTo="$parentItemLevel" x="-8" y="0"/>
 				</Anchors>
 			</FontString>
 		</Layer>
@@ -133,5 +156,78 @@
 	</Layers>
 </CheckButton>
 
+<Frame name="EasyDestroyRarityFilter" virtual="true">
+	<Size>
+		<AbsDimension x="0" y="65"/>
+	</Size>
+	<Layers>	
+		<Layer>
+			<Texture name="$parentTitle" parentArray="title">
+				<Size><AbsDimension x="80" y="10"/></Size>
+				<Color a="0" r="0" g="0" b="0"/>
+				<Anchors>
+					<Anchor point="TOP" relativePoint="TOP" x="0" y="-4"/>
+				</Anchors>
+			</Texture>
+			<FontString text="Item Quality" inherits="GameFontNormalSmall" parentKey="label">
+				<Anchors>
+					<Anchor point="CENTER" relativeTo="$parentTitle"/>
+				</Anchors>
+			</FontString>
+		</Layer>
+	</Layers>
+	
+	<Frames>
+	
+		<CheckButton name="$parentCommon" parentKey="common" parentArray="Rarity" inherits="EasyDestroyCheckboxTemplate">
+			<Anchors>
+				<Anchor point="TOPLEFT" x="20" y="-12"/>
+			</Anchors>
+			<Scripts>
+				<OnClick>
+					EasyDestroy.FilterChanged = true
+				</OnClick>
+			</Scripts>
+		</CheckButton>
+		<CheckButton name="$parentUncommon" inherits="EasyDestroyCheckboxTemplate" parentKey="uncommon" parentArray="Rarity" >
+			<Anchors>
+				<Anchor point="TOPLEFT" relativePoint="TOP" x="30" y="-12"/>
+			</Anchors>
+			<Scripts>
+				<OnClick>
+					EasyDestroy.FilterChanged = true
+				</OnClick>
+			</Scripts>
+		</CheckButton>
+		<CheckButton name="$parentRare" inherits="EasyDestroyCheckboxTemplate" parentKey="rare" parentArray="Rarity" >
+			<Anchors>
+				<Anchor point="TOPLEFT" relativeTo="$parentCommon" relativePoint="BOTTOMLEFT"/>
+			</Anchors>
+			<Scripts>
+				<OnClick>
+					EasyDestroy.FilterChanged = true
+				</OnClick>
+			</Scripts>
+		</CheckButton>
+		<CheckButton name="$parentEpic" inherits="EasyDestroyCheckboxTemplate" parentKey="epic" parentArray="Rarity" >
+			<Anchors>
+				<Anchor point="TOPLEFT" relativeTo="$parentUncommon" relativePoint="BOTTOMLEFT"/>
+			</Anchors>
+			<Scripts>
+				<OnClick>
+					EasyDestroy.FilterChanged = true
+				</OnClick>
+			</Scripts>
+		</CheckButton>
+		
+		<!-- Apparently SecureActionButtonTemplate doesnt' like being too many frames down as a child and refuses to show up
+		In order to get around this I had to use an InsecureActionButtonTemplate. Couldn't find any good documentation
+		of this functionality or limits on the SecureActionButtonTemplate so this is sort of bestguess as to why it didn't work. -->
+	</Frames>
+	<Backdrop edgeFile="Interface\Buttons\WHITE8x8" tile="true">			
+		<EdgeSize val="2"/>
+		<BorderColor a="1" r="0.99" g="0.81" b="0"/>
+	</Backdrop>
+</Frame>
 
 </Ui>

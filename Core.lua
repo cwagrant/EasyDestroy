@@ -19,6 +19,8 @@ EasyDestroy.WarnedLootOpen = false
 EasyDestroy.DestroyFilters = {}
 EasyDestroy.DestroyFilters[EasyDestroy.DestroyTypes.DISENCHANT] = {{itype=LE_ITEM_CLASS_WEAPON, stype=nil}, {itype=LE_ITEM_CLASS_ARMOR, stype=nil}}
 
+
+
 --[[
 	EasyDestroy.DestroyFunc.DISENCHANT = {
 		{itype=LE_ITEM_CLASS_WEAPON, stype=nil},
@@ -118,6 +120,7 @@ function _in_(checkTable, checkValue)
 	end
 	return false
 end
+
 
 
 
