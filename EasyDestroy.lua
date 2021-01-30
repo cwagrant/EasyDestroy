@@ -147,7 +147,7 @@ function EasyDestroy:FindItemsToDestroy(filter)
 				
 				-- can't typically disenchant cosmetic items. This filters them out (hopefully)
 				-- Not sure about cosmetic weapons...
-				if item.type==LE_ITEM_CLASS_ARMOR and item.stype == LE_ITEM_ARMOR_COSMETIC then
+				if item.type==LE_ITEM_CLASS_ARMOR and item.subtype == LE_ITEM_ARMOR_COSMETIC then
 					matchfound = false
 				end
 				
