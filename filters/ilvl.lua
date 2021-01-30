@@ -19,7 +19,7 @@ function filter:RegisterFilter()
     filter.frame = nil
     filter.height = 20
     filter.width = 100
-    filter.getiteminfo = filter.GetItemInfo
+    --filter.getiteminfo = filter.GetItemInfo
     EasyDestroyFilters[filter.key] = filter.Check
     EasyDestroyFilters.Registry[filter.key] = filter
     --quick and dirty, need to have some kind of function on the part of the addon to do this
@@ -27,7 +27,7 @@ function filter:RegisterFilter()
 end
 
 -- EasyDestroy passes 3 values to this function, itemlink, bag, and slot. 
-function filter.GetItemInfo(ilink)
+function filter:GetItemInfo(ilink)
     return select(1, GetDetailedItemLevelInfo(ilink))
 end
 -- There's no reason a filter should show up more than once

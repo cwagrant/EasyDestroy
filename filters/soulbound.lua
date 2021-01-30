@@ -18,14 +18,13 @@ function filter:RegisterFilter()
     filter.key = "boequality"
     filter.frame = nil
     filter.height = 65
-    filter.getiteminfo = filter.GetItemInfo
     EasyDestroyFilters[filter.key] = filter.Check
     EasyDestroyFilters.Registry[filter.key] = filter
     --quick and dirty, need to have some kind of function on the part of the addon to do this
     UIDropDownMenu_Initialize(EasyDestroyFilterTypes, EasyDestroy_InitFilterTypes)
 end
 
-function filter.GetItemInfo(itemLink, bag, slot)
+function filter:GetItemInfo(itemLink, bag, slot)
     local itemLoc = ItemLocation:CreateFromBagAndSlot(bag, slot)
     local isBound = C_Item.IsBound(itemLoc)
     return isBound
@@ -60,9 +59,12 @@ function filter:Check(inputquality, item)
     if filter.frame then
         local itemquality = item.quality
         local itembound = item.boequality
-
-        if tContains(inputquality, itemquality) and not(item.boequality) then
-            return false
+        local bindtype = item.bindtype
+        
+        if bindtype == LE_ITEM_BIND_ON_EQUIP then
+            if tContains(inputquality, itemquality) and not(item.boequality) then
+                return false
+            end
         end
 
     end

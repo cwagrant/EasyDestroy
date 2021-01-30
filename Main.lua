@@ -11,6 +11,9 @@ EasyDestroyFrame:RegisterEvent("PLAYER_LOGOUT")
 EasyDestroyFrame:RegisterEvent("PLAYER_LOGIN")
 EasyDestroyFrame:RegisterEvent("BAG_UPDATE_DELAYED")
 EasyDestroyFrame:RegisterEvent("UNIT_SPELLCAST_INTERRUPTED")
+EasyDestroyFrame:RegisterEvent("UNIT_SPELLCAST_FAILED")
+EasyDestroyFrame:RegisterEvent("PLAYER_REGEN_DISABLED")
+EasyDestroyFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
 
 --[[ 
 Note1: Considering looking at events to handle the enable/disable of the disenchant button
@@ -36,9 +39,21 @@ function EasyDestroy_EventHandler(self, event, ...)
 		EasyDestroy.CurrentFilter=testfilter
 		EasyDestroyItemsScrollBar_Update()
 	elseif event == "UNIT_SPELLCAST_INTERRUPTED" then
-		if select(1, ...) == "player" then
+		local who, _, what = ... 
+		if who=="player" and what==13262 then
+			EasyDestroyDebug("Disenchant Interrupted")
 			EasyDestroyButton:Enable()
 		end
+	elseif event == "UNIT_SPELLCAST_FAILED" then
+		local who, _, what = ...
+		if who=="player" and what==13262 then
+			EasyDestroy.Debug("Failed to Disenchant item...")
+			EasyDestroyButton:Enable()
+		end
+	elseif event=="PLAYER_REGEN_DISABLED" then
+		EasyDestroyButton:Disable()
+	elseif event=="PLAYER_REGEN_ENABLED" then
+		EasyDestroyButton:Enable()
 	elseif event=="ADDON_LOADED" then
 		local name = ...
 		if name == EasyDestroy.AddonName then
@@ -64,7 +79,7 @@ function EasyDestroy_EventHandler(self, event, ...)
 					if filterObj.properties.favorite then
 						UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, k)
 						EasyDestroy_LoadFilter(k)
-						EasyDestroy.FilterChanged = true
+						EasyDestroy_Refresh()
 					end
 				end
 			else
@@ -99,24 +114,27 @@ function EasyDestroy_DropDownSelect(self, arg1, arg2, checked)
 		EasyDestroy.CurrentFilter = EasyDestroy.Data.Filters[self.value]
 		EasyDestroy.CurrentFilter.fid = self.value
 	end
-	EasyDestroy.FilterChanged = true
+	EasyDestroy_Refresh()
 end
-
+--[[
 function EasyDestroy_DestroySpellSelect(self, arg1, arg2, checked)
 	EasyDestroy.Debug("SetSelectedValue", self.value)
 	UIDropDownMenu_SetSelectedValue(EasyDestroyDestroyType, self.value)
-end
+end]]
 
 SLASH_OPENUI1 = "/edestroy";
 SLASH_OPENUI2 = "/ed";
 SLASH_OPENUI3 = "/easydestroy"
 
 function SlashCmdList.OPENUI(msg)
-	if msg=="reset" then
+	msg = string.lower(msg)
+	if msg=="reposition" then
 		-- reset position to center of screen
 		EasyDestroyFrame:SetPoint("RIGHT", UIParent, "CENTER", 0, 0)
 	elseif msg=="macro" then
 		CreateMacro("ED_Disenchant", 236557, "/click EasyDestroyButton", nil)
+	elseif msg=="reset" then
+		EasyDestroyButton:Enable()
 	else
 		if EasyDestroyFrame:IsVisible() then
 			EasyDestroyFrame:Hide()
@@ -132,7 +150,7 @@ end
 
 EasyDestroyFrame:SetScript("OnShow", function()
 	EasyDestroyFrame:RegisterEvent("BAG_UPDATE_DELAYED")
-	EasyDestroy.FilterChanged = true -- This will force the search to repopulate on load
+	EasyDestroy_Refresh() -- This will force the search to repopulate on load
 end)
 
 EasyDestroyFrame:SetScript("OnHide", function()
@@ -161,6 +179,6 @@ EasyDestroyFilters_New:SetScript("OnClick", function()
 	EasyDestroy_InitDropDown()
 	EasyDestroy_ResetFilterStack()
 	UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, 0) 
-	EasyDestroy.FilterChanged = true end
+	EasyDestroy_Refresh() end
 )
 

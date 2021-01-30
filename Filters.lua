@@ -83,11 +83,13 @@ function EasyDestroy_FilterSelect(self, arg1, arg2, checked)
 		for k, v in ipairs(EasyDestroyFilters.FilterStack) do
 			if v.key == selectedFilter.key then
 				v.frame:Hide()
+				v.Clear()
 				tremove(EasyDestroyFilters.FilterStack, k)
 			end
 		end
 	end
 	EasyDestroy_RestackFilters()
+	EasyDestroy_Refresh()
 end
 
 function EasyDestroy_RestackFilters()
@@ -315,15 +317,15 @@ function EasyDestroy_ClearFilterFrame()
 	EasyDestroyFilters_FavoriteIcon:SetChecked(false);
 end
 
+-- loops through the filter registry, clears/hides any active filters, and sets the filterstack to an empty list.
 function EasyDestroy_ResetFilterStack()
-	for k, v in ipairs(EasyDestroyFilters.FilterStack) do
-		v.frame:Hide()
-		EasyDestroyFilters.FilterStack[k] = nil
-	end
-
 	for k,v in pairs(EasyDestroyFilters.Registry) do
 		v:Clear()
+		if v.frame then
+			v.frame:Hide()
+		end
 	end
+	EasyDestroyFilters.FilterStack = {}
 end
 
 function EasyDestroy_LoadFilter(fid)

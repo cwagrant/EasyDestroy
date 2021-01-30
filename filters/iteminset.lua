@@ -7,7 +7,6 @@ function filter:RegisterFilter()
     filter.key = "eqset"
     filter.frame = nil
     filter.height = 20
-    filter.getiteminfo = filter.GetItemInfo
     EasyDestroyFilters[filter.key] = filter.Check
     EasyDestroyFilters.Registry[filter.key] = filter
     --quick and dirty, need to have some kind of function on the part of the addon to do this
@@ -24,7 +23,7 @@ function filter:GetFilterFrame()
     return filter.frame
 end
 
-function filter.GetItemInfo(itemlink, bag, slot)
+function filter:GetItemInfo(itemlink, bag, slot)
 	local sets = C_EquipmentSet.GetEquipmentSetIDs();
 	
 	for _, setid in pairs(sets) do
@@ -42,19 +41,24 @@ function filter.GetItemInfo(itemlink, bag, slot)
 end
 
 -- check input vs item values
+-- return false = fails check, return true = passes check and item is included
 function filter:Check(excludeset, item)
+    -- if input is checked (e.g. ignore items in sets)
+    -- AND item.eqset = true
+    EasyDestroy.Debug(item.link, excludeset, item.eqset)
     local inset = item.eqset
     if excludeset then 
         return not(inset)
     else
         return true
     end
+
 end
 
 
 function filter:GetValues()
     if filter.frame then
-        return filter.checkbox:GetChecked()
+        return filter.checkbox:GetChecked() and true or filter.checkbox:IsShown() and filter.checkbox:GetChecked() or nil
     end
     return nil
 end

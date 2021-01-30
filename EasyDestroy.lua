@@ -4,67 +4,6 @@ local EDFramePool = {}
 local FP_UID = 1
 local ED_SearchInProgress = false
 
---[[ TODO 
-disable button while looting
-reenable button after looting
-
-the plan
- [x] Item Filter (similar to the easyscrap addon)
- [x] Save Filter
- [x] List items in the scrollframe
- [x] Each time an item in the frame is disenchanted, remove it from the frame and clean frame positions
- [x] Click "Disenchant" button to disenchant items in filter
- [x] Make it so that the Disenchant button can be a macro you can spam
- [x] Rewrite the function for finding items to disenchant to use the filters and instead of running on each click it will instead
-	run once, create a list of items based on bag/slot position and when item is disenchanted it is removed from this list.
-
-- Item Filters todo
-	It works, just need to make it use the fields on the frame
-	Once the fields work, need to add the ability to save
-	a filter for future use. Then need a drop down for
-	filters. Will need some sort of delete button
-	for deleting existing buttons.
-	Clear button to clear the filter fields (including drop
-	down field).
- 
-- Cleanup todo
-	Need to separate the base frame and event registration/handling
-	from the rest of the helper functions.
-	
-	May separate functions by what area they work for.
-	
-	Cleanup/refactor code.
-	
-- Updating filters
-	Want to turn allow combining multiple filters together.
-	E.g. Could have 1 "filter" that combines disenchanting blue tidespray bracers and epic LW bracers.
-	So it would be FilterGroups that have filters inside them and all items that match at least 1 of the filters would be included.
-	Might be a bit excessive? Still need to do a drop down and allow saving a filter.
-
-	-- Thought, instead make things comma separate-able? Or how do I handle filters in both an and and or state.
-	-- Might be easier to allow the creation of "Combo Filters" where a person creates multiple filters and then
-	-- is able to combine them together (will act as OR statements)
-
-- Idea - Filter 2.0
-Opens new window
-Allows for multiple entries, user can search for an item and add it to the filter.
-E.g.
- filter.items = {item1, item2, item3} 
- filter export
- filter import
- 
-Allow for blacklist and whitelist. Whitelist > Blacklist
-E.g.
-	filter.blacklist.quality = {3, 4} --don't show rare or epic items
-	filter.whitelist.items = {epicitem, rareitem} --but show these
-	
-And/Or Functionality?
-E.g.
-	filter.blacklist.filter1.items = {item}
-	filter.blacklist.filter1.
- 
-]]--
-
 function EasyDestroy:Initialize()
 	--[[ Title Bar ]]--
 	EasyDestroyFrame.Title:SetFontObject("GameFontHighlight");
@@ -174,8 +113,8 @@ function EasyDestroy:FindItemsToDestroy(filter)
 				end
 
 				for k, v in pairs(EasyDestroyFilters.Registry) do
-					if v.getiteminfo and type(v.getiteminfo) == 'function' then 
-						item[k] = v.getiteminfo(item.link, bag, slot)
+					if v.GetItemInfo ~= nil and type(v.GetItemInfo) == 'function' then 
+						item[k] = v:GetItemInfo(item.link, bag, slot)
 					end
 				end
 				
@@ -305,7 +244,7 @@ function EasyDestroyItemsScrollBar_Update(callbackFunction)
 	if callbackFunction ~= nil and type(callbackFunction) == "function" then
 		callbackFunction()
 	end
-
+	EasyDestroy.Debug("Completed Scroll Frame Update")
 end
 
 function EasyDestroy_ToggleFilters()
