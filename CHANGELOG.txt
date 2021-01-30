@@ -1,0 +1,8 @@
+20210130
+- Fixed bugs with filters for BOE items and items in Equipment Sets
+- Addressed enabling/disabling of Disenchant button if a user enters combat
+- Addressed re-enabling the button when/if a disenchant cast fails
+
+20210129
+- Overhauled filter system
+- Added BOE Item and Equipment Set filters

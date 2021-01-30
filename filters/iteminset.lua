@@ -40,12 +40,7 @@ function filter:GetItemInfo(itemlink, bag, slot)
 	return false
 end
 
--- check input vs item values
--- return false = fails check, return true = passes check and item is included
 function filter:Check(excludeset, item)
-    -- if input is checked (e.g. ignore items in sets)
-    -- AND item.eqset = true
-    EasyDestroy.Debug(item.link, excludeset, item.eqset)
     local inset = item.eqset
     if excludeset then 
         return not(inset)
