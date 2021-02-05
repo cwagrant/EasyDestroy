@@ -12,18 +12,10 @@ local filter = {}
 
 local EasyDestroyFilters = EasyDestroyFilters
 
-function filter:RegisterFilter()
-    -- give the filter a name (not currently used), a key, and a blank frame.
-    filter.name="Item Name"
-    filter.key = "name"
-    filter.frame = nil
-    filter.height = 20
-    filter.getiteminfo = nil
-    EasyDestroyFilters[filter.key] = filter.Check
-    EasyDestroyFilters.Registry[filter.key] = filter
-    --quick and dirty, need to have some kind of function on the part of the addon to do this
-    UIDropDownMenu_Initialize(EasyDestroyFilterTypes, EasyDestroy_InitFilterTypes)
-end
+filter.name="Item Name"
+filter.key = "name"
+filter.frame = nil
+filter.height = 20
 
 -- There's no reason a filter should show up more than once
 -- So we can treat it as a singleton and just use this to
@@ -84,4 +76,4 @@ function filter:Clear()
     end
 end
 
-filter:RegisterFilter()
+EasyDestroyFilters:RegisterFilter(filter)

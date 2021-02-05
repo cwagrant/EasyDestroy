@@ -10,10 +10,63 @@
             <Anchor point="TOPLEFT" relativeTo="EasyDestroyFrame" relativePoint="TOPRIGHT"/>
         </Anchors>
         <Frames>
-            <CheckButton name="$parent_FavoriteIcon" motionScriptsWhileDisabled="true">
+            <!--
+            <Frame name="$parentDisplayTypes" parentKey="DisplayTypes">
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeTo="$parentDialogBG" relativePoint="TOPLEFT" x="12" y="4"/>
+                    <Anchor point="RIGHT" relativeTo="$parentDialogBG" relativePoint="RIGHT" x="-4" y="0"/>
+                </Anchors>
+                <Size>
+                    <AbsDimension x="0" y="30"/>
+                </Size>
+                <Frames>
+                    <CheckButton name="$parentSearch" parentKey="Search" parentArray="DisplayTypes" inherits="EasyDestroyCheckboxTemplate">
+                        <Anchors>
+                            <Anchor point="TOPLEFT" x="20" y="-12"/>
+                        </Anchors>
+                        <Scripts>
+                            <OnClick>
+                                EasyDestroy.FilterChanged = true
+                            </OnClick>
+                        </Scripts>
+                    </CheckButton>
+                    <CheckButton name="$parentBlacklist" inherits="EasyDestroyCheckboxTemplate" parentKey="Blacklist" parentArray="DisplayTypes" >
+                        <Anchors>
+                            <Anchor point="TOPLEFT" relativePoint="TOP" x="20" y="-12"/>
+                        </Anchors>
+                        <Scripts>
+                            <OnClick>
+                                EasyDestroy.FilterChanged = true
+                            </OnClick>
+                        </Scripts>
+                    </CheckButton>
+                </Frames>
+            </Frame>
+            <Frame name="$parent_Select">
+                <Anchors>
+                    <Anchor point="TOP" relativeTo="$parentDisplayTypes" relativePoint="BOTTOM" x="0" y="-12"/>
+                    <Anchor point="LEFT" relativeTo="$parentDialogBG" relativePoint="LEFT" x="12" y="0"/>
+                    <Anchor point="RIGHT" relativeTo="$parentDialogBG" relativePoint="RIGHT" x="-4" y="0"/>
+                </Anchors>
+                <Size>
+                    <AbsDimension x="0" y="40"/>
+                </Size>
+                <Frames>
+                    <Frame name="$parentDropDown" inherits="UIDropDownMenuTemplate">
+                        <Anchors>
+                            <Anchor point="TOPLEFT" relativePoint="TOPLEFT" x="-14" y="8"/>
+                            <Anchor point="TOPRIGHT" relativePoint="RIGHT"/>
+                        </Anchors>
+                        <Size>
+                            <AbsDimension x="0" y="40"/>
+                        </Size>
+                    </Frame>
+                </Frames>
+            </Frame>-->
+            <CheckButton name="$parent_FavoriteIcon" motionScriptsWhileDisabled="true" parentKey="Favorite">
                 <Size x="16" y="16"/>
                 <Anchors>
-                    <Anchor point="TOPRIGHT" relativeTo="$parentDialogBG" x="-4" y="-4"/>
+                    <Anchor point="TOPRIGHT" relativeTo="$parentDialogBG" x="-4" y="-6"/>
                 </Anchors>
                 <NormalTexture file="Interface\Common\ReputationStar">
 					<TexCoords left="0.5" right="1" top="0" bottom="0.5"/>
@@ -25,70 +78,33 @@
 					<TexCoords left="0" right="0.5" top="0" bottom="0.5"/>
                 </CheckedTexture>
             </CheckButton>
-            <Frame name="$parent_FilterName" inherits="EasyDestroyEditBoxTemplate">
+            <Frame name="$parent_FilterName" inherits="EasyDestroyEditBoxTemplate" parentKey="FilterName" >
                 <Anchors>
-                    <Anchor point="TOPLEFT" relativeTo="$parentDialogBG" x="4" y="-4"/>
+                    <Anchor point="TOPLEFT" relativeTo="$parentDialogBG" x="0" y="-4"/>
                     <Anchor point="RIGHT" relativeTo="$parent_FavoriteIcon" relativePoint="LEFT" x="-4" y="0"/>
                 </Anchors>
             </Frame>
             <Frame name="$parent_AddFilterType">
                 <Anchors>
-                    <Anchor point="TOPLEFT" relativeTo="$parent_FilterName" relativePoint="BOTTOMLEFT" x="12" y="4"/>
+                    <Anchor point="TOP" relativeTo="$parent_FilterName" relativePoint="BOTTOM" x="0" y="-12"/>
+                    <Anchor point="LEFT" relativeTo="$parentDialogBG" relativePoint="LEFT" x="12" y="0"/>
                     <Anchor point="RIGHT" relativeTo="$parentDialogBG" relativePoint="RIGHT" x="-4" y="0"/>
                 </Anchors>
                 <Size>
-                    <AbsDimension x="0" y="40"/>
+                    <AbsDimension x="0" y="30"/>
                 </Size>
-                <Layers>
-                    <Layer level="OVERLAY">
-                        <FontString name="$parentLabel" parentKey="label" inherits="GameFontNormalSmall">
-                            <Anchors>
-                                <Anchor point="LEFT" x="-8"/>
-                            </Anchors>
-                        </FontString>
-                    </Layer>
-                </Layers>
                 <Frames>
                     <Frame name="EasyDestroyFilterTypes" inherits="UIDropDownMenuTemplate">
                         <Anchors>
-                            <Anchor point="TOPLEFT" relativeTo="$parentLabel" relativePoint="TOPRIGHT" x="-12" y="8"/>
+                            <Anchor point="TOPLEFT" relativePoint="TOPLEFT" x="-14" y="8"/>
                             <Anchor point="TOPRIGHT" relativePoint="RIGHT"/>
                         </Anchors>
                         <Size>
-                            <AbsDimension x="0" y="40"/>
+                            <AbsDimension x="0" y="30"/>
                         </Size>
                     </Frame>
                 </Frames>
             </Frame>
-            <!--<Frame name="EasyDestroyFilterDestroySpell" hidden="true">
-                <Anchors>
-                    <Anchor point="TOPLEFT" relativeTo="$parent_Rarity" relativePoint="BOTTOMLEFT"/>
-                    <Anchor point="TOPRIGHT" relativeTo="$parent_Rarity" relativePoint="BOTTOMRIGHT"/>
-                </Anchors>
-                <Size>
-                    <AbsDimension x="0" y="40"/>
-                </Size>
-                <Layers>
-                    <Layer level="OVERLAY">
-                        <FontString name="$parentLabel" parentKey="label" inherits="GameFontNormalSmall">
-                            <Anchors>
-                                <Anchor point="LEFT" x="-8"/>
-                            </Anchors>
-                        </FontString>
-                    </Layer>
-                </Layers>
-                <Frames>
-                    <Frame name="EasyDestroyDestroyType" inherits="UIDropDownMenuTemplate">
-                        <Anchors>
-                            <Anchor point="TOPLEFT" relativeTo="$parentLabel" relativePoint="TOPRIGHT" x="-12" y="8"/>
-                            <Anchor point="TOPRIGHT" relativePoint="RIGHT"/>
-                        </Anchors>
-                        <Size>
-                            <AbsDimension x="0" y="40"/>
-                        </Size>
-                    </Frame>
-                </Frames>
-            </Frame>-->
             <Button name="EasyDestroyFilters_Save" inherits="UIPanelButtonTemplate" text="Save Filter">
                 <Size>
                     <AbsDimension x="80" y="22"/>
@@ -121,6 +137,12 @@
                     <Anchor point="BOTTOM" relativeTo="EasyDestroyFilters" x="0" y="18"/>
                 </Anchors>
             </Button>
+            <CheckButton name="$parentCheck" inherits="EasyDestroyCheckboxTemplate" parentKey="Blacklist">
+                <Anchors>
+                    <Anchor point="BOTTOMLEFT" relativeTo="EasyDestroyFilters_Delete" relativePoint="TOPLEFT" x="0" y="6"/>
+                </Anchors>
+            </CheckButton>
+
         </Frames>
         <Scripts>
             <OnHide>EasyDestroy_OpenFilters:SetText('Show Filters')</OnHide>

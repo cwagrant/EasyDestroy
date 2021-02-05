@@ -2,16 +2,11 @@ local filter = {}
 
 local EasyDestroyFilters = EasyDestroyFilters
 
-function filter:RegisterFilter()
-    filter.name="Ignore Items in Equipment Sets"
-    filter.key = "eqset"
-    filter.frame = nil
-    filter.height = 20
-    EasyDestroyFilters[filter.key] = filter.Check
-    EasyDestroyFilters.Registry[filter.key] = filter
-    --quick and dirty, need to have some kind of function on the part of the addon to do this
-    UIDropDownMenu_Initialize(EasyDestroyFilterTypes, EasyDestroy_InitFilterTypes)
-end
+filter.name="Ignore Items in Equipment Sets"
+filter.key = "eqset"
+filter.frame = nil
+filter.height = 20
+
 
 function filter:GetFilterFrame()
     filter.frame = filter.frame or CreateFrame("Frame", "EDFilterItemInSet", EasyDestroyFilters)
@@ -77,4 +72,4 @@ function filter:Clear()
     end
 end
 
-filter:RegisterFilter()
+EasyDestroyFilters:RegisterFilter(filter)

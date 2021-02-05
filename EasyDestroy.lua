@@ -1,8 +1,32 @@
 --Addon settings
 EasyDestroy = EasyDestroy
-local EDFramePool = {}
-local FP_UID = 1
-local ED_SearchInProgress = false
+
+local separatorInfo = {
+	owner = EasyDestroyDropDown;
+	hasArrow = false;
+	dist = 0;
+	isTitle = true;
+	isUninteractable = true;
+	notCheckable = true;
+	iconOnly = true;
+	icon = "Interface\\Common\\UI-TooltipDivider-Transparent";
+	tCoordLeft = 0;
+	tCoordRight = 1;
+	tCoordTop = 0;
+	tCoordBottom = 1;
+	tSizeX = 0;
+	tSizeY = 8;
+	tFitDropDownSizeX = true;
+	iconInfo = {
+		tCoordLeft = 0,
+		tCoordRight = 1,
+		tCoordTop = 0,
+		tCoordBottom = 1,
+		tSizeX = 0,
+		tSizeY = 8,
+		tFitDropDownSizeX = true
+	},
+};
 
 function EasyDestroy:Initialize()
 	--[[ Title Bar ]]--
@@ -41,6 +65,10 @@ function EasyDestroy:Initialize()
 	})
 	EasyDestroyItems:SetBackdropColor(0,0,0,0.5)
 		
+	EasyDestroyFrameSearchTypes.Search.label:SetText("Searches")
+	EasyDestroyFrameSearchTypes.Search:SetChecked(true)
+	EasyDestroyFrameSearchTypes.Blacklist.label:SetText("Blacklists")
+
 	--[[ Filter View Area ]]--
 	UIDropDownMenu_SetWidth(EasyDestroyDropDown, EasyDestroyDropDown:GetWidth()-40)
 		
@@ -50,7 +78,7 @@ function EasyDestroy:Initialize()
 	EasyDestroy.EasyDestroyTest:SetPoint("BOTTOMLEFT", EasyDestroyFrame, "TOPLEFT", 0, 4)
 	EasyDestroy.EasyDestroyTest:SetText("Test")
 	EasyDestroy.EasyDestroyTest:SetScript("OnClick", function(self)
-		print("CountItemsFound", #EasyDestroy:FindItemsToDestroy(EasyDestroy.CurrentFilter['filter']) or 0)
+		print("CountItemsFound", #EasyDestroy:FindItemsToDestroy(EasyDestroy.CurrentFilter) or 0)
 		print("Filter", UIDropDownMenu_GetSelectedValue(EasyDestroyDropDown))
 		pprint(EasyDestroy.CurrentFilter)
 	end)
@@ -63,16 +91,57 @@ function EasyDestroy:Initialize()
 
 end
 
+
 function EasyDestroy_InitDropDown()
 	local info = UIDropDownMenu_CreateInfo()
+	local favoriteID = nil
 	info.text, info.value, info.checked, info.func, info.owner = "New Filter...", 0, false, EasyDestroy_DropDownSelect, EasyDestroyDropDown
 	UIDropDownMenu_AddButton(info)
-	
+	local hasSeparator = false
+	local includeSearches, includeBlacklists = EasyDestroy:IncludeSearches(), EasyDestroy:IncludeBlacklists()
+
+	-- This monstrosity sorts by type=type and name<name or type<type
+	-- e.g. if types match, sort by name, otherwise sort by type
 	if EasyDestroy.Data.Filters then
-		for fid, filter in EasyDestroy.spairs(EasyDestroy.Data.Filters, function(t, a, b) return t[a].properties.name < t[b].properties.name end) do
+		for fid, filter in EasyDestroy.spairs(EasyDestroy.Data.Filters, function(t, a, b) return (t[a].properties.type == t[b].properties.type and t[a].properties.name:lower() < t[b].properties.name:lower()) or t[a].properties.type < t[b].properties.type end) do
 			info.text, info.value, info.checked, info.func, info.owner = filter.properties.name, fid, false, EasyDestroy_DropDownSelect, EasyDestroyDropDown
-			UIDropDownMenu_AddButton(info)
+
+			if EasyDestroy.DebugActive then
+				info.text = filter.properties.name .. " | " .. fid
+			end
+			if filter.properties.type == ED_FILTER_TYPE_SEARCH and includeSearches then
+				UIDropDownMenu_AddButton(info)
+				if filter.properties.favorite == true then
+					favoriteID = info.value
+				end
+			elseif filter.properties.type == ED_FILTER_TYPE_BLACKLIST and includeBlacklists then
+				if not hasSeparator and includeSearches then
+					UIDropDownMenu_AddButton(separatorInfo)
+					hasSeparator = true
+				end
+				UIDropDownMenu_AddButton(info)
+			end
 		end
+	end
+end
+
+function EasyDestroySearchTypes_OnClick()
+	EasyDestroy_InitDropDown()
+	local favoriteID = nil
+	for fid, filter in pairs(EasyDestroy.Data.Filters) do
+		if filter.properties.favorite == true then
+			favoriteID = fid
+		end
+	end
+
+	if not(EasyDestroy:IncludeSearches()) and not(EasyDestroy:IncludeBlacklists()) then
+		UIDropDownMenu_SetText(EasyDestroyDropDown, 'You must select at least one type of filter.')
+	elseif EasyDestroy:IncludeSearches() and favoriteID then
+		UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, favoriteID)
+		EasyDestroy_LoadFilter(favoriteID)
+		EasyDestroy_Refresh()
+	else
+		UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, 0)
 	end
 end
 
@@ -95,6 +164,8 @@ function EasyDestroy:FindItemsToDestroy(filter)
 	local matchfound = nil
 	local items = {}
 	local itemkey = 0
+	local filterRegistry = EasyDestroyFilters.Registry
+	
 	for bag = 0, NUM_BAG_SLOTS do
 		for slot=1, GetContainerNumSlots(bag) do
 			matchfound = nil
@@ -102,28 +173,26 @@ function EasyDestroy:FindItemsToDestroy(filter)
 			item.link = select(7, GetContainerItemInfo(bag, slot));
 			if item.link then 
 				item.name, _, item.quality, item.level, _, item._type, item._subtype, item.stack, item.slot, item.icon, item.price, item.type, item.subtype = GetItemInfo(item.link);
-				--item.eqset = EasyDestroy.ItemInEquipmentSet(bag, slot);
-				item.mog = EasyDestroy.HaveTransmog(item.link);
+				item.mog = EasyDestroyFilters:HaveTransmog(item.link);
 				item.id = GetContainerItemID(bag, slot);
 				item.bindtype = select(14, GetItemInfo(item.link))
 
-				--item.level = GetDetailedItemLevelInfo(item.link)
 				if not item.name then -- Because unlike Jim Croce, Mythic Keystones do not, in fact, have a name.
-					item.name = "NO_NAME_ITEM"
+					item.name = "Blizzard Didn't Name This Item"
 				end
 
-				for k, v in pairs(EasyDestroyFilters.Registry) do
+				for k, v in pairs(filterRegistry) do
 					if v.GetItemInfo ~= nil and type(v.GetItemInfo) == 'function' then 
 						item[k] = v:GetItemInfo(item.link, bag, slot)
 					end
 				end
 				
 				
-				for k, v in pairs(filter) do
-					if not EasyDestroyFilters.Registry[k] then
-						print("Unsupported filter:" .. k)
+				for k, v in pairs(filter.filter) do
+					if not filterRegistry[k] then
+						print("Unsupported filter: " .. k)
 					else
-						if not EasyDestroyFilters.Registry[k]:Check(v, item) then
+						if not filterRegistry[k]:Check(v, item) then
 							matchfound = false
 							break
 						end
@@ -142,6 +211,29 @@ function EasyDestroy:FindItemsToDestroy(filter)
 								typematch = true
 							end
 						end
+					end
+				end
+
+				-- [[ PLACEHOLDER: BLACKLIST LOGIC ]]
+				-- if there was a match so far, then lets check it against blacklists
+				-- if the filter we are looking at is a blacklist, then lets ignore this
+				-- so that we can see what items would be caught by the blacklist filter we are creating
+				if matchfound and filter.properties.type ~= ED_FILTER_TYPE_BLACKLIST then 
+					for fid, blacklist in pairs(EasyDestroy.Data.Filters) do
+						if blacklist.properties.type == ED_FILTER_TYPE_BLACKLIST then 
+							for k, v in pairs(blacklist.filter) do
+								if not filterRegistry[k] then
+									printed("Unsupported filter: " .. k)
+								else
+									if filterRegistry[k]:Check(v, item) then
+										matchfound = false
+										break
+									end
+								end
+							end
+						end
+						-- we found a match in the blacklist, so disregard this item and quit searching additional blacklists
+						if not matchfound then break end
 					end
 				end
 				
@@ -213,7 +305,7 @@ function EasyDestroy:DisenchantItem()
 end
 
 function EasyDestroyItemsScrollBar_Update(callbackFunction)
-	local filter = EasyDestroy.CurrentFilter["filter"]
+	local filter = EasyDestroy.CurrentFilter
 	local itemList = EasyDestroy:FindItemsToDestroy(filter)
 	FauxScrollFrame_Update(EasyDestroyItemsFrameScrollFrame, #itemList, 8, 24)
 	
@@ -257,3 +349,31 @@ function EasyDestroy_ToggleFilters()
 	end
 end
 
+function EasyDestroy:IncludeBlacklists()
+	return EasyDestroyFrameSearchTypes.Blacklist:GetChecked()
+end
+
+function EasyDestroy:IncludeSearches()
+	return EasyDestroyFrameSearchTypes.Search:GetChecked()
+end
+
+function EasyDestroy:SelectAllFilterTypes()
+	EasyDestroyFrameSearchTypes.Blacklist:SetChecked(true)
+	EasyDestroyFrameSearchTypes.Search:SetChecked(true)
+end
+
+-- Function of the window drop down, moved from Main.
+function EasyDestroy_DropDownSelect(self, arg1, arg2, checked)
+	EasyDestroy.Debug("SetSelectedValue", self.value)
+	EasyDestroy.FilterSaveWarned = false
+	UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, self.value)
+	if self.value == 0 then
+		EasyDestroy_ClearFilterFrame()
+		EasyDestroy.CurrentFilter = EasyDestroy.EmptyFilter
+	else
+		EasyDestroy_LoadFilter(self.value)
+		EasyDestroy.CurrentFilter = EasyDestroy.Data.Filters[self.value]
+		EasyDestroy.CurrentFilter.fid = self.value
+	end
+	EasyDestroy_Refresh()
+end

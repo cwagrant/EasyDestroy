@@ -1,3 +1,20 @@
+20210204
+- Added in logic for blacklists
+- Filters now come in two types. Searches (items you want to see) and Blacklists.
+- Blacklists are universally applied. When creating a blacklist you are able to see
+    in the main window which items that filter will exclude from searches. 
+- Added a confirmation dialog for deleting filters.
+- Added a confirmation dialog for when you set a new favorite.
+- Added a warning dialog when you attempt to set a favorited filter as a blacklist.
+- Added a warning dialog when you attempt to save a new filter with the same name as
+    an existing filter.
+- Added a warning dialog when you check the Blacklist box on a filter without having
+    the Blacklists box checked on the main window. When updating/modifying/creating
+    blacklists you should have that box checked, and vice versa for Searches.
+- Fixed bug where Disenchant button wasn't reenabled if Disenchant was interrupted.
+- More code cleanup
+- Some cleanup of the frames.
+
 20210130
 - Fixed bugs with filters for BOE items and items in Equipment Sets
 - Addressed enabling/disabling of Disenchant button if a user enters combat

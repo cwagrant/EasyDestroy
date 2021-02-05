@@ -1,11 +1,12 @@
 ## Interface: 90002
-## Version: 1.2.2
+## Version: 1.3.0
 ## Title: EasyDestroy
 ## Notes: Makes disenchanting easy!
 ## Author: Cwagrant
 ## X-License: MIT License
 ## X-Category: Professions
 ## SavedVariables: EasyDestroyData
+## SavedVariablePerCharacter: EasyDestroyFavorites
 
 ## X-Curse-Project-ID: 414637
 ## X-Website: https://github.com/cwagrant/EasyDestroy

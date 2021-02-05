@@ -41,7 +41,7 @@ function EasyDestroy_EventHandler(self, event, ...)
 	elseif event == "UNIT_SPELLCAST_INTERRUPTED" then
 		local who, _, what = ... 
 		if who=="player" and what==13262 then
-			EasyDestroyDebug("Disenchant Interrupted")
+			EasyDestroy.Debug("Disenchant Interrupted")
 			EasyDestroyButton:Enable()
 		end
 	elseif event == "UNIT_SPELLCAST_FAILED" then
@@ -59,7 +59,7 @@ function EasyDestroy_EventHandler(self, event, ...)
 		if name == EasyDestroy.AddonName then
 			EasyDestroy.AddonLoaded = true
 			EasyDestroy:Initialize()
-			EasyDestroy:InitFilters()
+			EasyDestroyFilters:SetupWindow()
 
 			if EasyDestroyData then 
 				EasyDestroy.Data = EasyDestroyData
@@ -68,13 +68,15 @@ function EasyDestroy_EventHandler(self, event, ...)
 				EasyDestroy.Data = {}
 				EasyDestroy.DataLoaded = true
 			end
+			
+			EasyDestroy.Data = EasyDestroy:UpdateDBFormat(EasyDestroy.Data)
 			EasyDestroy.Data.Filters = EasyDestroy.Data.Filters or {}
 			EasyDestroy.Data.Options = EasyDestroy.Data.Options or {}
-			EasyDestroy.Test = {}
 			EasyDestroy.CurrentFilter = EasyDestroy.EmptyFilter
+
 			UIDropDownMenu_Initialize(EasyDestroyDropDown, EasyDestroy_InitDropDown)
+			
 			if GetTableSize(EasyDestroy.Data.Filters)>0 then
-				tinsert(EasyDestroy.Test, "Loaded filters, count > 0")
 				for k, filterObj in pairs(EasyDestroy.Data.Filters) do
 					if filterObj.properties.favorite then
 						UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, k)
@@ -85,7 +87,7 @@ function EasyDestroy_EventHandler(self, event, ...)
 			else
 				UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, 0)
 			end
-			UIDropDownMenu_Initialize(EasyDestroyFilterTypes, EasyDestroy_InitFilterTypes)
+
 		end
 	elseif event=="PLAYER_LOGOUT" then
 		if EasyDestroy.DataLoaded then
@@ -101,26 +103,6 @@ function EasyDestroy_OnUpdate(self, delay)
 		EasyDestroy.FilterChanged = false
 	end
 end
-
-function EasyDestroy_DropDownSelect(self, arg1, arg2, checked)
-	EasyDestroy.Debug("SetSelectedValue", self.value)
-	EasyDestroy.FilterSaveWarned = false
-	UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, self.value)
-	if self.value == 0 then
-		EasyDestroy_ClearFilterFrame()
-		EasyDestroy.CurrentFilter = EasyDestroy.EmptyFilter
-	else
-		EasyDestroy_LoadFilter(self.value)
-		EasyDestroy.CurrentFilter = EasyDestroy.Data.Filters[self.value]
-		EasyDestroy.CurrentFilter.fid = self.value
-	end
-	EasyDestroy_Refresh()
-end
---[[
-function EasyDestroy_DestroySpellSelect(self, arg1, arg2, checked)
-	EasyDestroy.Debug("SetSelectedValue", self.value)
-	UIDropDownMenu_SetSelectedValue(EasyDestroyDestroyType, self.value)
-end]]
 
 SLASH_OPENUI1 = "/edestroy";
 SLASH_OPENUI2 = "/ed";
@@ -144,6 +126,7 @@ function SlashCmdList.OPENUI(msg)
 	end
 end
 
+-- Generally should just set EasyDestroy.FilterChanged = true to refresh the window with the most recent settings for the filter
 function EasyDestroy_Refresh()
 	EasyDestroy.FilterChanged = true
 end
@@ -170,15 +153,23 @@ EasyDestroyButton:SetScript("PostClick", function(self)
 	end
 )
 
+EasyDestroyFrameSearchTypes.Search:SetScript("OnClick", EasyDestroySearchTypes_OnClick)
+EasyDestroyFrameSearchTypes.Blacklist:SetScript("OnClick", EasyDestroySearchTypes_OnClick)
+
 EasyDestroy_OpenFilters:SetScript("OnClick", EasyDestroy_ToggleFilters)
-EasyDestroyFilters_Save:SetScript("OnClick", EasyDestroyFilters_SaveFilter)
-EasyDestroyFilters_Delete:SetScript("OnClick", EasyDestroyFilters_DeleteFilter)
+EasyDestroyFilters_Save:SetScript("OnClick", function() EasyDestroyFilters.SaveFilter() end)
+-- EasyDestroyFilters_Delete:SetScript("OnClick", EasyDestroyFilters_DeleteFilter)
+EasyDestroyFilters_Delete:SetScript("OnClick", function() StaticPopup_Show("ED_CONFIRM_DELETE_FILTER", EasyDestroyFilters:GetFilterName()) end)
 EasyDestroyFilters_NewFromFilter:SetScript("OnClick", EasyDestroyFilters_CreateNewFromCurrent)
 EasyDestroyFilters_New:SetScript("OnClick", function() 
 	EasyDestroy_ClearFilterFrame() 
 	EasyDestroy_InitDropDown()
 	EasyDestroy_ResetFilterStack()
 	UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, 0) 
+	if EasyDestroy:IncludeBlacklists() and not EasyDestroy:IncludeSearches() then
+		EasyDestroyFrameSearchTypes.Blacklist:SetChecked(true)
+	end
 	EasyDestroy_Refresh() end
 )
+
 

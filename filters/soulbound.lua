@@ -12,17 +12,11 @@ local filter = {}
 
 local EasyDestroyFilters = EasyDestroyFilters
 
-function filter:RegisterFilter()
-    -- give the filter a name (not currently used), a key, and a blank frame.
-    filter.name="Ignore BOE Items By Quality"
-    filter.key = "boequality"
-    filter.frame = nil
-    filter.height = 65
-    EasyDestroyFilters[filter.key] = filter.Check
-    EasyDestroyFilters.Registry[filter.key] = filter
-    --quick and dirty, need to have some kind of function on the part of the addon to do this
-    UIDropDownMenu_Initialize(EasyDestroyFilterTypes, EasyDestroy_InitFilterTypes)
-end
+filter.name="Ignore BOE Items By Quality"
+filter.key = "boequality"
+filter.frame = nil
+filter.height = 65
+
 
 function filter:GetItemInfo(itemLink, bag, slot)
     local itemLoc = ItemLocation:CreateFromBagAndSlot(bag, slot)
@@ -133,5 +127,4 @@ function filter:Clear()
     end
 end
 
-
-filter:RegisterFilter()
+EasyDestroyFilters:RegisterFilter(filter)

@@ -6,10 +6,6 @@ EasyDestroy.AddonLoaded = false
 EasyDestroy.CurrentFilter = {}
 EasyDestroy.FilterChanged = false
 EasyDestroy.FilterSaveWarned = false
-EasyDestroy.Errors = {}
-EasyDestroy.Errors.None = nil
-EasyDestroy.Errors.Name ="ED_ERROR_NAME"
-EasyDestroy.Errors.Favorite = "ED_ERROR_FAVORITE"
 
 EasyDestroy.DestroyTypes = {}
 EasyDestroy.DestroyTypes.DISENCHANT = "DISENCHANT"
@@ -18,6 +14,20 @@ EasyDestroy.DestroyTypes.PROSPECT = "PROSPECT"
 EasyDestroy.WarnedLootOpen = false
 EasyDestroy.DestroyFilters = {}
 EasyDestroy.DestroyFilters[EasyDestroy.DestroyTypes.DISENCHANT] = {{itype=LE_ITEM_CLASS_WEAPON, stype=nil}, {itype=LE_ITEM_CLASS_ARMOR, stype=nil}}
+
+ED_FILTER_TYPES = {}
+ED_FILTER_TYPE_SEARCH = 1
+ED_FILTER_TYPE_BLACKLIST = 2
+tinsert(ED_FILTER_TYPES, ED_FILTER_TYPE_SEARCH, 'Search')
+tinsert(ED_FILTER_TYPES, ED_FILTER_TYPE_BLACKLIST, 'Blacklist')
+
+ED_ERROR_TYPES = {}
+ED_ERROR_NONE = 1
+ED_ERROR_NAME = 2
+ED_ERROR_FAVORITE = 3
+tinsert(ED_ERROR_TYPES, ED_ERROR_NONE, 'None')
+tinsert(ED_ERROR_TYPES, ED_ERROR_NAME, 'Name')
+tinsert(ED_ERROR_TYPES, ED_ERROR_FAVORITE, 'Favorite')
 
 
 
@@ -111,8 +121,15 @@ function GetTableSize(t)
 	return count
 end
 
--- function to give me something more akin to python's "in" operator.
-function _in_(checkTable, checkValue)
+function EasyDestroy.Keys(tbl)
+	local rtn = {}
+	for k, v in pairs(tbl) do
+		tinsert(rtn, k)
+	end
+	return rtn
+end
+
+function EasyDestroy.InKeys(checkTable, checkValue)
 	for k, v in pairs(checkTable) do
 		if k == checkValue then
 			return true
@@ -120,6 +137,29 @@ function _in_(checkTable, checkValue)
 	end
 	return false
 end
+
+function EasyDestroy.Error(txt)
+	print(string.format("|cFFFF0000%s|r", txt))
+end
+
+function EasyDestroy:UpdateDBFormat(data)
+	version, subversion, patch = strsplit(".", EasyDestroy.Version)
+	version, subversion, patch = tonumber(version), tonumber(subversion), tonumber(patch)
+
+	if version >=1 and subversion >=2 and patch >=3 then
+		if data.Filters ~= nil then
+			for k, v in pairs(data.Filters) do
+				if v.properties.type == nil then
+					v.properties.type = ED_FILTER_TYPE_SEARCH
+				end
+			end
+		end
+	end
+
+	return data
+end
+
+
 
 
 

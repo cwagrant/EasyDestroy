@@ -9,22 +9,12 @@ Registerable filters require 4 things.
 ]]
 
 local filter = {}
+EasyDestroyFilters = EasyDestroyFilters
 
-local EasyDestroyFilters = EasyDestroyFilters
-
-function filter:RegisterFilter()
-    -- give the filter a name (not currently used), a key, and a blank frame.
-    filter.name="Item Level"
-    filter.key = "level"
-    filter.frame = nil
-    filter.height = 20
-    filter.width = 100
-    --filter.getiteminfo = filter.GetItemInfo
-    EasyDestroyFilters[filter.key] = filter.Check
-    EasyDestroyFilters.Registry[filter.key] = filter
-    --quick and dirty, need to have some kind of function on the part of the addon to do this
-    UIDropDownMenu_Initialize(EasyDestroyFilterTypes, EasyDestroy_InitFilterTypes)
-end
+filter.name = "Item Level"
+filter.key = "level"
+filter.frame = nil
+filter.height = 20
 
 -- EasyDestroy passes 3 values to this function, itemlink, bag, and slot. 
 function filter:GetItemInfo(ilink)
@@ -112,4 +102,4 @@ function filter:Clear()
     end
 end
 
-filter:RegisterFilter()
+EasyDestroyFilters:RegisterFilter(filter)

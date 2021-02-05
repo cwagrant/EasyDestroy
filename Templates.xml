@@ -9,7 +9,7 @@
 		<Layer level="OVERLAY">
 			<FontString name="$parentLabel" parentKey="label" inherits="GameFontNormalSmall">
 				<Anchors>
-					<Anchor point="LEFT"/>
+					<Anchor point="LEFT" x="12"/>
 				</Anchors>
 			</FontString>
 		</Layer>
@@ -21,7 +21,7 @@
 			</Size>
 			<Anchors>
 				<Anchor point="LEFT" relativeKey="$parent.label" relativePoint="RIGHT" x="10"/>
-				<Anchor point="RIGHT" x="-4"/>
+				<Anchor point="RIGHT" x="-12"/>
 			</Anchors>
 			<Scripts>
 				<OnEnterPressed>
@@ -43,7 +43,7 @@
 		<Layer level="OVERLAY">
 			<FontString name="$parentLabel" parentKey="label" inherits="GameFontNormalSmall">
 				<Anchors>
-					<Anchor point="LEFT"/>
+					<Anchor point="LEFT" x="12"/>
 				</Anchors>
 			</FontString>
 		</Layer>
@@ -158,7 +158,7 @@
 
 <Frame name="EasyDestroyRarityFilter" virtual="true">
 	<Size>
-		<AbsDimension x="0" y="65"/>
+		<AbsDimension x="0" y="70"/>
 	</Size>
 	<Layers>	
 		<Layer>

@@ -4,7 +4,7 @@
  
 <Frame name="EasyDestroyFrame" inherits="UIPanelDialogTemplate" hidden="false" movable="true" parent="UIParent">
 	<Size>
-		<AbsDimension x="340" y ="320"/>
+		<AbsDimension x="340" y ="380"/>
 	</Size>
 	<Anchors>
 		<Anchor point="CENTER"/>
@@ -111,10 +111,41 @@
 				<Anchor point="BOTTOMRIGHT" relativeTo="EasyDestroyFrameDialogBG"/>
 			</Anchors>
 			<Frames>
+				<Frame name="$parentTypes" parentKey="Types">
+					<Anchors>
+						<Anchor point="TOPLEFT" x="8" y="-8"/>
+						<Anchor point="TOPRIGHT" x="-8" y="-8"/>
+					</Anchors>
+					<Size>
+						<AbsDimension x="0" y="20"/>
+					</Size>
+					<Frames>
+						<CheckButton name="$parentSearch" parentKey="Search" parentArray="Types" inherits="EasyDestroyCheckboxTemplate">
+							<Anchors>
+								<Anchor point="TOPLEFT" x="20" y="-12"/>
+							</Anchors>
+							<Scripts>
+								<OnClick>
+									EasyDestroy.FilterChanged = true
+								</OnClick>
+							</Scripts>
+						</CheckButton>
+						<CheckButton name="$parentBlacklist" inherits="EasyDestroyCheckboxTemplate" parentKey="Blacklist" parentArray="Types" >
+							<Anchors>
+								<Anchor point="TOPLEFT" relativePoint="TOP" x="20" y="-12"/>
+							</Anchors>
+							<Scripts>
+								<OnClick>
+									EasyDestroy.FilterChanged = true
+								</OnClick>
+							</Scripts>
+						</CheckButton>
+					</Frames>
+				</Frame>
 				<Frame name="EasyDestroyDropDown" parentKey="DropDown" inherits="UIDropDownMenuTemplate">
 					<Anchors>
-						<Anchor point="TOPLEFT" x="8"  y="-8"/>
-						<Anchor point="TOPRIGHT" x="-8" y="-8"/>
+						<Anchor point="TOPLEFT" relativeTo="$parentTypes" relativePoint="BOTTOMLEFT" x="-4"  y="-30"/>
+						<Anchor point="TOPRIGHT" relativeTo="$parentTypes" relativePoint="BOTTOMRIGHT" x="-8" y="-30"/>
 					</Anchors>
 				</Frame>
 			</Frames>
