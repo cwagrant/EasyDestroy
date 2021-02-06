@@ -1,7 +1,7 @@
 --Addon settings
 EasyDestroy = EasyDestroy
 
-local GetItemInfo, GetContainerItemInfo, GetContainerItemID = GetItemInfo, GetContainerItemInfo, GetContainerItemID
+--local GetItemInfo, GetContainerItemInfo, GetContainerItemID = GetItemInfo, GetContainerItemInfo, GetContainerItemID
 
 local separatorInfo = {
 	owner = EasyDestroyDropDown;
@@ -231,7 +231,7 @@ function EasyDestroy:FindItemsToDestroy(filter)
 						if blacklist.properties.type == ED_FILTER_TYPE_BLACKLIST then 
 							for k, v in pairs(blacklist.filter) do
 								if not filterRegistry[k] then
-									printed("Unsupported filter: " .. k)
+									print("Unsupported filter: " .. k)
 								else
 									if filterRegistry[k].Blacklist ~= nil and type(filterRegistry[k].Blacklist) == "function" then
 										if filterRegistry[k]:Blacklist(v, item) then

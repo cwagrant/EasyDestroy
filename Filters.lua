@@ -215,7 +215,7 @@ end
 
 function EasyDestroyFilters:HaveTransmog(itemlink)
 	local appearance = C_TransmogCollection.GetItemInfo(itemlink);
-	if apperance then 
+	if appearance then 
 		local sources = C_TransmogCollection.GetAppearanceSources(appearance);
 		if sources then
 			for k, v in pairs(sources) do

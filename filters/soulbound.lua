@@ -9,7 +9,7 @@ Registerable filters require 4 things.
 ]]
 
 local filter = {}
-local ItemLocation, C_Item = ItemLocation, C_Item
+--local ItemLocation, C_Item = ItemLocation, C_Item
 
 local EasyDestroyFilters = EasyDestroyFilters
 
