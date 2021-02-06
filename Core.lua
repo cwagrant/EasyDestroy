@@ -154,7 +154,7 @@ function EasyDestroy:UpdateDBFormat(data)
 	local version, subversion, patch = strsplit(".", EasyDestroy.Version)
 	version, subversion, patch = tonumber(version), tonumber(subversion), tonumber(patch)
 
-	if version >=1 and subversion >=2 and then
+	if (version == 1 and subversion >=2) or (version>=1) then
 		if data.Filters ~= nil then
 			for k, v in pairs(data.Filters) do
 				if v.properties.type == nil then
