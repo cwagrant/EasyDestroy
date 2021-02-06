@@ -9,6 +9,7 @@ Registerable filters require 4 things.
 ]]
 
 local filter = {}
+local ItemLocation, C_Item = ItemLocation, C_Item
 
 local EasyDestroyFilters = EasyDestroyFilters
 
@@ -63,6 +64,21 @@ function filter:Check(inputquality, item)
 
     end
     return true
+end
+
+function filter:Blacklist(inputquality, item)
+    if filter.frame then
+        local itemquality = item.quality
+        local itembound = item.boequality
+        local bindtype = item.bindtype
+
+        if bindtype == LE_ITEM_BIND_ON_EQUIP then
+            if tContains(inputquality, itemquality) and not(item.boequality) then
+                return true
+            end
+        end
+    end
+    return false
 end
 
 function filter.GetRarityChecked(rarityType)

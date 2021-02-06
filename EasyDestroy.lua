@@ -1,6 +1,8 @@
 --Addon settings
 EasyDestroy = EasyDestroy
 
+local GetItemInfo, GetContainerItemInfo, GetContainerItemID = GetItemInfo, GetContainerItemInfo, GetContainerItemID
+
 local separatorInfo = {
 	owner = EasyDestroyDropDown;
 	hasArrow = false;
@@ -80,6 +82,7 @@ function EasyDestroy:Initialize()
 	EasyDestroy.EasyDestroyTest:SetScript("OnClick", function(self)
 		print("CountItemsFound", #EasyDestroy:FindItemsToDestroy(EasyDestroy.CurrentFilter) or 0)
 		print("Filter", UIDropDownMenu_GetSelectedValue(EasyDestroyDropDown))
+		print("Filter ID", EasyDestroyFilters.CurrentFilterID)
 		pprint(EasyDestroy.CurrentFilter)
 	end)
 	
@@ -176,7 +179,7 @@ function EasyDestroy:FindItemsToDestroy(filter)
 				item.mog = EasyDestroyFilters:HaveTransmog(item.link);
 				item.id = GetContainerItemID(bag, slot);
 				item.bindtype = select(14, GetItemInfo(item.link))
-
+				-- GetContainerItemInfo GetContainerItemID
 				if not item.name then -- Because unlike Jim Croce, Mythic Keystones do not, in fact, have a name.
 					item.name = "Blizzard Didn't Name This Item"
 				end
@@ -192,10 +195,15 @@ function EasyDestroy:FindItemsToDestroy(filter)
 					if not filterRegistry[k] then
 						print("Unsupported filter: " .. k)
 					else
-						if not filterRegistry[k]:Check(v, item) then
+						if filter.properties.type == ED_FILTER_TYPE_BLACKLIST and filterRegistry[k].Blacklist ~= nil and type(filterRegistry[k].Blacklist) == "function" then
+							if not filterRegistry[k]:Blacklist(v, item) then
+								matchfound = false
+								break
+							end
+						elseif not filterRegistry[k]:Check(v, item) then
 							matchfound = false
 							break
-						end
+						end	
 					end
 					matchfound = true
 				end
@@ -225,10 +233,15 @@ function EasyDestroy:FindItemsToDestroy(filter)
 								if not filterRegistry[k] then
 									printed("Unsupported filter: " .. k)
 								else
-									if filterRegistry[k]:Check(v, item) then
+									if filterRegistry[k].Blacklist ~= nil and type(filterRegistry[k].Blacklist) == "function" then
+										if filterRegistry[k]:Blacklist(v, item) then
+											matchfound = false
+											break
+										end
+									elseif filterRegistry[k]:Check(v, item) then
 										matchfound = false
 										break
-									end
+									end									
 								end
 							end
 						end
@@ -269,6 +282,9 @@ function EasyDestroy:DisenchantItem()
 	
 	if not IsSpellKnown(13262) then
 		print ("You must have disenchanting to disenchant this item.")
+		return
+	elseif EasyDestroyFilters.Blacklist:GetChecked() then
+		StaticPopup_Show("ED_CANT_DISENCHANT_BLACKLIST")
 		return
 	elseif not IsUsableSpell(13262) then
 		print("You cannot disenchant that item right now.")
@@ -337,6 +353,10 @@ function EasyDestroyItemsScrollBar_Update(callbackFunction)
 		callbackFunction()
 	end
 	EasyDestroy.Debug("Completed Scroll Frame Update")
+
+	if EasyDestroyFrame_FoundItemsCount ~= nil then 
+		EasyDestroyFrame_FoundItemsCount:SetText(#itemList .. " Item(s) Found")
+	end
 end
 
 function EasyDestroy_ToggleFilters()

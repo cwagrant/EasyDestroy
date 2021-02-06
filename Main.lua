@@ -167,7 +167,7 @@ EasyDestroyFilters_New:SetScript("OnClick", function()
 	EasyDestroy_ResetFilterStack()
 	UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, 0) 
 	if EasyDestroy:IncludeBlacklists() and not EasyDestroy:IncludeSearches() then
-		EasyDestroyFrameSearchTypes.Blacklist:SetChecked(true)
+		EasyDestroyFrameSearchTypes.Search:SetChecked(true)
 	end
 	EasyDestroy_Refresh() end
 )

@@ -29,6 +29,14 @@ tinsert(ED_ERROR_TYPES, ED_ERROR_NONE, 'None')
 tinsert(ED_ERROR_TYPES, ED_ERROR_NAME, 'Name')
 tinsert(ED_ERROR_TYPES, ED_ERROR_FAVORITE, 'Favorite')
 
+StaticPopupDialogs["ED_CANT_DISENCHANT_BLACKLIST"] = {
+	text = "You cannot disenchant items on the blacklist.|n|nYou are currently editing a blacklist filter.",
+	button1 = "Okay",
+	timeout = 30,
+	whileDead = false,
+	hideOnEscape = true,
+	preferredIndex = 3,
+}
 
 
 --[[

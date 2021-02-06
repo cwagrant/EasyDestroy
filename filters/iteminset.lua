@@ -10,11 +10,11 @@ filter.height = 20
 
 function filter:GetFilterFrame()
     filter.frame = filter.frame or CreateFrame("Frame", "EDFilterItemInSet", EasyDestroyFilters)
-    filter.checkbox = CreateFrame("CheckButton", nil, filter.frame, "EasyDestroyCheckboxTemplate")
+    filter.checkbox = filter.checkbox or CreateFrame("CheckButton", nil, filter.frame, "EasyDestroyCheckboxTemplate")
     filter.checkbox:SetPoint("LEFT")
     filter.checkbox.label:SetText(filter.name)
     filter.checkbox:SetChecked(false)
-    filter.checkbox:SetScript("OnClick", EasyDestroy_Refresh)
+    --filter.checkbox:SetScript("OnClick", EasyDestroy_Refresh)
     return filter.frame
 end
 
@@ -37,12 +37,21 @@ end
 
 function filter:Check(excludeset, item)
     local inset = item.eqset
-    if excludeset then 
-        return not(inset)
+    if excludeset and inset then 
+        return false
     else
         return true
     end
 
+end
+
+function filter:Blacklist(excludeset, item)
+    local inset = item.eqset
+    if excludeset and inset then
+        return true
+    else
+        return false
+    end
 end
 
 

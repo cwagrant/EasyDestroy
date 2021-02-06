@@ -10,6 +10,13 @@
 		<Anchor point="CENTER"/>
 	</Anchors>
 	<Layers>
+		<Layer level="OVERLAY">
+			<FontString name="$parent_FoundItemsCount" parentKey="FoundItemsCount" inherits="GameFontHighlight">
+				<Anchors>
+					<Anchor point="BOTTOM" x="0" y="24"/>
+				</Anchors>
+			</FontString>
+		</Layer>
 	</Layers>
 	<Frames>
 		<Frame parentKey="TitleBar">

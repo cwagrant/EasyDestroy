@@ -1,6 +1,7 @@
 EasyDestroy = EasyDestroy
 EasyDestroyFilters.Registry = {}
 EasyDestroyFilters.FilterStack = {}
+EasyDestroyFilters.CurrentFilterID = nil
 --[[
 filters = {
 	Armor Type = Cloth, Leather, Mail, Plate
@@ -280,8 +281,10 @@ function EasyDestroyFilters.SaveFilter(skipFavoriteCheck)
 	local FilterID = UIDropDownMenu_GetSelectedValue(EasyDestroyDropDown)
 
 	-- if we are creating a new filter, then give it an ID
-	if FilterID == 0 then
+	if FilterID == 0 and not EasyDestroyFilters.CurrentFilterID then
 		FilterID = "FilterID" .. EasyDestroyFilters:GetNextFilterID()
+	elseif EasyDestroyFilters.CurrentFilterID ~= nil and EasyDestroyFilters.CurrentFilterID ~= 0 then
+		FilterID = EasyDestroyFilters.CurrentFilterID
 	end
 
 	local filter = EasyDestroy:GenerateFilter()
@@ -440,6 +443,7 @@ function EasyDestroy_ClearFilterFrame()
 	EasyDestroyFilters:SetFilterName("")
 	EasyDestroyFilters_FavoriteIcon:SetChecked(false)
 	EasyDestroyFilters.Blacklist:SetChecked(false)
+	EasyDestroyFilters.CurrentFilterID = nil
 end
 
 -- loops through the filter registry, clears/hides any active filters, and sets the filterstack to an empty list.
@@ -458,6 +462,7 @@ function EasyDestroy_LoadFilter(fid)
 	EasyDestroy_ResetFilterStack()
 	EasyDestroy:Debug("Loading Filter", fid)
 	local filter = EasyDestroy.Data.Filters[fid]
+	EasyDestroyFilters.CurrentFilterID = fid
 
 	EasyDestroyFilters:SetFilterName(filter.properties.name) --_FilterName.input:SetText(filter.properties.name)
 	EasyDestroyFilters_FavoriteIcon:SetChecked(filter.properties.favorite)
