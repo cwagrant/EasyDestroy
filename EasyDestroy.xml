@@ -13,7 +13,7 @@
 		<Layer level="OVERLAY">
 			<FontString name="$parent_FoundItemsCount" parentKey="FoundItemsCount" inherits="GameFontHighlight">
 				<Anchors>
-					<Anchor point="BOTTOM" x="0" y="24"/>
+					<Anchor point="BOTTOM" x="0" y="44`"/>
 				</Anchors>
 			</FontString>
 		</Layer>
@@ -180,6 +180,15 @@
 			</Size>
 			<Anchors>
 				<Anchor point="BOTTOMRIGHT" relativeTo="EasyDestroyFrameSearch" x="-10" y="10"/>
+			</Anchors>
+		</Button>
+		<Button name="EasyDestroy_OpenBlacklist" inherits="UIPanelButtonTemplate" text="Item Blacklist">
+			<Size>
+				<AbsDimension x="90" y="22"/>
+			</Size>
+			<Anchors>
+				<Anchor point="TOPLEFT" relativeTo="EasyDestroyButton" relativePoint="TOPRIGHT" x="24"/>
+				<Anchor point="BOTTOMRIGHT" relativeTo="EasyDestroy_OpenFilters" relativePoint="BOTTOMLEFT" x="-24"/>
 			</Anchors>
 		</Button>
 	</Frames>

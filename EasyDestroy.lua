@@ -165,6 +165,7 @@ end
 function EasyDestroy:FindItemsToDestroy(filter)
 	-- item = {keyinteger, bag, slot, itemlink}
 	local matchfound = nil
+	local typematch = false
 	local items = {}
 	local itemkey = 0
 	local filterRegistry = EasyDestroyFilters.Registry
@@ -172,6 +173,7 @@ function EasyDestroy:FindItemsToDestroy(filter)
 	for bag = 0, NUM_BAG_SLOTS do
 		for slot=1, GetContainerNumSlots(bag) do
 			matchfound = nil
+			typematch = false
 			local item = {};
 			item.link = select(7, GetContainerItemInfo(bag, slot));
 			if item.link then 
@@ -190,70 +192,67 @@ function EasyDestroy:FindItemsToDestroy(filter)
 					end
 				end
 				
-				
-				for k, v in pairs(filter.filter) do
-					if not filterRegistry[k] then
-						print("Unsupported filter: " .. k)
-					else
-						if filter.properties.type == ED_FILTER_TYPE_BLACKLIST and filterRegistry[k].Blacklist ~= nil and type(filterRegistry[k].Blacklist) == "function" then
-							if not filterRegistry[k]:Blacklist(v, item) then
+				-- not a true loop, just an easy way to shortcircuit the checks if any of them fail
+				-- this way we can skip unnecessary checks and hopefully speed things up a bit
+				while (true) do
+					-- Ignore items that are junk or > legendary.
+					if item.quality and (item.quality < 1 or item.quality > 4) then
+						matchfound = false
+						break
+					end
+
+					for k, v in pairs(filter.filter) do
+						if not filterRegistry[k] then
+							print("Unsupported filter: " .. k)
+						else
+							if filter.properties.type == ED_FILTER_TYPE_BLACKLIST and filterRegistry[k].Blacklist ~= nil and type(filterRegistry[k].Blacklist) == "function" then
+								if not filterRegistry[k]:Blacklist(v, item) then
+									matchfound = false
+									break
+								end
+							elseif not filterRegistry[k]:Check(v, item) then
 								matchfound = false
 								break
-							end
-						elseif not filterRegistry[k]:Check(v, item) then
-							matchfound = false
-							break
-						end	
-					end
-					matchfound = true
-				end
-				
-				--[[ Filter out types/subtypes that don't matter for the current action ]]--
-				local typematch = false
-				if matchfound then
-					for k, v in ipairs(EasyDestroy.DestroyFilters[EasyDestroy.DestroyAction]) do
-						if v.itype == item.type then
-							if not v.stype then
-								typematch = true
-							elseif v.stype == item.subtype then
-								typematch = true
-							end
+							end	
 						end
+						matchfound = true
 					end
-				end
+					
+					if not matchfound then break end
 
-				-- [[ PLACEHOLDER: BLACKLIST LOGIC ]]
-				-- if there was a match so far, then lets check it against blacklists
-				-- if the filter we are looking at is a blacklist, then lets ignore this
-				-- so that we can see what items would be caught by the blacklist filter we are creating
-				if matchfound and filter.properties.type ~= ED_FILTER_TYPE_BLACKLIST then 
-					for fid, blacklist in pairs(EasyDestroy.Data.Filters) do
-						if blacklist.properties.type == ED_FILTER_TYPE_BLACKLIST then 
-							for k, v in pairs(blacklist.filter) do
-								if not filterRegistry[k] then
-									print("Unsupported filter: " .. k)
-								else
-									if filterRegistry[k].Blacklist ~= nil and type(filterRegistry[k].Blacklist) == "function" then
-										if filterRegistry[k]:Blacklist(v, item) then
-											matchfound = false
-											break
-										end
-									elseif filterRegistry[k]:Check(v, item) then
-										matchfound = false
-										break
-									end									
+					--[[ Filter out types/subtypes that don't matter for the current action ]]--
+					if matchfound then
+						for k, v in ipairs(EasyDestroy.DestroyFilters[EasyDestroy.DestroyAction]) do
+							if v.itype == item.type then
+								if not v.stype then
+									typematch = true
+								elseif v.stype == item.subtype then
+									typematch = true
 								end
 							end
 						end
-						-- we found a match in the blacklist, so disregard this item and quit searching additional blacklists
-						if not matchfound then break end
 					end
-				end
-				
-				-- can't typically disenchant cosmetic items. This filters them out (hopefully)
-				-- Not sure about cosmetic weapons...
-				if item.type==LE_ITEM_CLASS_ARMOR and item.subtype == LE_ITEM_ARMOR_COSMETIC then
-					matchfound = false
+					if not typematch then break end
+
+					-- this is a check of the "item" blacklist
+					if filter.properties.type ~= ED_FILTER_TYPE_BLACKLIST and EasyDestroy.ItemInBlacklist(item.id, item.name, item.quality, item.level) then
+						matchfound = false
+						break
+					end
+					
+					-- this is a check of blacklist type filters
+					if filter.properties.type ~= ED_FILTER_TYPE_BLACKLIST and EasyDestroy:InFilterBlacklist(item) then 
+						matchfound = false
+						break
+					end
+					
+					-- can't typically disenchant cosmetic items. This filters them out (hopefully)
+					-- Not sure about cosmetic weapons...
+					if item.type==LE_ITEM_CLASS_ARMOR and item.subtype == LE_ITEM_ARMOR_COSMETIC then
+						matchfound = false
+						break
+					end
+					break
 				end
 				
 				if matchfound and typematch then
@@ -264,6 +263,50 @@ function EasyDestroy:FindItemsToDestroy(filter)
 		end
 	end
 	return items
+end
+
+-- Unlike the whitelist, where an item just needs to fail at least one criteria (or)
+-- the blacklist needs to fail an item based on all the criteria (and).
+--[[
+	for each blacklist:
+	- reset the criteriaTable
+	- if item matches a filter, insert true
+	- if item fails to match a filter, insert false
+	- if there are no false values in criteriaTable, an item matches the blacklist
+	- if the item matches ANY blacklist, then the item is excluded (return true)
+]]
+function EasyDestroy:InFilterBlacklist(item)
+	local filterRegistry = EasyDestroyFilters.Registry
+	local criteriaTable = {}
+	local matchesAny = false
+	for fid, blacklist in pairs(EasyDestroy.Data.Filters) do
+		if blacklist.properties.type == ED_FILTER_TYPE_BLACKLIST then
+			wipe(criteriaTable)
+			for k, v in pairs(blacklist.filter) do
+				if filterRegistry[k].Blacklist ~= nil and type(filterRegistry[k].Blacklist == "function") then
+					if filterRegistry[k]:Blacklist(v, item) then
+						tinsert(criteriaTable, true)
+					else
+						tinsert(criteriaTable, false)
+					end
+				elseif filterRegistry[k]:Check(v, item) then
+					--print(blacklist.properties.name, filterRegistry[k].name, v, item.link)
+					tinsert(criteriaTable, true)
+				else
+					tinsert(criteriaTable, false)			
+				end
+			end
+			if not tContains(criteriaTable, false) then 
+				matchesAny = true	
+			end
+		end
+		-- short circuit on a match
+		if matchesAny then
+			return true
+		end
+	end
+	return matchesAny
+	--return true
 end
 
 function EasyDestroy:DisenchantItem()
@@ -389,6 +432,7 @@ function EasyDestroy_DropDownSelect(self, arg1, arg2, checked)
 	UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, self.value)
 	if self.value == 0 then
 		EasyDestroy_ClearFilterFrame()
+		EasyDestroy_ResetFilterStack()
 		EasyDestroy.CurrentFilter = EasyDestroy.EmptyFilter
 	else
 		EasyDestroy_LoadFilter(self.value)

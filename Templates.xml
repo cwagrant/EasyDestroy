@@ -131,9 +131,11 @@
 			local width = GetScreenWidth() or 0
 			local anchor = "ANCHOR_RIGHT"
 			if x > (width/2) then anchor="ANCHOR_LEFT" end
-			GameTooltip:SetOwner(self, anchor)
-			GameTooltip:SetHyperlink(self.Item.itemLink)
-			GameTooltip:Show()
+			if self.Item.itemLink then 
+				GameTooltip:SetOwner(self, anchor)
+				GameTooltip:SetHyperlink(self.Item.itemLink)
+				GameTooltip:Show()
+			end
 		</OnEnter>
 		<OnLeave>
 			GameTooltip:Hide()
@@ -228,6 +230,92 @@
 		<EdgeSize val="2"/>
 		<BorderColor a="1" r="0.99" g="0.81" b="0"/>
 	</Backdrop>
+</Frame>
+<Frame name="EasyDestroyItemScrollTemplate" inherits="BackdropTemplate" virtual="true">
+	<Anchors>
+		<Anchor point="TOPLEFT" x="4"/>
+		<Anchor point="BOTTOMRIGHT" x="-4"/>
+	</Anchors>
+	<Frames>
+		<ScrollFrame name="$parentScrollFrame" parentKey="ScrollFrame" inherits="FauxScrollFrameTemplate">
+			<Anchors>
+				<Anchor point="TOPLEFT" RelativeTo="$parent" x="0" y="-5"/>
+				<Anchor point="BOTTOMRIGHT" RelativeTo="$parent" x="0" y="5"/>
+			</Anchors>
+			<!--<Scripts>
+				<OnVerticalScroll>
+					FauxScrollFrame_OnVerticalScroll(self, offset, 24, EasyDestroyItemsScrollBar_Update);
+				</OnVerticalScroll>
+			</Scripts>-->
+			<Size>
+				<AbsDimension x="31" y="239"/>
+			</Size>
+		</ScrollFrame>
+		<Button name="$parentItem1" inherits="EasyDestroyItemTemplate">
+			<Anchors>
+				<Anchor point="TOPRIGHT" RelativePoint="TOPRIGHT" RelativeTo="$parent">
+					<Offset>
+						<AbsDimension x="0" y="-4" />
+					</Offset>
+				</Anchor>
+				<Anchor point="LEFT" RelativePoint="LEFT" RelativeTo="$parent" />
+			</Anchors>
+		</Button>
+		<Button name="$parentItem2" inherits="EasyDestroyItemTemplate">
+			<Anchors>
+				<Anchor point="TOPLEFT" RelativePoint="BOTTOMLEFT" RelativeTo="$parentItem1" />
+				<Anchor point="TOPRIGHT" RelativePoint="BOTTOMRIGHT" RelativeTo="$parentItem1" />
+			</Anchors>
+		</Button>
+		<Button name="$parentItem3" inherits="EasyDestroyItemTemplate">
+			<Anchors>
+				<Anchor point="TOPLEFT" RelativePoint="BOTTOMLEFT" RelativeTo="$parentItem2" />
+				<Anchor point="TOPRIGHT" RelativePoint="BOTTOMRIGHT" RelativeTo="$parentItem2" />
+			</Anchors>
+		</Button>
+		<Button name="$parentItem4" inherits="EasyDestroyItemTemplate">
+			<Anchors>
+				<Anchor point="TOPLEFT" RelativePoint="BOTTOMLEFT" RelativeTo="$parentItem3" />
+				<Anchor point="TOPRIGHT" RelativePoint="BOTTOMRIGHT" RelativeTo="$parentItem3" />
+			</Anchors>
+		</Button>
+		<Button name="$parentItem5" inherits="EasyDestroyItemTemplate">
+			<Anchors>
+				<Anchor point="TOPLEFT" RelativePoint="BOTTOMLEFT" RelativeTo="$parentItem4" />
+				<Anchor point="TOPRIGHT" RelativePoint="BOTTOMRIGHT" RelativeTo="$parentItem4" />
+			</Anchors>
+		</Button>
+		<Button name="$parentItem6" inherits="EasyDestroyItemTemplate">
+			<Anchors>
+				<Anchor point="TOPLEFT" RelativePoint="BOTTOMLEFT" RelativeTo="$parentItem5" />
+				<Anchor point="TOPRIGHT" RelativePoint="BOTTOMRIGHT" RelativeTo="$parentItem5" />
+			</Anchors>
+		</Button>
+		<Button name="$parentItem7" inherits="EasyDestroyItemTemplate">
+			<Anchors>
+				<Anchor point="TOPLEFT" RelativePoint="BOTTOMLEFT" RelativeTo="$parentItem6" />
+				<Anchor point="TOPRIGHT" RelativePoint="BOTTOMRIGHT" RelativeTo="$parentItem6" />
+			</Anchors>
+		</Button>
+		<Button name="$parentItem8" inherits="EasyDestroyItemTemplate">
+			<Anchors>
+				<Anchor point="TOPLEFT" RelativePoint="BOTTOMLEFT" RelativeTo="$parentItem7" />
+				<Anchor point="TOPRIGHT" RelativePoint="BOTTOMRIGHT" RelativeTo="$parentItem7" />
+			</Anchors>
+		</Button>
+		<Button name="$parentItem9" inherits="EasyDestroyItemTemplate">
+			<Anchors>
+				<Anchor point="TOPLEFT" RelativePoint="BOTTOMLEFT" RelativeTo="$parentItem8" />
+				<Anchor point="TOPRIGHT" RelativePoint="BOTTOMRIGHT" RelativeTo="$parentItem8" />
+			</Anchors>
+		</Button>
+		<Button name="$parentItem10" inherits="EasyDestroyItemTemplate">
+			<Anchors>
+				<Anchor point="TOPLEFT" RelativePoint="BOTTOMLEFT" RelativeTo="$parentItem9" />
+				<Anchor point="TOPRIGHT" RelativePoint="BOTTOMRIGHT" RelativeTo="$parentItem9" />
+			</Anchors>
+		</Button>
+	</Frames>
 </Frame>
 
 </Ui>

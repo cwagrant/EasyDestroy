@@ -72,6 +72,7 @@ function EasyDestroy_EventHandler(self, event, ...)
 			
 			EasyDestroy.Data.Filters = EasyDestroy.Data.Filters or {}
 			EasyDestroy.Data.Options = EasyDestroy.Data.Options or {}
+			EasyDestroy.Data.Blacklist = EasyDestroy.Data.Blacklist or {}
 			EasyDestroy.CurrentFilter = EasyDestroy.EmptyFilter
 
 			UIDropDownMenu_Initialize(EasyDestroyDropDown, EasyDestroy_InitDropDown)

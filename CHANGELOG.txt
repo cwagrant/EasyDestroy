@@ -1,3 +1,12 @@
+20210207
+- bug fixes
+- Default Filter updated. Now excludes all items that aren't common, uncommon, rare, epic (white, green, blue, purple)
+- Item Blacklist Added
+    - Items are blacklisted based on their itemid, item level, and quality.
+    - Shadowlands Legendaries are filtered by their names due to how they are handled with bonus ids
+- Updated the logic for filtering items to have better short circuiting logic (should improve speed).
+- Added list for item id's that should be filtered out by default. Currently only lists the boards for the mechagon trinket
+
 20210204
 - Added in logic for blacklists
 - Filters now come in two types. Searches (items you want to see) and Blacklists.

@@ -1,8 +1,8 @@
 ## Interface: 90002
-## Version: 1.3.2
+## Version: 1.3.3
 ## Title: EasyDestroy
 ## Notes: Makes disenchanting easy!
-## Author: Cwagrant
+## Author: C.W.A.Grant
 ## X-License: MIT License
 ## X-Category: Professions
 ## SavedVariables: EasyDestroyData
@@ -12,6 +12,7 @@
 ## X-Website: https://github.com/cwagrant/EasyDestroy
 
 Core.lua
+blacklist\lists.lua
 Templates.xml
 EasyDestroy.xml
 Filters.xml
@@ -25,3 +26,5 @@ filters\itemid.lua
 filters\rarity.lua
 filters\iteminset.lua
 filters\soulbound.lua
+
+blacklist\blacklist.lua
