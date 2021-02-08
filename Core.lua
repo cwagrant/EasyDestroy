@@ -164,6 +164,20 @@ function EasyDestroy:UpdateDBFormat(data)
 		end
 	end
 
+	if (version == 1 and subversion >= 3)  or (version>=1) then
+		if data.Blacklist ~= nil then 
+			for k, v in ipairs(data.Blacklist) do
+				if v then
+					local item = Item:CreateFromItemID(v.itemid)
+					item:ContinueOnItemLoad(function()
+						if not v.link then v.link = item:GetItemLink() end
+						if not v.name then v.name = item:GetItemName() end
+					end)
+				end
+			end
+		end
+	end
+
 	return data
 end
 

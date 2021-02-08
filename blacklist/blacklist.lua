@@ -93,24 +93,24 @@ local function GetItemsInBlacklist()
     local itemList = {}
     local blacklist = EasyDestroy.Data.Blacklist or {}
     -- sort blacklists by item name (or legendary name if available) and then ilvl
-    for k, item in EasyDestroy.spairs(blacklist, function(t,a,b) return ((t[a].legendary or GetItemInfo(t[a].itemid))==(t[b].legendary or GetItemInfo(t[b].itemid)) and t[a].ilvl < t[b].ilvl) or (t[a].legendary or GetItemInfo(t[a].itemid)) < (t[b].legendary or GetItemInfo(t[b].itemid)) end) do
+    for k, item in EasyDestroy.spairs(blacklist, function(t,a,b) 
+        return ( (t[a].legendary or t[a].name) == (t[b].legendary or t[b].name) and t[a].ilvl < t[b].ilvl) or 
+        ((t[a].legendary or t[a].name) < (t[b].legendary or t[b].name ) ) end) do
+    --for k, item in pairs(blacklist) do
         local a = {}
-        a.itemid, a.itemname, a.itemlink, a.itemqual = item.itemid, GetItemInfo(item.itemid)
+        a.itemid, a.itemname, a.itemlink, a.itemqual, a.ilvl = item.itemid, item.name, item.link, item.quality, item.ilvl
+        --a.itemid, a.itemname, a.itemlink, a.itemqual = item.itemid, GetItemInfo(item.itemid)
         -- Overwrite with the quality level of the item we added.
-        if item and item.quality then
-            a.itemqual = item.quality
-        end
 
         if item and item.legendary then
             a.itemname = item.legendary
             a.itemqual = 5 --legendary
-            a.itemlink = item.link or a.itemlink
         end
 
-        a.ilvl = item.ilvl
         tinsert(itemList, a)
     end
 
+    --table.sort(itemList, function(a, b) return (a.itemname==b.itemname and a.ilvl<b.ilvl) or (a.ilvl<b.ilvl) end)
     return itemList
 end
 
@@ -130,21 +130,23 @@ local function UpdateItemFrame(frame, item)
 end
 
 local function UpdateBlacklistFrame(frame, item)
-    local icon = select(10, GetItemInfo(item.itemlink))
-    frame.Icon:SetTexture(icon)
-	frame.Item:SetText(item.itemname)
-    frame.Item.itemLink = item.itemlink
-	local ilvl = item.ilvl or select(1, GetDetailedItemLevelInfo(item.itemlink))
-	if ilvl then
-		frame.ItemLevel:SetText("(" .. ilvl .. ")")
-	else
-		frame.ItemLevel:SetText("")
-	end
-	
+    if item and item.itemlink then 
+        local icon = select(10, GetItemInfo(item.itemlink))
+        frame.Icon:SetTexture(icon)
+        frame.Item:SetText(item.itemname)
+        frame.Item.itemLink = item.itemlink
+        local ilvl = item.ilvl or select(1, GetDetailedItemLevelInfo(item.itemlink))
+        if ilvl then
+            frame.ItemLevel:SetText("(" .. ilvl .. ")")
+        else
+            frame.ItemLevel:SetText("")
+        end
+    end
+        
 	return frame
 end
 
-function isItemShadowlandsLegendary(itemstring)
+local function isItemShadowlandsLegendary(itemstring)
     local splitLink = {strsplit(':', itemstring)}
     local bonusIDCount = splitLink[14]
     if bonusIDCount and tonumber(bonusIDCount) and tonumber(bonusIDCount) > 0 then
@@ -171,9 +173,8 @@ local function OnClickBagItem(self)
     tbl.legendary = legendary
     tbl.quality = C_Item.GetItemQuality(self.info.itemloc)
     tbl.ilvl = GetDetailedItemLevelInfo(self.info.itemlink)
-    if legendary then
-        tbl.link = self.info.itemlink
-    end
+    tbl.link = self.info.itemlink
+    tbl.name = self.info.itemname
     tinsert(EasyDestroy.Data.Blacklist, tbl)
     needsUpdate = true
     EasyDestroy.FilterChanged = true
@@ -254,15 +255,24 @@ local function BlacklistScrollUpdate()
 		local frame = _G['EDBLBlacklistItemsItem'..i]
 		if index <= #itemList then
             local item = itemList[index]
-            EasyDestroy.Debug("Update Item Frame", item.itemlink)
-            --pprint(item)
-			UpdateBlacklistFrame(frame, item)
-			local r,g,b = GetItemQualityColor(item.itemqual)
-			frame:SetBackdrop({bgFile="Interface\\Tooltips\\UI-Tooltip-Background",})
-			frame:SetBackdropColor(r,g,b, 0.5)
-			frame.info = item
-            frame:Show()
-            frame:SetScript("OnClick", OnClickBlacklistItem)
+            local loadItem = Item:CreateFromItemID(item.itemid)
+            -- Server doesn't always immediately load/cache items,
+            -- therefore, we have to sometimes wait for the item to load before finishing
+            -- when we finish, we'll need to update the frame to include this info
+            loadItem:ContinueOnItemLoad(function() 
+                EasyDestroy.Debug("Update Item Frame", item.itemlink)
+                if item and not item.itemlink then
+                    item.itemlink = loadItem:GetItemLink()
+                end
+                UpdateBlacklistFrame(frame, item)
+                local r,g,b = GetItemQualityColor(item.itemqual)
+                frame:SetBackdrop({bgFile="Interface\\Tooltips\\UI-Tooltip-Background",})
+                frame:SetBackdropColor(r,g,b, 0.5)
+                frame.info = item
+                frame:Show()
+                frame:SetScript("OnClick", OnClickBlacklistItem)
+                needsUpdate = true
+            end)
 		else
 			frame:Hide()
 			frame.info = nil

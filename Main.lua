@@ -58,7 +58,6 @@ function EasyDestroy_EventHandler(self, event, ...)
 		local name = ...
 		if name == EasyDestroy.AddonName then
 			EasyDestroy.AddonLoaded = true
-			EasyDestroy.Data = EasyDestroy:UpdateDBFormat(EasyDestroy.Data)
 			EasyDestroy:Initialize()
 			EasyDestroyFilters:SetupWindow()
 
@@ -69,6 +68,8 @@ function EasyDestroy_EventHandler(self, event, ...)
 				EasyDestroy.Data = {}
 				EasyDestroy.DataLoaded = true
 			end
+
+			EasyDestroy.Data = EasyDestroy:UpdateDBFormat(EasyDestroy.Data)
 			
 			EasyDestroy.Data.Filters = EasyDestroy.Data.Filters or {}
 			EasyDestroy.Data.Options = EasyDestroy.Data.Options or {}
