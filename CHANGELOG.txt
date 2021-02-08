@@ -1,3 +1,7 @@
+20210208
+- Added instructions in the Item Blacklist
+- More bugfixes
+
 20210207
 - bug fixes
 - Default Filter updated. Now excludes all items that aren't common, uncommon, rare, epic (white, green, blue, purple)

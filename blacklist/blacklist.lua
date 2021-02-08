@@ -74,7 +74,7 @@ local function GetItemsInBags()
                 end
 
                 if passCheck then
-                    tinsert(itemList, {itemkey=itemkey, bag=bag, slot=slot, itemlink=item.link, itemname=item.name, itemloc=item.location})
+                    tinsert(itemList, {bag=bag, slot=slot, itemlink=item.link, itemname=item.name, itemloc=item.location})
 				end
                 
                 -- Eventually will need to filter out items already on the blacklist
@@ -292,6 +292,9 @@ local function OnFrameShow()
     local bagitems = leftframe:CreateFontString(leftframe, "OVERLAY", "GameFontHighlight")
     bagitems:SetPoint("BOTTOMLEFT", leftframe, "TOPLEFT", -4, 0)
     bagitems:SetText("Items in Bag:")
+    local bihelp = leftframe:CreateFontString(leftframe, "OVERLAY", "GameFontHighlight")
+    bihelp:SetPoint("BOTTOMRIGHT", leftframe, "TOPRIGHT", 4, 0)
+    bihelp:SetText("To add/remove items from the Items Backlist, just click the item in the windows below.")
     -- EasyDestroy:CreateBG(leftframe, 0, 1, 0)
 
     local rightframe = CreateFrame("Frame", nil, frame)
