@@ -17,6 +17,7 @@ filter.name="Ignore BOE Items By Quality"
 filter.key = "boequality"
 filter.frame = nil
 filter.height = 65
+filter.parent = _G[EDFILTER_SCROLL_CHILD]
 
 
 function filter:GetItemInfo(itemLink, bag, slot)
@@ -31,7 +32,7 @@ end
 -- create it if it's not yet been made
 function filter:GetFilterFrame()
     -- We create the frame here, we'll leave the details on size/anchors to the Filters window.
-    filter.frame = filter.frame or CreateFrame("Frame", "EDFilterSoulbound", EasyDestroyFilters, "EasyDestroyRarityFilter")
+    filter.frame = filter.frame or CreateFrame("Frame", "EDFilterSoulbound", filter.parent, "EasyDestroyRarityFilter")
     filter.frame.label:SetText( filter.name)
 	filter.frame.common.label:SetText("|c11ffffff" .. "Common" .. "|r")
 	filter.frame.rare.label:SetText("|c110070dd" .. "Rare" .. "|r")

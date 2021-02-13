@@ -53,12 +53,12 @@ filters = {
 ]]
 
 function EasyDestroyFilters:SetupWindow()
-	self.Title:SetFontObject("GameFontHighlight");
-	self.Title:SetText("Filter Editor");		
-	self.FilterName.label:SetText("Filter Name:")
-	self.Favorite:SetChecked(false);		
-	self.Blacklist.label:SetText("Blacklist")
-	UIDropDownMenu_SetWidth(EasyDestroyFilterTypes, self:GetWidth()-60)
+	-- EasyDestroyFilterSettings.Title:SetFontObject("GameFontHighlight");
+	-- EasyDestroyFilterSettings.Title:SetText("Filter Editor");		
+	EasyDestroyFilterSettings.FilterName.label:SetText("Filter Name:")
+	EasyDestroyFilterSettings.Favorite:SetChecked(false);		
+	EasyDestroyFilterSettings.Blacklist.label:SetText("Blacklist")
+	UIDropDownMenu_SetWidth(EasyDestroyFilterTypes, EasyDestroyFilterSettings:GetWidth()-50)
 
 	StaticPopupDialogs["ED_CONFIRM_DELETE_FILTER"] = {
 		text = "Are you sure you wish to delete filter %s?",
@@ -76,7 +76,7 @@ function EasyDestroyFilters:SetupWindow()
 		button1 = "Yes",
 		button2 = "No",
 		OnAccept = function(self) EasyDestroyFilters.SaveFilter(true) end,
-		OnCancel = function(self) EasyDestroyFilters.Favorite:SetChecked(false) end,
+		OnCancel = function(self) EasyDestroyFilterSettings.Favorite:SetChecked(false) end,
 		timeout = 30,
 		whileDead = false,
 		hideOnEscape = true,
@@ -84,15 +84,16 @@ function EasyDestroyFilters:SetupWindow()
 	}
 
 	StaticPopupDialogs["ED_BLACKLIST_NO_FAVORITE"] = {
-		text = "You cannot set a blacklist as a favorite. If you continue, this filter will be no longer be favorited.",
+		text = "You cannot set a blacklist as a favorite. If you continue, this filter will be no longer be favorited. |n|n|cFFFF0000This applies to all characters that have this filter as a favorite.",
 		button1 = "Okay",
 		button2 = "Cancel",
 		OnAccept = function(self) 
-			EasyDestroyFilters.Favorite:SetChecked(false)
-			EasyDestroyFilters.Favorite:Disable()
+			EasyDestroyFilterSettings.Favorite:SetChecked(false)
+			EasyDestroyFilterSettings.Favorite:Disable()
+			EasyDestroy_UnsetFavorite()
 		end,
 		OnCancel = function(self)
-			EasyDestroyFilters.Blacklist:SetChecked(false)
+			EasyDestroyFilterSettings.Blacklist:SetChecked(false)
 		end,
 		timeout = 30,
 		whileDead = false,
@@ -120,24 +121,31 @@ function EasyDestroyFilters:SetupWindow()
 		preferredIndex = 3,
 	}
 
-	EasyDestroyFilters.Blacklist:SetScript("OnClick", function() 
-		if EasyDestroyFilters.Blacklist:GetChecked() and EasyDestroyFilters.Favorite:GetChecked() then 
+	EasyDestroyFilterSettings.Blacklist:SetScript("OnClick", function(self) 
+		if EasyDestroyFilterSettings.Blacklist:GetChecked() and EasyDestroyFilterSettings.Favorite:GetChecked() then 
 			StaticPopup_Show("ED_BLACKLIST_NO_FAVORITE") 
 		end  
 
 		if not EasyDestroy:IncludeBlacklists() or not EasyDestroy:IncludeSearches() then
 			StaticPopup_Show("ED_SHOW_ALL_FILTERS")
 		end
+
+		if self:GetChecked() and EasyDestroyFilterSettings.Favorite:IsEnabled() then
+			EasyDestroyFilterSettings.Favorite:Disable()
+		elseif not self:GetChecked() and not EasyDestroyFilterSettings.Favorite:IsEnabled() then
+			EasyDestroyFilterSettings.Favorite:Enable()
+		end
+		EasyDestroy.FilterChanged = true
 	end )
 end
 
 function EasyDestroyFilters:GetFilterName()
-	return self.FilterName.input:GetText()
+	return EasyDestroyFilterSettings.FilterName.input:GetText()
 end
 
 function EasyDestroyFilters:SetFilterName(filtername)
 	if filtername ~= nil and type(filtername) == "string" then 
-		self.FilterName.input:SetText(filtername)
+		EasyDestroyFilterSettings.FilterName.input:SetText(filtername)
 	end
 end
 
@@ -180,17 +188,27 @@ function EasyDestroyFilters.SelectFilterTypes(self, arg1, arg2, checked)
 	if checked then 
 		local frame = selectedFilter.GetFilterFrame()
 		local lastFrame = nil
+		local scrollFrame = _G[EDFILTER_SCROLL_CHILD]
 		if EasyDestroyFilters.FilterStack[#EasyDestroyFilters.FilterStack] and EasyDestroyFilters.FilterStack[#EasyDestroyFilters.FilterStack].frame then
 			lastFrame = EasyDestroyFilters.FilterStack[#EasyDestroyFilters.FilterStack].frame
 		else
-			lastFrame = EasyDestroyFilters_AddFilterType
+			lastFrame = nil --EasyDestroyFilters_AddFilterType
 		end
-		frame:SetPoint("LEFT", EasyDestroyFiltersDialogBG, "LEFT", 4, 0)
-		frame:SetPoint("RIGHT", EasyDestroyFiltersDialogBG, "RIGHT", -4, 0)
-		frame:SetPoint("TOP", lastFrame, "BOTTOM")
+		frame:ClearAllPoints()
+		frame:SetPoint("LEFT", scrollFrame, 4, 0)
+		frame:SetPoint("RIGHT", scrollFrame, -4, 0)
+
+		if lastFrame == nil then 
+			lastFrame = scrollFrame
+			frame:SetPoint("TOPLEFT", scrollFrame)
+		else
+			frame:SetPoint("TOP", lastFrame, "BOTTOM")
+		end
+
 		frame:SetHeight(selectedFilter.height)
 		frame:Show()
 		tinsert(EasyDestroyFilters.FilterStack, selectedFilter)
+		lastFrame = frame
 	else
 		local frame = selectedFilter.GetFilterFrame()
 		for k, v in ipairs(EasyDestroyFilters.FilterStack) do
@@ -201,16 +219,8 @@ function EasyDestroyFilters.SelectFilterTypes(self, arg1, arg2, checked)
 			end
 		end
 	end
-	EasyDestroyFilters:RestackFilters()
+	EasyDestroy_PlaceFilterFrames()
 	EasyDestroy_Refresh()
-end
-
-function EasyDestroyFilters:RestackFilters()
-	local lastFrame = EasyDestroyFilters_AddFilterType
-	for k, v in ipairs(self.FilterStack) do
-		v.frame:SetPoint("TOP", lastFrame, "BOTTOM")
-		lastFrame = v.frame
-	end
 end
 
 function EasyDestroyFilters:HaveTransmog(itemlink)
@@ -248,7 +258,7 @@ function EasyDestroy:GenerateFilter()
 		
 	filterObj.properties.name = filter_name
 	filterObj.properties.favorite = EasyDestroyFilters_FavoriteIcon:GetChecked()
-	if EasyDestroyFilters.Blacklist:GetChecked() then
+	if EasyDestroyFilterSettings.Blacklist:GetChecked() then
 		filterObj.properties.type = ED_FILTER_TYPE_BLACKLIST
 	else
 		filterObj.properties.type = ED_FILTER_TYPE_SEARCH
@@ -350,6 +360,13 @@ function EasyDestroyFilters__Save(filterID, filter)
 	EasyDestroy:Debug("Saving Filter", filterID)
 	EasyDestroy.Data.Filters[filterID] = filter
 
+	-- update favorite id for character specific ids
+	if EasyDestroyFilterSettings.Favorite:GetChecked() then
+		if EasyDestroy_UsingCharacterFavorites() then
+			EasyDestroy.CharacterData.FavoriteID = filterID
+		end
+	end
+
 	-- not a fan of putting this stuff  over here in filters. But that's just how it is for now.
 	EasyDestroy_LoadFilter(filterID)
 	EasyDestroy_InitDropDown()
@@ -366,26 +383,30 @@ function EasyDestroyFilters_DeleteFilter()
 	EasyDestroy.Data.Filters[FilterID] = nil
 
 	EasyDestroy_InitDropDown()
-	for k, filterObj in pairs(EasyDestroy.Data.Filters) do
-		if filterObj.properties.favorite then
-			UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, k)
-			EasyDestroy_LoadFilter(k)
-			EasyDestroy.FilterChanged = true
-		end
-	end
 
+	local favoriteID =  EasyDestroy_GetFavorite()
+	if favoriteID ~= nil then
+		UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, favoriteID)
+		EasyDestroy_LoadFilter(favoriteID)
+		EasyDestroy.FilterChanged = true
+	end
 end
 
 function EasyDestroyFilters_SaveValidation(newFilterID, filter, skipFavoriteCheck)
 
-	local fid, favoriteFilter = EasyDestroyFilters_FindFavorite()
+	local fid = EasyDestroy_GetFavorite()
 	local nameFid, nameFilter = EasyDestroyFilters_FindFilterWithName(filter.properties.name)
 
 	-- if the name already exists and the name does not belong to the filter we are checking
 	if nameFid and nameFid ~= newFilterID then
 		return false, ED_ERROR_NAME, filter.properties.name
 
-	elseif favoriteFilter and filter.properties.favorite and not skipFavoriteCheck then
+	elseif fid and fid ~= nil and EasyDestroy_UsingCharacterFavorites() and not skipFavoriteCheck then
+		if fid ~= newFilterID then
+			return false, ED_ERROR_FAVORITE, "This character already has a favorite."
+		end
+		
+	elseif fid and fid ~= nil and filter.properties.favorite and not skipFavoriteCheck then
 		EasyDestroy.Debug(fid, newFilterID, "Checking for filter id match.")
 		if fid ~= newFilterID then
 			return false, ED_ERROR_FAVORITE, 'Error: you already have a favorite filter, click save again to override.'
@@ -442,7 +463,7 @@ end
 function EasyDestroy_ClearFilterFrame()
 	EasyDestroyFilters:SetFilterName("")
 	EasyDestroyFilters_FavoriteIcon:SetChecked(false)
-	EasyDestroyFilters.Blacklist:SetChecked(false)
+	EasyDestroyFilterSettings.Blacklist:SetChecked(false)
 	EasyDestroyFilters.CurrentFilterID = nil
 end
 
@@ -457,6 +478,29 @@ function EasyDestroy_ResetFilterStack()
 	wipe(EasyDestroyFilters.FilterStack)
 end
 
+function EasyDestroy_PlaceFilterFrames()
+	local lastFrame = nil
+	local scrollFrame = _G[EDFILTER_SCROLL_CHILD]
+	for k, v in ipairs(EasyDestroyFilters.FilterStack) do
+		local frame = v.GetFilterFrame()
+		frame:ClearAllPoints()
+
+		if lastFrame == nil then
+			lastFrame = scrollFrame
+			frame:SetPoint("TOPLEFT", lastFrame, 0, -4)
+		else
+			frame:SetPoint("TOP", lastFrame, "BOTTOM", 0, -4)
+		end
+
+		frame:SetPoint("LEFT", scrollFrame, 4, 0)
+		frame:SetPoint("RIGHT", scrollFrame, -4, 0)
+
+		frame:SetHeight(v.height)
+		frame:Show()
+		lastFrame = frame
+	end
+end
+
 function EasyDestroy_LoadFilter(fid)
 	EasyDestroy_ClearFilterFrame()
 	EasyDestroy_ResetFilterStack()
@@ -465,32 +509,34 @@ function EasyDestroy_LoadFilter(fid)
 	EasyDestroyFilters.CurrentFilterID = fid
 
 	EasyDestroyFilters:SetFilterName(filter.properties.name) --_FilterName.input:SetText(filter.properties.name)
-	EasyDestroyFilters_FavoriteIcon:SetChecked(filter.properties.favorite)
+	if EasyDestroy_UsingCharacterFavorites() then
+		local fav = EasyDestroy_GetFavorite()
+		if fav and fav ~= nil and fav == fid then
+			if filter.properties.type ~= ED_FILTER_TYPE_BLACKLIST then
+				EasyDestroyFilters_FavoriteIcon:SetChecked(true)
+			else
+				-- if a player tries to load a filter that's a blacklist and they have previously
+				-- marked it as a favorite, then we're going to unset that (sorry, not sorry).
+				EasyDestroy_UnsetFavorite()
+			end
+		end
+	else
+		EasyDestroyFilters_FavoriteIcon:SetChecked(filter.properties.favorite)
+	end
 	
 	if filter.properties.type == ED_FILTER_TYPE_BLACKLIST then
-		EasyDestroyFilters.Blacklist:SetChecked(true)
-		EasyDestroyFilters.Favorite:Disable()
+		EasyDestroyFilterSettings.Blacklist:SetChecked(true)
+		EasyDestroyFilterSettings.Favorite:Disable()
 	else
-		EasyDestroyFilters.Blacklist:SetChecked(false)
-		EasyDestroyFilters.Favorite:Enable()
+		EasyDestroyFilterSettings.Blacklist:SetChecked(false)
+		EasyDestroyFilterSettings.Favorite:Enable()
 	end
 
 	for key, registeredFilter in pairs(EasyDestroyFilters.Registry) do
 		registeredFilter:Clear()
 		if filter.filter[key] ~= nil then
-			local frame = registeredFilter.GetFilterFrame()
-			local lastFrame = nil
-			if EasyDestroyFilters.FilterStack[#EasyDestroyFilters.FilterStack] and EasyDestroyFilters.FilterStack[#EasyDestroyFilters.FilterStack].frame then
-				lastFrame = EasyDestroyFilters.FilterStack[#EasyDestroyFilters.FilterStack].frame
-			else
-				lastFrame = EasyDestroyFilters_AddFilterType
-			end
-			frame:SetPoint("LEFT", EasyDestroyFiltersDialogBG, "LEFT", 4, 0)
-			frame:SetPoint("RIGHT", EasyDestroyFiltersDialogBG, "RIGHT", -4, 0)
-			frame:SetPoint("TOP", lastFrame, "BOTTOM")
-			frame:SetHeight(registeredFilter.height)
-			frame:Show()
 			tinsert(EasyDestroyFilters.FilterStack, registeredFilter)
+			EasyDestroy_PlaceFilterFrames()
 			registeredFilter:SetValues(filter.filter[key] or "")
 		end
 	end
@@ -500,10 +546,70 @@ function EasyDestroyFilters_FavoriteIconOnClick()
 	if EasyDestroyFilters_FavoriteIcon:GetChecked() then
 		EasyDestroyFilters_FavoriteIcon:SetChecked(false)
 	else
-		local existingFavorite = EasyDestroyFilters_FindFavorite()
-		if existingFavorite then
-			EasyDestroy.Data.Filters[existingFavorite].properties.favorite = false
+		local existingFavorite = EasyDestroy_GetFavorite()
+		if existingFavorite and existingFavorite ~= nil then
+			if not EasyDestroy_UsingCharacterFavorites() then
+				EasyDestroy.Data.Filters[existingFavorite].properties.favorite = false
+			end
 		end
 		EasyDestroyFilters_FavoriteIcon:SetChecked(true)
+	end
+end
+
+--[[
+	If the user has character specific favorites set AND the character has a favorite
+	then we'll return the FID set in the character's data.
+	
+	If the user has character specific favorites set and the character has no favorite
+	or the favorite no longer exists, then we'll return nil.
+
+	If character specific favorites are off then set the favorite based on if one exists.
+]]
+function EasyDestroy_GetFavorite()
+	if EasyDestroy.Data.Options.CharacterFavorites and EasyDestroy.CharacterData then
+		if EasyDestroy.CharacterData.FavoriteID and EasyDestroy.Data.Filters[EasyDestroy.CharacterData.FavoriteID] then
+			local filter = EasyDestroy.Data.Filters[EasyDestroy.CharacterData.FavoriteID] or nil
+			if filter ~= nil then
+				if filter.properties.type == ED_FILTER_TYPE_BLACKLIST then
+					EasyDestroy_UnsetFavorite()
+					return nil
+				else
+					return EasyDestroy.CharacterData.FavoriteID
+				end
+			end
+		end
+		-- if we didn't find one, then lets return nil
+		return nil
+	end
+
+	if GetTableSize(EasyDestroy.Data.Filters)>0 then
+		for k, filterObj in pairs(EasyDestroy.Data.Filters) do
+			if filterObj.properties.favorite then
+				return k
+			end
+		end
+	end
+	return nil
+end
+
+function EasyDestroy_UsingCharacterFavorites()
+	if EasyDestroy.Data.Options.CharacterFavorites then
+		return true
+	end
+	return false
+end
+
+function EasyDestroy_UnsetFavorite()
+	if EasyDestroy.Data.Options.CharacterFavorites and EasyDestroy.CharacterData then
+		EasyDestroy.CharacterData.FavoriteID = nil
+		return
+	end
+
+	if GetTableSize(EasyDestroy.Data.Filters)>0 then
+		for k, filterObj in pairs(EasyDestroy.Data.Filters) do
+			if filterObj.properties.favorite then
+				EasyDestroy.Data.Filters[k].properties.favorite = false
+			end
+		end
 	end
 end

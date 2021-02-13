@@ -16,6 +16,7 @@ filter.name="Item ID"
 filter.key = "id"
 filter.frame = nil
 filter.height = 20
+filter.parent = _G[EDFILTER_SCROLL_CHILD]
 
 -- There's no reason a filter should show up more than once
 -- So we can treat it as a singleton and just use this to
@@ -23,7 +24,7 @@ filter.height = 20
 -- create it if it's not yet been made
 function filter:GetFilterFrame()
     -- We create the frame here, we'll leave the details on size/anchors to the Filters window.
-    filter.frame = filter.frame or CreateFrame("Frame", "EDFilterItemID", EasyDestroyFilters, "EasyDestroyEditBoxTemplate")
+    filter.frame = filter.frame or CreateFrame("Frame", "EDFilterItemID", filter.parent, "EasyDestroyEditBoxTemplate")
     filter.frame.label:SetText( filter.name .. ":")
     filter.frame.input:SetNumeric(true)
     return filter.frame

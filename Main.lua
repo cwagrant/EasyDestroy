@@ -14,6 +14,8 @@ EasyDestroyFrame:RegisterEvent("UNIT_SPELLCAST_INTERRUPTED")
 EasyDestroyFrame:RegisterEvent("UNIT_SPELLCAST_FAILED")
 EasyDestroyFrame:RegisterEvent("PLAYER_REGEN_DISABLED")
 EasyDestroyFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+EasyDestroyFrame:RegisterEvent("PLAYER_STARTED_MOVING")
+EasyDestroyFrame:RegisterEvent("PLAYER_STOPPED_MOVING")
 
 --[[ 
 Note1: Considering looking at events to handle the enable/disable of the disenchant button
@@ -40,19 +42,25 @@ function EasyDestroy_EventHandler(self, event, ...)
 		EasyDestroyItemsScrollBar_Update()
 	elseif event == "UNIT_SPELLCAST_INTERRUPTED" then
 		local who, _, what = ... 
-		if who=="player" and what==13262 then
+		if who=="player" and what==13262 and not EasyDestroy.PlayerMoving then
 			EasyDestroy.Debug("Disenchant Interrupted")
 			EasyDestroyButton:Enable()
 		end
 	elseif event == "UNIT_SPELLCAST_FAILED" then
 		local who, _, what = ...
-		if who=="player" and what==13262 then
+		if who=="player" and what==13262 and not EasyDestroy.PlayerMoving then
 			EasyDestroy.Debug("Failed to Disenchant item...")
 			EasyDestroyButton:Enable()
 		end
 	elseif event=="PLAYER_REGEN_DISABLED" then
 		EasyDestroyButton:Disable()
-	elseif event=="PLAYER_REGEN_ENABLED" then
+	elseif event=="PLAYER_REGEN_ENABLED" and not EasyDestroy.PlayerMoving then
+		EasyDestroyButton:Enable()
+	elseif event=="PLAYER_STARTED_MOVING" then
+		EasyDestroy.PlayerMoving = true
+		EasyDestroyButton:Disable()
+	elseif event=="PLAYER_STOPPED_MOVING" then
+		EasyDestroy.PlayerMoving = false
 		EasyDestroyButton:Enable()
 	elseif event=="ADDON_LOADED" then
 		local name = ...
@@ -69,6 +77,12 @@ function EasyDestroy_EventHandler(self, event, ...)
 				EasyDestroy.DataLoaded = true
 			end
 
+			if EasyDestroyCharacter then
+				EasyDestroy.CharacterData = EasyDestroyCharacter
+			else
+				EasyDestroy.CharacterData = {}
+			end
+
 			EasyDestroy.Data = EasyDestroy:UpdateDBFormat(EasyDestroy.Data)
 			
 			EasyDestroy.Data.Filters = EasyDestroy.Data.Filters or {}
@@ -78,14 +92,20 @@ function EasyDestroy_EventHandler(self, event, ...)
 
 			UIDropDownMenu_Initialize(EasyDestroyDropDown, EasyDestroy_InitDropDown)
 			
-			if GetTableSize(EasyDestroy.Data.Filters)>0 then
+			local fav = EasyDestroy_GetFavorite()
+			if fav ~= nil then
+				UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, fav)
+				EasyDestroy_LoadFilter(fav)
+				EasyDestroy_Refresh()
+						
+			--[[if GetTableSize(EasyDestroy.Data.Filters)>0 then
 				for k, filterObj in pairs(EasyDestroy.Data.Filters) do
 					if filterObj.properties.favorite then
 						UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, k)
 						EasyDestroy_LoadFilter(k)
 						EasyDestroy_Refresh()
 					end
-				end
+				end]]
 			else
 				UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, 0)
 			end
@@ -94,6 +114,7 @@ function EasyDestroy_EventHandler(self, event, ...)
 	elseif event=="PLAYER_LOGOUT" then
 		if EasyDestroy.DataLoaded then
 			EasyDestroyData = EasyDestroy.Data
+			EasyDestroyCharacter = EasyDestroy.CharacterData
 		end
 	end
 end
@@ -119,6 +140,17 @@ function SlashCmdList.OPENUI(msg)
 		CreateMacro("ED_Disenchant", 236557, "/click EasyDestroyButton", nil)
 	elseif msg=="reset" then
 		EasyDestroyButton:Enable()
+	elseif msg:find("characterfavorites ") or msg:find("cf ") then
+		local a, b = strsplit(" ", msg)
+		if b == "true" then
+			EasyDestroy.Data.Options.CharacterFavorites = true
+			print("Character Favorites turned on.")
+		elseif b == "false" then 
+			EasyDestroy.Data.Options.CharacterFavorites = false
+			print("Character Favorites turned off.")
+		else
+			print("Unrecognized setting: " .. b)
+		end
 	else
 		if EasyDestroyFrame:IsVisible() then
 			EasyDestroyFrame:Hide()
@@ -158,9 +190,7 @@ EasyDestroyButton:SetScript("PostClick", function(self)
 EasyDestroyFrameSearchTypes.Search:SetScript("OnClick", EasyDestroySearchTypes_OnClick)
 EasyDestroyFrameSearchTypes.Blacklist:SetScript("OnClick", EasyDestroySearchTypes_OnClick)
 
-EasyDestroy_OpenFilters:SetScript("OnClick", EasyDestroy_ToggleFilters)
 EasyDestroyFilters_Save:SetScript("OnClick", function() EasyDestroyFilters.SaveFilter() end)
--- EasyDestroyFilters_Delete:SetScript("OnClick", EasyDestroyFilters_DeleteFilter)
 EasyDestroyFilters_Delete:SetScript("OnClick", function() StaticPopup_Show("ED_CONFIRM_DELETE_FILTER", EasyDestroyFilters:GetFilterName()) end)
 EasyDestroyFilters_NewFromFilter:SetScript("OnClick", EasyDestroyFilters_CreateNewFromCurrent)
 EasyDestroyFilters_New:SetScript("OnClick", function() 
@@ -174,4 +204,4 @@ EasyDestroyFilters_New:SetScript("OnClick", function()
 	EasyDestroy_Refresh() end
 )
 
-
+EasyDestroySelectedFiltersScroll:SetToplevel(true)

@@ -1,10 +1,15 @@
 EasyDestroy = EasyDestroy
+local addonName, addonSpace = ...
 
 local frame = CreateFrame("Frame", "ED_Blacklist", InterfaceOptionsFramePanelContainer)
 local needsUpdate = false
 frame.name = EasyDestroy.AddonName
 frame:Hide()
 
+-- On Load do Mixin of item frames 
+
+-- Item Template Frame should have fields:
+-- .link, .ilvl, .name, .quality
 -- I think the end goal will be to match on 1) Item ID 2) Item Quality and 3) Item Level.
 -- That means we'll need to save all 3 of those values in the blacklist.
 local function ItemInBlacklist(itemid, itemname, quality, ilvl)
@@ -73,8 +78,9 @@ local function GetItemsInBags()
                     break
                 end
 
+                -- data.itemlink, data.itemname, data.itemqual, (data.ilvl or nil)
                 if passCheck then
-                    tinsert(itemList, {bag=bag, slot=slot, itemlink=item.link, itemname=item.name, itemloc=item.location})
+                    tinsert(itemList, {bag=bag, slot=slot, itemlink=item.link, itemname=item.name, itemqual=item.quality, itemloc=item.location, ilvl=item.ilvl})
 				end
                 
                 -- Eventually will need to filter out items already on the blacklist
@@ -114,38 +120,6 @@ local function GetItemsInBlacklist()
     return itemList
 end
 
-local function UpdateItemFrame(frame, item)
-    local icon = GetContainerItemInfo(item.bag, item.slot)
-    frame.Icon:SetTexture(icon)
-	frame.Item:SetText(item.itemname)
-	frame.Item.itemLink = item.itemlink
-	local ilvl = select(1, GetDetailedItemLevelInfo(item.itemlink))
-	if ilvl then
-		frame.ItemLevel:SetText("(" .. ilvl .. ")")
-	else
-		frame.ItemLevel:SetText("")
-	end
-	
-	return frame
-end
-
-local function UpdateBlacklistFrame(frame, item)
-    if item and item.itemlink then 
-        local icon = select(10, GetItemInfo(item.itemlink))
-        frame.Icon:SetTexture(icon)
-        frame.Item:SetText(item.itemname)
-        frame.Item.itemLink = item.itemlink
-        local ilvl = item.ilvl or select(1, GetDetailedItemLevelInfo(item.itemlink))
-        if ilvl then
-            frame.ItemLevel:SetText("(" .. ilvl .. ")")
-        else
-            frame.ItemLevel:SetText("")
-        end
-    end
-        
-	return frame
-end
-
 local function isItemShadowlandsLegendary(itemstring)
     local splitLink = {strsplit(':', itemstring)}
     local bonusIDCount = splitLink[14]
@@ -162,7 +136,6 @@ local function isItemShadowlandsLegendary(itemstring)
     end
     return nil
 end
-
 
 local function OnClickBagItem(self)
     local itemid = GetContainerItemID(self.info.bag, self.info.slot);
@@ -191,95 +164,6 @@ local function OnClickBlacklistItem(self)
             EasyDestroy.FilterChanged = true
         end
     end
-end
-
-local function ItemsScrollUpdate()
-    local itemList = GetItemsInBags()
-    if not frame.itemsInBags then 
-        pprint(frame)
-        return
-    else
---        print("Continuing...")
-    end
-    FauxScrollFrame_Update(frame.itemsInBags.ScrollFrame, #itemList, 10, 24)
-	--[[
-	if #itemList > 10 then
-		EasyDestroyItems:SetPoint("TOPRIGHT", EasyDestroyFrameDialogBG, "TOPRIGHT",  -28, 0)
-	else
-		EasyDestroyItems:SetPoint("TOPRIGHT", EasyDestroyFrameDialogBG, "TOPRIGHT", -4, 0)
-	end
-	]]
-	local offset = FauxScrollFrame_GetOffset(frame.itemsInBags.ScrollFrame)
-	for i=1, 10, 1 do
-		local index = offset+i
-		local frame = _G['EDBLBagItemsItem'..i]
-		if index <= #itemList then
-            local item = itemList[index]
-            EasyDestroy.Debug("Update Item Frame", item.itemlink)
-            --pprint(item)
-			UpdateItemFrame(frame, item)
-			local r,g,b = GetItemQualityColor(C_Item.GetItemQuality(item.itemloc))
-			frame:SetBackdrop({bgFile="Interface\\Tooltips\\UI-Tooltip-Background",})
-			frame:SetBackdropColor(r,g,b, 0.5)
-			frame.info = item
-            frame:Show()
-            frame:SetScript("OnClick", OnClickBagItem)
-		else
-			frame:Hide()
-			frame.info = nil
-		end
-	end
-	EasyDestroy.Debug("Completed Scroll Frame Update")
-
-end
-
-local function BlacklistScrollUpdate()
-    local itemList = GetItemsInBlacklist()
-    if not frame.itemsInBlacklist then 
-        pprint(frame)
-        return
-    else
---        print("Continuing...")
-    end
-    FauxScrollFrame_Update(frame.itemsInBlacklist.ScrollFrame, #itemList, 10, 24)
-	--[[
-	if #itemList > 10 then
-		EasyDestroyItems:SetPoint("TOPRIGHT", EasyDestroyFrameDialogBG, "TOPRIGHT",  -28, 0)
-	else
-		EasyDestroyItems:SetPoint("TOPRIGHT", EasyDestroyFrameDialogBG, "TOPRIGHT", -4, 0)
-	end
-	]]
-	local offset = FauxScrollFrame_GetOffset(frame.itemsInBlacklist.ScrollFrame)
-	for i=1, 10, 1 do
-		local index = offset+i
-		local frame = _G['EDBLBlacklistItemsItem'..i]
-		if index <= #itemList then
-            local item = itemList[index]
-            local loadItem = Item:CreateFromItemID(item.itemid)
-            -- Server doesn't always immediately load/cache items,
-            -- therefore, we have to sometimes wait for the item to load before finishing
-            -- when we finish, we'll need to update the frame to include this info
-            loadItem:ContinueOnItemLoad(function() 
-                EasyDestroy.Debug("Update Item Frame", item.itemlink)
-                if item and not item.itemlink then
-                    item.itemlink = loadItem:GetItemLink()
-                end
-                UpdateBlacklistFrame(frame, item)
-                local r,g,b = GetItemQualityColor(item.itemqual)
-                frame:SetBackdrop({bgFile="Interface\\Tooltips\\UI-Tooltip-Background",})
-                frame:SetBackdropColor(r,g,b, 0.5)
-                frame.info = item
-                frame:Show()
-                frame:SetScript("OnClick", OnClickBlacklistItem)
-                needsUpdate = true
-            end)
-		else
-			frame:Hide()
-			frame.info = nil
-		end
-	end
-	EasyDestroy.Debug("Completed Scroll Frame Update")
-
 end
 
 local function OnFrameShow()
@@ -313,34 +197,40 @@ local function OnFrameShow()
 
     local itemsInBags = CreateFrame("Frame", "EDBLBagItems", leftframe, "EasyDestroyItemScrollTemplate")
     itemsInBags:Show()
+    itemsInBags:Initialize(GetItemsInBags, 10, 24, OnClickBagItem)
     frame.itemsInBags = itemsInBags
 
     local itemsInBlacklist = CreateFrame("Frame", "EDBLBlacklistItems", rightframe, "EasyDestroyItemScrollTemplate")
     itemsInBlacklist:Show()
+    itemsInBlacklist:Initialize(GetItemsInBlacklist, 10, 24, OnClickBlacklistItem)
     frame.itemsInBlacklist = itemsInBlacklist
 
     itemsInBags.ScrollFrame:SetScript("OnVerticalScroll", function(self, offset)
-        FauxScrollFrame_OnVerticalScroll(self, offset, 24, ItemsScrollUpdate);
+        itemsInBags:OnVerticalScroll(offset)
+        needsUpdate = true
     end)
 
-        itemsInBlacklist.ScrollFrame:SetScript("OnVerticalScroll", function(self, offset)
-        FauxScrollFrame_OnVerticalScroll(self, offset, 24, BlacklistScrollUpdate);
+    itemsInBlacklist.ScrollFrame:SetScript("OnVerticalScroll", function(self, offset)
+        itemsInBlacklist:OnVerticalScroll(offset)
+        needsUpdate = true
     end)
-    ItemsScrollUpdate()
-    BlacklistScrollUpdate()
+
+    itemsInBags:ScrollUpdate()
+    itemsInBlacklist:ScrollUpdate()
+
+    frame:SetScript("OnUpdate", function()
+        if needsUpdate == true then 
+            itemsInBags:ScrollUpdate()
+            itemsInBlacklist:ScrollUpdate()
+            needsUpdate = false
+        end
+    end)
+
     -- Only run this code the very first time we show the frame
     frame:SetScript("OnShow", nil)
 end
 
 frame:SetScript("OnShow", OnFrameShow)
-
-frame:SetScript("OnUpdate", function()
-    if needsUpdate == true then 
-        ItemsScrollUpdate()
-        BlacklistScrollUpdate()
-        needsUpdate = false
-    end
-end)
 
 EasyDestroy.ItemInBlacklist = ItemInBlacklist
 InterfaceOptions_AddCategory(frame)

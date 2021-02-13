@@ -16,6 +16,7 @@ filter.name="Item Quality"
 filter.key = "quality"
 filter.frame = nil
 filter.height = 65
+filter.parent = _G[EDFILTER_SCROLL_CHILD]
 
 -- There's no reason a filter should show up more than once
 -- So we can treat it as a singleton and just use this to
@@ -23,7 +24,7 @@ filter.height = 65
 -- create it if it's not yet been made
 function filter:GetFilterFrame()
     -- We create the frame here, we'll leave the details on size/anchors to the Filters window.
-    filter.frame = filter.frame or CreateFrame("Frame", "EDFilterQuality", EasyDestroyFilters, "EasyDestroyRarityFilter")
+    filter.frame = filter.frame or CreateFrame("Frame", "EDFilterQuality", filter.parent, "EasyDestroyRarityFilter")
     filter.frame.label:SetText( filter.name)
 	filter.frame.common.label:SetText("|c11ffffff" .. "Common" .. "|r")
 	filter.frame.rare.label:SetText("|c110070dd" .. "Rare" .. "|r")

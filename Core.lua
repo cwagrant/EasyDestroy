@@ -1,4 +1,5 @@
 EasyDestroy = {}
+EasyDestroyFilters = {} -- Until 2.0 this was a frame
 EasyDestroy.Version =  GetAddOnMetadata("EasyDestroy", "version")
 EasyDestroy.DebugActive = false
 EasyDestroy.AddonName = "EasyDestroy"
@@ -6,6 +7,7 @@ EasyDestroy.AddonLoaded = false
 EasyDestroy.CurrentFilter = {}
 EasyDestroy.FilterChanged = false
 EasyDestroy.FilterSaveWarned = false
+EasyDestroy.PlayerMoving = false
 
 EasyDestroy.DestroyTypes = {}
 EasyDestroy.DestroyTypes.DISENCHANT = "DISENCHANT"
@@ -14,6 +16,9 @@ EasyDestroy.DestroyTypes.PROSPECT = "PROSPECT"
 EasyDestroy.WarnedLootOpen = false
 EasyDestroy.DestroyFilters = {}
 EasyDestroy.DestroyFilters[EasyDestroy.DestroyTypes.DISENCHANT] = {{itype=LE_ITEM_CLASS_WEAPON, stype=nil}, {itype=LE_ITEM_CLASS_ARMOR, stype=nil}}
+
+-- This is the name of the frame that fitler types attach to for scrolling
+EDFILTER_SCROLL_CHILD = "EasyDestroySelectedFiltersScrollChild"
 
 ED_FILTER_TYPES = {}
 ED_FILTER_TYPE_SEARCH = 1
@@ -30,7 +35,7 @@ tinsert(ED_ERROR_TYPES, ED_ERROR_NAME, 'Name')
 tinsert(ED_ERROR_TYPES, ED_ERROR_FAVORITE, 'Favorite')
 
 StaticPopupDialogs["ED_CANT_DISENCHANT_BLACKLIST"] = {
-	text = "You cannot disenchant items on the blacklist.|n|nYou are currently editing a blacklist filter.",
+	text = "You cannot disenchant items on the blacklist.|n|nYou are currently viewing or editing a blacklist filter.",
 	button1 = "Okay",
 	timeout = 30,
 	whileDead = false,
@@ -175,6 +180,12 @@ function EasyDestroy:UpdateDBFormat(data)
 					end)
 				end
 			end
+		end
+	end
+
+	if (version > 1) then
+		if data.Options and data.Options.CharacterFavorites == nil then
+			data.Options.CharacterFavorites = false
 		end
 	end
 

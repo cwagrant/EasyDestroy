@@ -1,6 +1,8 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/"
  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
  xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
+ <Script file="Templates.lua"/>
+
 <Frame name="EasyDestroyEditBoxTemplate" virtual="true">
 	<Size>
 		<AbsDimension x="0" y="20"/>
@@ -92,7 +94,7 @@
 	</Scripts>
 </Frame>
 
-<Frame name="EasyDestroyItemTemplate" virtual="true" enableMouse="true" inherits="BackdropTemplate">
+<Frame name="EasyDestroyItemTemplate" virtual="true" enableMouse="true" inherits="BackdropTemplate" mixin="EasyDestroyItemsMixin">
 	<Size>
 		<AbsDimension x="0" y="24"/>
 	</Size>
@@ -231,7 +233,7 @@
 		<BorderColor a="1" r="0.99" g="0.81" b="0"/>
 	</Backdrop>
 </Frame>
-<Frame name="EasyDestroyItemScrollTemplate" inherits="BackdropTemplate" virtual="true">
+<Frame name="EasyDestroyItemScrollTemplate" inherits="BackdropTemplate" virtual="true" mixin="EasyDestroyScrollMixin">
 	<Anchors>
 		<Anchor point="TOPLEFT" x="4"/>
 		<Anchor point="BOTTOMRIGHT" x="-4"/>

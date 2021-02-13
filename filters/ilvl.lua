@@ -15,6 +15,7 @@ filter.name = "Item Level"
 filter.key = "level"
 filter.frame = nil
 filter.height = 20
+filter.parent = _G[EDFILTER_SCROLL_CHILD]
 
 -- EasyDestroy passes 3 values to this function, itemlink, bag, and slot. 
 function filter:GetItemInfo(ilink)
@@ -26,7 +27,7 @@ end
 -- create it if it's not yet been made
 function filter:GetFilterFrame()
     -- We create the frame here, we'll leave the details on size/anchors to the Filters window.
-    filter.frame = filter.frame or CreateFrame("Frame", "EDFilterItemLevel", EasyDestroyFilters, "EasyDestroyEditBoxRangeTemplate")
+    filter.frame = filter.frame or CreateFrame("Frame", "EDFilterItemLevel", filter.parent, "EasyDestroyEditBoxRangeTemplate")
     filter.frame.label:SetText( filter.name .. ":")
 	filter.frame.inputfrom:SetNumeric(true)
     filter.frame.inputto:SetNumeric(true)

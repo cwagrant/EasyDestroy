@@ -6,10 +6,11 @@ filter.name="Ignore Items in Equipment Sets"
 filter.key = "eqset"
 filter.frame = nil
 filter.height = 20
+filter.parent = _G[EDFILTER_SCROLL_CHILD]
 
 
 function filter:GetFilterFrame()
-    filter.frame = filter.frame or CreateFrame("Frame", "EDFilterItemInSet", EasyDestroyFilters)
+    filter.frame = filter.frame or CreateFrame("Frame", "EDFilterItemInSet", filter.parent)
     filter.checkbox = filter.checkbox or CreateFrame("CheckButton", nil, filter.frame, "EasyDestroyCheckboxTemplate")
     filter.checkbox:SetPoint("LEFT")
     filter.checkbox.label:SetText(filter.name)

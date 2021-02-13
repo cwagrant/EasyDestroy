@@ -65,7 +65,18 @@ function EasyDestroy:Initialize()
 		tileEdge=false, 
 		insets={left=4, right=4, top=4, bottom=4}
 	})
+
+	EasyDestroySelectedFilters:SetBackdrop({
+		bgFile="Interface\\Tooltips\\UI-Tooltip-Background",
+		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
+		edgeSize=8,
+		tile=true, 
+		tileEdge=false, 
+		insets={left=4, right=4, top=4, bottom=4}
+	})
+
 	EasyDestroyItems:SetBackdropColor(0,0,0,0.5)
+	EasyDestroySelectedFilters:SetBackdropColor(0,0,0,0.5)
 		
 	EasyDestroyFrameSearchTypes.Search.label:SetText("Searches")
 	EasyDestroyFrameSearchTypes.Search:SetChecked(true)
@@ -130,12 +141,7 @@ end
 
 function EasyDestroySearchTypes_OnClick()
 	EasyDestroy_InitDropDown()
-	local favoriteID = nil
-	for fid, filter in pairs(EasyDestroy.Data.Filters) do
-		if filter.properties.favorite == true then
-			favoriteID = fid
-		end
-	end
+	local favoriteID = EasyDestroy_GetFavorite()
 
 	if not(EasyDestroy:IncludeSearches()) and not(EasyDestroy:IncludeBlacklists()) then
 		UIDropDownMenu_SetText(EasyDestroyDropDown, 'You must select at least one type of filter.')
@@ -326,7 +332,7 @@ function EasyDestroy:DisenchantItem()
 	if not IsSpellKnown(13262) then
 		print ("You must have disenchanting to disenchant this item.")
 		return
-	elseif EasyDestroyFilters.Blacklist:GetChecked() then
+	elseif EasyDestroyFilterSettings.Blacklist:GetChecked() then
 		StaticPopup_Show("ED_CANT_DISENCHANT_BLACKLIST")
 		return
 	elseif not IsUsableSpell(13262) then
@@ -399,16 +405,6 @@ function EasyDestroyItemsScrollBar_Update(callbackFunction)
 
 	if EasyDestroyFrame_FoundItemsCount ~= nil then 
 		EasyDestroyFrame_FoundItemsCount:SetText(#itemList .. " Item(s) Found")
-	end
-end
-
-function EasyDestroy_ToggleFilters()
-	if EasyDestroyFilters:IsVisible() then
-		EasyDestroyFilters:Hide()
-		EasyDestroy_OpenFilters:SetText("Show Filters")
-	else
-		EasyDestroyFilters:Show()
-		EasyDestroy_OpenFilters:SetText("Hide Filters")
 	end
 end
 

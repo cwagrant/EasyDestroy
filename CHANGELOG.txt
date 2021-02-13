@@ -1,3 +1,11 @@
+20210213 - 2.0.0b
+- UI overhaul (one window = better?)
+- Added the ability for character specific favorites. However, I have not yet finished an options window.
+    '/ed cf true' will turn on character specific favorites. 
+- Added some logic around enabling/disabling the disenchant button when moving.
+- Removed Filters.xml
+- Reduced rampant redundancies through code
+
 20210208
 - Added instructions in the Item Blacklist
 - More bugfixes

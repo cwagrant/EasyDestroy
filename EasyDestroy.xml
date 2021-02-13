@@ -4,7 +4,7 @@
  
 <Frame name="EasyDestroyFrame" inherits="UIPanelDialogTemplate" hidden="false" movable="true" parent="UIParent">
 	<Size>
-		<AbsDimension x="340" y ="380"/>
+		<AbsDimension x="580" y ="580"/>
 	</Size>
 	<Anchors>
 		<Anchor point="CENTER"/>
@@ -13,7 +13,7 @@
 		<Layer level="OVERLAY">
 			<FontString name="$parent_FoundItemsCount" parentKey="FoundItemsCount" inherits="GameFontHighlight">
 				<Anchors>
-					<Anchor point="BOTTOM" x="0" y="44"/>
+					<Anchor point="BOTTOM" x="0" y="20"/>
 				</Anchors>
 			</FontString>
 		</Layer>
@@ -114,14 +114,14 @@
 		</Frame>
 		<Frame name="EasyDestroyFrameSearch">
 			<Anchors>
-				<Anchor point="TOPLEFT" relativeTo="EasyDestroyItems" relativePoint="BOTTOMLEFT" x="-4"/>
+				<Anchor point="TOPLEFT" relativeTo="EasyDestroyItems" relativePoint="BOTTOMLEFT" />
 				<Anchor point="BOTTOMRIGHT" relativeTo="EasyDestroyFrameDialogBG"/>
 			</Anchors>
 			<Frames>
 				<Frame name="$parentTypes" parentKey="Types">
 					<Anchors>
-						<Anchor point="TOPLEFT" x="8" y="-8"/>
-						<Anchor point="TOPRIGHT" x="-8" y="-8"/>
+						<Anchor point="TOPLEFT" x="8" y="-4"/>
+						<Anchor point="TOPRIGHT" x="-8" y="-4"/>
 					</Anchors>
 					<Size>
 						<AbsDimension x="0" y="20"/>
@@ -129,7 +129,7 @@
 					<Frames>
 						<CheckButton name="$parentSearch" parentKey="Search" parentArray="Types" inherits="EasyDestroyCheckboxTemplate">
 							<Anchors>
-								<Anchor point="TOPLEFT" x="20" y="-12"/>
+								<Anchor point="TOPLEFT" x="20" y="-8"/>
 							</Anchors>
 							<Scripts>
 								<OnClick>
@@ -139,7 +139,7 @@
 						</CheckButton>
 						<CheckButton name="$parentBlacklist" inherits="EasyDestroyCheckboxTemplate" parentKey="Blacklist" parentArray="Types" >
 							<Anchors>
-								<Anchor point="TOPLEFT" relativePoint="TOP" x="20" y="-12"/>
+								<Anchor point="TOPLEFT" relativePoint="TOP" x="20" y="-8"/>
 							</Anchors>
 							<Scripts>
 								<OnClick>
@@ -151,8 +151,8 @@
 				</Frame>
 				<Frame name="EasyDestroyDropDown" parentKey="DropDown" inherits="UIDropDownMenuTemplate">
 					<Anchors>
-						<Anchor point="TOPLEFT" relativeTo="$parentTypes" relativePoint="BOTTOMLEFT" x="-4"  y="-30"/>
-						<Anchor point="TOPRIGHT" relativeTo="$parentTypes" relativePoint="BOTTOMRIGHT" x="-8" y="-30"/>
+						<Anchor point="TOPLEFT" relativeTo="$parentTypes" relativePoint="BOTTOMLEFT" x="-4"  y="-10"/>
+						<Anchor point="TOPRIGHT" relativeTo="$parentTypes" relativePoint="BOTTOMRIGHT" x="-8" y="-10"/>
 					</Anchors>
 				</Frame>
 			</Frames>
@@ -166,31 +166,157 @@
 				<Color a="1" r="0" g="0" b="0" />
 			</Backdrop>
 		</Frame>
+		<Frame name="EasyDestroySelectedFilters" inherits="BackdropTemplate">
+			<Anchors>
+				<Anchor point="TOPLEFT" relativeTo="$parent" relativePoint="CENTER" x="0" y="-10"/>
+				<Anchor point="BOTTOMRIGHT" relativeTo="$parentDialogBG" x="-30" y="50"/>
+			</Anchors>
+			<Frames>
+				<ScrollFrame name="$parentScroll" inherits="UIPanelScrollFrameTemplate">
+					<Anchors>
+						<Anchor point="TOPLEFT" x="4" y="-4"/>
+						<Anchor point = "BOTTOMRIGHT" x="-4" y="4"/>
+					</Anchors>
+					<Scripts>
+						<OnLoad>
+							self.scrollBarHideable = 1;
+							ScrollFrame_OnLoad(self);
+							ScrollFrame_OnScrollRangeChanged(self);
+						</OnLoad>
+					</Scripts>
+					<ScrollChild>
+						<Frame name="$parentChild">
+							<Anchors>
+								<Anchor point="TOPLEFT" x="4" y="0"/>
+							</Anchors>
+							<Size>
+								<AbsDimension x="0" y="10"/>
+							</Size>
+							<Scripts>
+								<OnLoad>
+									self:SetWidth(EasyDestroySelectedFiltersScroll:GetWidth()-4)
+								</OnLoad>
+							</Scripts>
+						</Frame>
+					</ScrollChild>
+				</ScrollFrame>
+			</Frames>
+		</Frame>
+
+		<Frame name="EasyDestroyFilterSettings">
+			<Anchors>
+				<Anchor point="TOPLEFT" relativeTo="$parentSearch" relativePoint="TOPLEFT" x="10" y="-70"/>
+				<Anchor point="BOTTOMRIGHT" relativeTo="EasyDestroySelectedFilters" relativePoint="BOTTOMLEFT" x="-10"/>
+			</Anchors>
+			<Frames>
+
+				<CheckButton name="EasyDestroyFilters_FavoriteIcon" motionScriptsWhileDisabled="true" parentKey="Favorite">
+					<Size x="16" y="16"/>
+					<Anchors>
+						<Anchor point="TOPRIGHT" relativeTo="$parent" x="-4" y="-6"/>
+					</Anchors>
+					<NormalTexture file="Interface\Common\ReputationStar">
+						<TexCoords left="0.5" right="1" top="0" bottom="0.5"/>
+					</NormalTexture>
+					<HighlightTexture file="Interface\Common\ReputationStar">
+						<TexCoords left="0" right="0.5" top="0.5" bottom="1"/>
+					</HighlightTexture>
+					<CheckedTexture file="Interface\Common\ReputationStar">
+						<TexCoords left="0" right="0.5" top="0" bottom="0.5"/>
+					</CheckedTexture>
+				</CheckButton>
+
+				<Frame name="EasyDestroyFilters_FilterName" inherits="EasyDestroyEditBoxTemplate" parentKey="FilterName" >
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="$parent" x="0" y="-4"/>
+						<Anchor point="RIGHT" relativeTo="EasyDestroyFilters_FavoriteIcon" relativePoint="LEFT" x="-4" y="0"/>
+					</Anchors>
+				</Frame>
+
+				<CheckButton name="EasyDestroyFiltersCheck" inherits="EasyDestroyCheckboxTemplate" parentKey="Blacklist">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="EasyDestroyFilters_FilterName" relativePoint="BOTTOMLEFT" x="10" y="-4"/>
+					</Anchors>
+				</CheckButton>
+
+				<Frame name="EasyDestroyFilters_AddFilterType">
+					<Anchors>
+						<Anchor point="TOP" relativeTo="EasyDestroyFiltersCheck" relativePoint="BOTTOM" x="0" y="-12"/>
+						<Anchor point="LEFT" relativeTo="$parent" relativePoint="LEFT" x="12" y="0"/>
+						<Anchor point="RIGHT" relativeTo="$parent" relativePoint="RIGHT" x="-4" y="0"/>
+					</Anchors>
+					<Size>
+						<AbsDimension x="0" y="30"/>
+					</Size>
+					<Frames>
+						<Frame name="EasyDestroyFilterTypes" inherits="UIDropDownMenuTemplate">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativePoint="TOPLEFT" x="-14" y="8"/>
+								<Anchor point="TOPRIGHT" relativePoint="RIGHT"/>
+							</Anchors>
+							<Size>
+								<AbsDimension x="0" y="30"/>
+							</Size>
+						</Frame>
+					</Frames>
+				</Frame>
+
+				<Button name="EasyDestroyFilters_New" inherits="UIPanelButtonTemplate" text="New Filter">
+					<Size>
+						<AbsDimension x="100" y="22"/>
+					</Size>
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="EasyDestroyFilters_AddFilterType" relativePoint="BOTTOMLEFT" x="-6" y="0"/>
+					</Anchors>
+				</Button>
+
+				<Button name="EasyDestroyFilters_NewFromFilter" inherits="UIPanelButtonTemplate" text="New From Current">
+					<Size>
+						<AbsDimension x="100" y="22"/>
+					</Size>
+					<Anchors>
+						<Anchor point="TOPRIGHT" relativeTo="EasyDestroyFilters_AddFilterType" relativePoint="BOTTOMRIGHT" x="0" y="0"/>
+					</Anchors>
+				</Button>
+
+				<Button name="EasyDestroyFilters_Save" inherits="UIPanelButtonTemplate" text="Save Filter">
+					<Size>
+						<AbsDimension x="100" y="22"/>
+					</Size>
+					<Anchors>
+						<Anchor point="TOPRIGHT" relativeTo="EasyDestroyFilters_NewFromFilter" relativePoint="BOTTOMRIGHT" x="0" y="-4"/>
+					</Anchors>
+				</Button>
+
+				<Button name="EasyDestroyFilters_Delete" inherits="UIPanelButtonTemplate" text="Delete Filter">
+					<Size>
+						<AbsDimension x="100" y="22"/>
+					</Size>
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="EasyDestroyFilters_New" relativePoint="BOTTOMLEFT" x="0" y="-4"/>
+					</Anchors>
+				</Button>
+			</Frames>
+		</Frame>
+
 		<Button name="EasyDestroyButton" inherits="InsecureActionButtonTemplate,UIPanelButtonTemplate" text="Disenchant">
 			<Size>
-				<AbsDimension x="80" y="22"/>
+				<AbsDimension x="100" y="22"/>
 			</Size>
 			<Anchors>
 				<Anchor point="BOTTOMLEFT" relativeTo="EasyDestroyFrameSearch" x="10" y="10"/>
 			</Anchors>
 		</Button>
-		<Button name="EasyDestroy_OpenFilters" inherits="UIPanelButtonTemplate" text="Show Filters">
+
+		<Button name="EasyDestroy_OpenBlacklist" inherits="UIPanelButtonTemplate" text="Item Blacklist">
 			<Size>
-				<AbsDimension x="80" y="22"/>
+				<AbsDimension x="100" y="22"/>
 			</Size>
 			<Anchors>
 				<Anchor point="BOTTOMRIGHT" relativeTo="EasyDestroyFrameSearch" x="-10" y="10"/>
 			</Anchors>
 		</Button>
-		<Button name="EasyDestroy_OpenBlacklist" inherits="UIPanelButtonTemplate" text="Item Blacklist">
-			<Size>
-				<AbsDimension x="90" y="22"/>
-			</Size>
-			<Anchors>
-				<Anchor point="TOPLEFT" relativeTo="EasyDestroyButton" relativePoint="TOPRIGHT" x="24"/>
-				<Anchor point="BOTTOMRIGHT" relativeTo="EasyDestroy_OpenFilters" relativePoint="BOTTOMLEFT" x="-24"/>
-			</Anchors>
-		</Button>
+
 	</Frames>
 	<Scripts>
 		<OnLoad>
