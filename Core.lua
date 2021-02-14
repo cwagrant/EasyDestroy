@@ -6,7 +6,6 @@ EasyDestroy.AddonName = "EasyDestroy"
 EasyDestroy.AddonLoaded = false
 EasyDestroy.CurrentFilter = {}
 EasyDestroy.FilterChanged = false
-EasyDestroy.FilterSaveWarned = false
 EasyDestroy.PlayerMoving = false
 
 EasyDestroy.DestroyTypes = {}
@@ -64,7 +63,6 @@ local ADDON_IS_LOADED = false;
 
 EasyDestroy.DataLoaded = false
 EasyDestroy.Data = {}
-EasyDestroy.FilterCount = 0
 EasyDestroy.EmptyFilter = {filter={}, properties={}}
 EasyDestroy.Spells = {
 	13262, --Disenchant

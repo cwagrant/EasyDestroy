@@ -207,12 +207,10 @@ local function OnFrameShow()
 
     itemsInBags.ScrollFrame:SetScript("OnVerticalScroll", function(self, offset)
         itemsInBags:OnVerticalScroll(offset)
-        needsUpdate = true
     end)
 
     itemsInBlacklist.ScrollFrame:SetScript("OnVerticalScroll", function(self, offset)
         itemsInBlacklist:OnVerticalScroll(offset)
-        needsUpdate = true
     end)
 
     itemsInBags:ScrollUpdate()
@@ -220,7 +218,10 @@ local function OnFrameShow()
 
     frame:SetScript("OnUpdate", function()
         if needsUpdate == true then 
+            itemsInBags.UpdateItemList = true
             itemsInBags:ScrollUpdate()
+
+            itemsInBlacklist.UpdateItemList = true
             itemsInBlacklist:ScrollUpdate()
             needsUpdate = false
         end

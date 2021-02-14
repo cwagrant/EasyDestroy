@@ -36,10 +36,12 @@ function EasyDestroy_EventHandler(self, event, ...)
 		-- Originally reenabled the button via a timer, however by doing it as a callback this makes it so
 		-- that we don't have to worry about it ever somehow being re-enabled before the bags and
 		-- item list have been properly processed.
-		EasyDestroyItemsScrollBar_Update(function() EasyDestroyButton:Enable() end)
+		-- EasyDestroyItemsScrollBar_Update(function() EasyDestroyButton:Enable() end)
+		EasyDestroyItemsFrame:ScrollUpdate()
 	elseif event=="PLAYER_ENTERING_WORLD" and EasyDestroy.AddonLoaded then
 		EasyDestroy.CurrentFilter=testfilter
-		EasyDestroyItemsScrollBar_Update()
+		-- EasyDestroyItemsScrollBar_Update()
+		EasyDestroyItemsFrame:ScrollUpdate()
 	elseif event == "UNIT_SPELLCAST_INTERRUPTED" then
 		local who, _, what = ... 
 		if who=="player" and what==13262 and not EasyDestroy.PlayerMoving then
@@ -97,15 +99,6 @@ function EasyDestroy_EventHandler(self, event, ...)
 				UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, fav)
 				EasyDestroy_LoadFilter(fav)
 				EasyDestroy_Refresh()
-						
-			--[[if GetTableSize(EasyDestroy.Data.Filters)>0 then
-				for k, filterObj in pairs(EasyDestroy.Data.Filters) do
-					if filterObj.properties.favorite then
-						UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, k)
-						EasyDestroy_LoadFilter(k)
-						EasyDestroy_Refresh()
-					end
-				end]]
 			else
 				UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, 0)
 			end
@@ -122,7 +115,9 @@ end
 function EasyDestroy_OnUpdate(self, delay)
 	if EasyDestroy.FilterChanged then 
 		EasyDestroy.CurrentFilter = EasyDestroy:GenerateFilter()
-		EasyDestroyItemsScrollBar_Update()
+		EasyDestroyItemsFrame.UpdateItemList = true
+		EasyDestroyItemsFrame:ScrollUpdate()
+		EasyDestroyFrame_FoundItemsCount:SetText(EasyDestroyItemsFrame.ItemCount ..  " Item(s) Found")
 		EasyDestroy.FilterChanged = false
 	end
 end
@@ -172,6 +167,7 @@ end)
 
 EasyDestroyFrame:SetScript("OnHide", function()
 	EasyDestroyFrame:UnregisterEvent("BAG_UPDATE_DELAYED")
+	collectgarbage()
 end)
 
 
@@ -190,7 +186,7 @@ EasyDestroyButton:SetScript("PostClick", function(self)
 EasyDestroyFrameSearchTypes.Search:SetScript("OnClick", EasyDestroySearchTypes_OnClick)
 EasyDestroyFrameSearchTypes.Blacklist:SetScript("OnClick", EasyDestroySearchTypes_OnClick)
 
-EasyDestroyFilters_Save:SetScript("OnClick", function() EasyDestroyFilters.SaveFilter() end)
+EasyDestroyFilters_Save:SetScript("OnClick", function() EasyDestroyFilters_SaveFilter() end)
 EasyDestroyFilters_Delete:SetScript("OnClick", function() StaticPopup_Show("ED_CONFIRM_DELETE_FILTER", EasyDestroyFilters:GetFilterName()) end)
 EasyDestroyFilters_NewFromFilter:SetScript("OnClick", EasyDestroyFilters_CreateNewFromCurrent)
 EasyDestroyFilters_New:SetScript("OnClick", function() 

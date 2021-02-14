@@ -30,82 +30,6 @@ local separatorInfo = {
 	},
 };
 
-function EasyDestroy:Initialize()
-	--[[ Title Bar ]]--
-	EasyDestroyFrame.Title:SetFontObject("GameFontHighlight");
-	EasyDestroyFrame.Title:SetText("Easy Destroy");		
-	
-	--[[ Frame Movement Information ]]--
-	EasyDestroyFrame.TitleBar:EnableMouse(true)
-	EasyDestroyFrame.TitleBar:SetScript("OnMouseDown", function(self, button)
-	  if button == "LeftButton" and not EasyDestroyFrame.isMoving then
-	   EasyDestroyFrame:StartMoving();
-	   EasyDestroyFrame.isMoving = true;
-	  end
-	end)
-	EasyDestroyFrame.TitleBar:SetScript("OnMouseUp", function(self, button)
-	  if button == "LeftButton" and EasyDestroyFrame.isMoving then
-	   EasyDestroyFrame:StopMovingOrSizing();
-	   EasyDestroyFrame.isMoving = false;
-	  end
-	end)
-	EasyDestroyFrame.TitleBar:SetScript("OnHide", function(self)
-	  if ( EasyDestroyFrame.isMoving ) then
-	   EasyDestroyFrame:StopMovingOrSizing();
-	   EasyDestroyFrame.isMoving = false;
-	  end
-	end)
-	
-	--[[ Item View Scrolling Area ]]--
-	EasyDestroyItems:SetBackdrop({
-		bgFile="Interface\\Tooltips\\UI-Tooltip-Background",
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-		edgeSize=16,
-		tile=true, 
-		tileEdge=false, 
-		insets={left=4, right=4, top=4, bottom=4}
-	})
-
-	EasyDestroySelectedFilters:SetBackdrop({
-		bgFile="Interface\\Tooltips\\UI-Tooltip-Background",
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-		edgeSize=8,
-		tile=true, 
-		tileEdge=false, 
-		insets={left=4, right=4, top=4, bottom=4}
-	})
-
-	EasyDestroyItems:SetBackdropColor(0,0,0,0.5)
-	EasyDestroySelectedFilters:SetBackdropColor(0,0,0,0.5)
-		
-	EasyDestroyFrameSearchTypes.Search.label:SetText("Searches")
-	EasyDestroyFrameSearchTypes.Search:SetChecked(true)
-	EasyDestroyFrameSearchTypes.Blacklist.label:SetText("Blacklists")
-
-	--[[ Filter View Area ]]--
-	UIDropDownMenu_SetWidth(EasyDestroyDropDown, EasyDestroyDropDown:GetWidth()-40)
-		
-	--[[ Test Button for debugging various information ]]--
-	EasyDestroy.EasyDestroyTest = CreateFrame("Button", "EDTest", EasyDestroyFrame, "UIPanelButtonTemplate")
-	EasyDestroy.EasyDestroyTest:SetSize(80, 22)
-	EasyDestroy.EasyDestroyTest:SetPoint("BOTTOMLEFT", EasyDestroyFrame, "TOPLEFT", 0, 4)
-	EasyDestroy.EasyDestroyTest:SetText("Test")
-	EasyDestroy.EasyDestroyTest:SetScript("OnClick", function(self)
-		print("CountItemsFound", #EasyDestroy:FindItemsToDestroy(EasyDestroy.CurrentFilter) or 0)
-		print("Filter", UIDropDownMenu_GetSelectedValue(EasyDestroyDropDown))
-		print("Filter ID", EasyDestroyFilters.CurrentFilterID)
-		pprint(EasyDestroy.CurrentFilter)
-	end)
-	
-	if EasyDestroy.DebugActive then
-		EasyDestroy.EasyDestroyTest:Show()
-	else
-		EasyDestroy.EasyDestroyTest:Hide()
-	end
-
-end
-
-
 function EasyDestroy_InitDropDown()
 	local info = UIDropDownMenu_CreateInfo()
 	local favoriteID = nil
@@ -154,22 +78,9 @@ function EasyDestroySearchTypes_OnClick()
 	end
 end
 
-function EasyDestroy_UpdateItemFrame(frame, item)
-	frame.Icon:SetTexture(GetItemIcon(item.itemlink))
-	frame.Item:SetText(GetItemInfo(item.itemlink))
-	frame.Item.itemLink = item.itemlink
-	local ilvl = select(1, GetDetailedItemLevelInfo(item.itemlink))
-	if ilvl then
-		frame.ItemLevel:SetText("(" .. ilvl .. ")")
-	else
-		frame.ItemLevel:SetText("")
-	end
-	
-	return frame
-end
-
-function EasyDestroy:FindItemsToDestroy(filter)
+local function FindItemsToDestroy()
 	-- item = {keyinteger, bag, slot, itemlink}
+	local filter = EasyDestroy.CurrentFilter
 	local matchfound = nil
 	local typematch = false
 	local items = {}
@@ -262,7 +173,8 @@ function EasyDestroy:FindItemsToDestroy(filter)
 				end
 				
 				if matchfound and typematch then
-					tinsert(items, {itemkey=itemkey, bag=bag, slot=slot, itemlink=item.link})
+					--tinsert(itemList, {bag=bag, slot=slot, itemlink=item.link, itemname=item.name, itemqual=item.quality, itemloc=item.location, ilvl=item.ilvl})
+					tinsert(items, {itemkey=itemkey, bag=bag, slot=slot, itemlink=item.link, itemname=item.name, itemqual=item.quality, ilvl=item.ilvl})
 					itemkey = itemkey + 1
 				end
 			end
@@ -369,45 +281,6 @@ function EasyDestroy:DisenchantItem()
 	EasyDestroyButton:Disable()
 end
 
-function EasyDestroyItemsScrollBar_Update(callbackFunction)
-	local filter = EasyDestroy.CurrentFilter
-	local itemList = EasyDestroy:FindItemsToDestroy(filter)
-	FauxScrollFrame_Update(EasyDestroyItemsFrameScrollFrame, #itemList, 8, 24)
-	
-	if #itemList > 8 then
-		EasyDestroyItems:SetPoint("TOPRIGHT", EasyDestroyFrameDialogBG, "TOPRIGHT",  -28, 0)
-	else
-		EasyDestroyItems:SetPoint("TOPRIGHT", EasyDestroyFrameDialogBG, "TOPRIGHT", -4, 0)
-	end
-	
-	local offset = FauxScrollFrame_GetOffset(EasyDestroyItemsFrameScrollFrame)
-	for i=1, 8, 1 do
-		local index = offset+i
-		local frame = _G['EasyDestroyItemsFrameItem'..i]
-		if index <= #itemList then
-			local item = itemList[index]
-			EasyDestroy_UpdateItemFrame(frame, item)
-			local r,g,b = GetItemQualityColor(C_Item.GetItemQualityByID(item.itemlink))
-			frame:SetBackdrop({bgFile="Interface\\Tooltips\\UI-Tooltip-Background",})
-			frame:SetBackdropColor(r,g,b, 0.5)
-			frame.info = item
-			frame:Show()
-		else
-			frame:Hide()
-			frame.info = nil
-		end
-	end
-
-	if callbackFunction ~= nil and type(callbackFunction) == "function" then
-		callbackFunction()
-	end
-	EasyDestroy.Debug("Completed Scroll Frame Update")
-
-	if EasyDestroyFrame_FoundItemsCount ~= nil then 
-		EasyDestroyFrame_FoundItemsCount:SetText(#itemList .. " Item(s) Found")
-	end
-end
-
 function EasyDestroy:IncludeBlacklists()
 	return EasyDestroyFrameSearchTypes.Blacklist:GetChecked()
 end
@@ -424,7 +297,6 @@ end
 -- Function of the window drop down, moved from Main.
 function EasyDestroy_DropDownSelect(self, arg1, arg2, checked)
 	EasyDestroy.Debug("SetSelectedValue", self.value)
-	EasyDestroy.FilterSaveWarned = false
 	UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, self.value)
 	if self.value == 0 then
 		EasyDestroy_ClearFilterFrame()
@@ -436,4 +308,86 @@ function EasyDestroy_DropDownSelect(self, arg1, arg2, checked)
 		EasyDestroy.CurrentFilter.fid = self.value
 	end
 	EasyDestroy_Refresh()
+end
+
+function EasyDestroy:Initialize()
+	--[[ Title Bar ]]--
+	EasyDestroyFrame.Title:SetFontObject("GameFontHighlight");
+	EasyDestroyFrame.Title:SetText("Easy Destroy");		
+	
+	--[[ Frame Movement Information ]]--
+	EasyDestroyFrame.TitleBar:EnableMouse(true)
+	EasyDestroyFrame.TitleBar:SetScript("OnMouseDown", function(self, button)
+	  if button == "LeftButton" and not EasyDestroyFrame.isMoving then
+	   EasyDestroyFrame:StartMoving();
+	   EasyDestroyFrame.isMoving = true;
+	  end
+	end)
+	EasyDestroyFrame.TitleBar:SetScript("OnMouseUp", function(self, button)
+	  if button == "LeftButton" and EasyDestroyFrame.isMoving then
+	   EasyDestroyFrame:StopMovingOrSizing();
+	   EasyDestroyFrame.isMoving = false;
+	  end
+	end)
+	EasyDestroyFrame.TitleBar:SetScript("OnHide", function(self)
+	  if ( EasyDestroyFrame.isMoving ) then
+	   EasyDestroyFrame:StopMovingOrSizing();
+	   EasyDestroyFrame.isMoving = false;
+	  end
+	end)
+	
+	--[[ Item View Scrolling Area ]]--
+	EasyDestroyItems:SetBackdrop({
+		bgFile="Interface\\Tooltips\\UI-Tooltip-Background",
+		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
+		edgeSize=16,
+		tile=true, 
+		tileEdge=false, 
+		insets={left=4, right=4, top=4, bottom=4}
+	})
+
+	EasyDestroySelectedFilters:SetBackdrop({
+		bgFile="Interface\\Tooltips\\UI-Tooltip-Background",
+		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
+		edgeSize=8,
+		tile=true, 
+		tileEdge=false, 
+		insets={left=4, right=4, top=4, bottom=4}
+	})
+
+	EasyDestroyItems:SetBackdropColor(0,0,0,0.5)
+	EasyDestroySelectedFilters:SetBackdropColor(0,0,0,0.5)
+		
+	EasyDestroyFrameSearchTypes.Search.label:SetText("Searches")
+	EasyDestroyFrameSearchTypes.Search:SetChecked(true)
+	EasyDestroyFrameSearchTypes.Blacklist.label:SetText("Blacklists")
+
+	--[[ Filter View Area ]]--
+	UIDropDownMenu_SetWidth(EasyDestroyDropDown, EasyDestroyDropDown:GetWidth()-40)
+		
+	--[[ Test Button for debugging various information ]]--
+	EasyDestroy.EasyDestroyTest = CreateFrame("Button", "EDTest", EasyDestroyFrame, "UIPanelButtonTemplate")
+	EasyDestroy.EasyDestroyTest:SetSize(80, 22)
+	EasyDestroy.EasyDestroyTest:SetPoint("BOTTOMLEFT", EasyDestroyFrame, "TOPLEFT", 0, 4)
+	EasyDestroy.EasyDestroyTest:SetText("Test")
+	EasyDestroy.EasyDestroyTest:SetScript("OnClick", function(self)
+		print("CountItemsFound", #FindItemsToDestroy() or 0)
+		print("Filter", UIDropDownMenu_GetSelectedValue(EasyDestroyDropDown))
+		print("Filter ID", EasyDestroyFilters.CurrentFilterID)
+		pprint(EasyDestroy.CurrentFilter)
+	end)
+	
+	if EasyDestroy.DebugActive then
+		EasyDestroy.EasyDestroyTest:Show()
+	else
+		EasyDestroy.EasyDestroyTest:Hide()
+	end
+
+    EasyDestroyItemsFrame:Initialize(FindItemsToDestroy, 8, 24, nil)
+	
+	EasyDestroyItemsFrame.ScrollFrame:SetScript("OnVerticalScroll", function(self, offset)
+        EasyDestroyItemsFrame:OnVerticalScroll(offset)
+        --EasyDestroy.FilterChanged = true
+    end)
+
 end

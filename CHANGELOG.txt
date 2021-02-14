@@ -1,3 +1,11 @@
+20210213 - 2.0.1b
+- Code cleanup
+- Further redundancy removal/standardization
+- Moved favorites related functions to a new file for clarity.
+- Significantly reduced memory usage from filter modifications/changing.
+- Bug fixes.
+- Added comments to a number of functions.
+
 20210213 - 2.0.0b
 - UI overhaul (one window = better?)
 - Added the ability for character specific favorites. However, I have not yet finished an options window.

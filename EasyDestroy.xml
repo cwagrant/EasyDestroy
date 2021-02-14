@@ -36,13 +36,13 @@
 			
 			<!-- Scroll Frame Buttons -->
 			<Frames>
-				<Frame name="EasyDestroyItemsFrame" inherits="BackdropTemplate">
+				<Frame name="EasyDestroyItemsFrame" inherits="EasyDestroyItemScrollTemplate" mixin="EasyDestroyScrollMixin">
 					<Anchors>
 						<Anchor point="TOPLEFT" x="4"/>
 						<Anchor point="BOTTOMRIGHT" x="-4"/>
 					</Anchors>
-					<Frames>
-						<ScrollFrame name="$parentScrollFrame" inherits="FauxScrollFrameTemplate">
+					<!--<Frames>
+						<ScrollFrame name="$parentScrollFrame" inherits="FauxScrollFrameTemplate" parentKey="ScrollFrame">
 							<Anchors>
 								<Anchor point="TOPLEFT" RelativeTo="EasyDestroyItems" x="0" y="-5"/>
 								<Anchor point="BOTTOMRIGHT" RelativeTo="EasyDestroyItems" x="0" y="5"/>
@@ -108,7 +108,7 @@
 								<Anchor point="TOPRIGHT" RelativePoint="BOTTOMRIGHT" RelativeTo="$parentItem7" />
 							</Anchors>
 						</Button>
-					</Frames>
+					</Frames>-->
 				</Frame>
 			</Frames>
 		</Frame>

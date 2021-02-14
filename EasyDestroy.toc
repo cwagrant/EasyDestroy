@@ -1,5 +1,5 @@
 ## Interface: 90002
-## Version: 2.0.0b
+## Version: 2.0.1b
 ## Title: EasyDestroy
 ## Notes: Makes disenchanting easy!
 ## Author: Deeproot-Dalaran (C.W.A.Grant)
@@ -17,6 +17,7 @@ Templates.xml
 EasyDestroy.xml
 EasyDestroy.lua
 Filters.lua
+Favorites.lua
 Main.lua
 
 filters\ilvl.lua
