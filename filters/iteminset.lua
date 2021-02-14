@@ -11,11 +11,10 @@ filter.parent = _G[EDFILTER_SCROLL_CHILD]
 
 function filter:GetFilterFrame()
     filter.frame = filter.frame or CreateFrame("Frame", "EDFilterItemInSet", filter.parent)
-    filter.checkbox = filter.checkbox or CreateFrame("CheckButton", nil, filter.frame, "EasyDestroyCheckboxTemplate")
+    filter.checkbox = filter.checkbox or CreateFrame("CheckButton", "EDFilterItemInSetCheck", filter.frame, "EasyDestroyCheckboxTemplate")
     filter.checkbox:SetPoint("LEFT")
     filter.checkbox.label:SetText(filter.name)
-    filter.checkbox:SetChecked(false)
-    --filter.checkbox:SetScript("OnClick", EasyDestroy_Refresh)
+    filter.checkbox:SetScript("OnClick", EasyDestroy_Refresh)
     return filter.frame
 end
 
@@ -58,14 +57,22 @@ end
 
 function filter:GetValues()
     if filter.frame then
-        return filter.checkbox:GetChecked() and true or filter.checkbox:IsShown() and filter.checkbox:GetChecked() or nil
+        if filter.checkbox:GetChecked() then
+            return true
+        else
+            return false
+        end
     end
     return nil
 end
 
 function filter:SetValues(values)
     if filter.frame then
-        filter.checkbox:SetChecked(values)
+        if values == "" then
+            filter.checkbox:SetChecked(false)
+        else
+            filter.checkbox:SetChecked(values)
+        end
     end
 end
 

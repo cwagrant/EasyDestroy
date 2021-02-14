@@ -294,6 +294,10 @@ function EasyDestroyFilters_SaveFilter(skipFavoriteCheck)
 
 	-- if error and error is type favorite and we have alredy warned them OR it is valid, then we save the filter
 	elseif (not valid and validationErrorType == ED_ERROR_FAVORITE) or valid then
+		EasyDestroy.Debug("Saving filter")
+		if EasyDestroy.DebugActive then
+			pprint(filter)
+		end
 		if validationErrorType == ED_ERROR_FAVORITE then
 			EasyDestroyFilters_ClearFavorite()
 		end
@@ -341,6 +345,10 @@ function EasyDestroyFilters__Save(filterID, filter)
 	]]
 	EasyDestroy:Debug("Saving Filter", filterID)
 	EasyDestroy.Data.Filters[filterID] = filter
+
+	if EasyDestroy.DebugActive then
+		pprint(filter)
+	end
 
 	-- update favorite id for character specific ids
 	if EasyDestroyFilterSettings.Favorite:GetChecked() then

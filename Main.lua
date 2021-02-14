@@ -37,7 +37,8 @@ function EasyDestroy_EventHandler(self, event, ...)
 		-- that we don't have to worry about it ever somehow being re-enabled before the bags and
 		-- item list have been properly processed.
 		-- EasyDestroyItemsScrollBar_Update(function() EasyDestroyButton:Enable() end)
-		EasyDestroyItemsFrame:ScrollUpdate()
+		EasyDestroyItemsFrame.UpdateItemList = true
+		EasyDestroyItemsFrame:ScrollUpdate(function() EasyDestroyButton:Enable() end)
 	elseif event=="PLAYER_ENTERING_WORLD" and EasyDestroy.AddonLoaded then
 		EasyDestroy.CurrentFilter=testfilter
 		-- EasyDestroyItemsScrollBar_Update()
@@ -200,4 +201,33 @@ EasyDestroyFilters_New:SetScript("OnClick", function()
 	EasyDestroy_Refresh() end
 )
 
+EasyDestroy_ToggleConfigurator:SetScript("OnClick", function() 
+	if EasyDestroyConfiguration:IsVisible() then 
+		EasyDestroyConfiguration:Hide() 
+	else
+		EasyDestroyConfiguration:Show()
+	end
+end)
+
+EasyDestroyConfiguration:SetScript("OnHide", function()
+	EasyDestroyFrame:SetSize(340, 380)
+	EasyDestroy_ToggleConfigurator:SetText("Show Configurator")
+	UIDropDownMenu_SetWidth(EasyDestroyDropDown, EasyDestroyDropDown:GetWidth()-40)
+	EasyDestroy_ToggleConfigurator:ClearAllPoints()
+	EasyDestroy_ToggleConfigurator:SetPoint("BOTTOMRIGHT", EasyDestroy_OpenBlacklist, "TOPRIGHT", 0, 10)
+end)
+
+EasyDestroyConfiguration:SetScript("OnShow", function()
+	EasyDestroyFrame:SetSize(580, 580)
+	EasyDestroy_ToggleConfigurator:SetText("Hide Configurator")
+	UIDropDownMenu_SetWidth(EasyDestroyDropDown, EasyDestroyDropDown:GetWidth()-40)
+	EasyDestroy_ToggleConfigurator:ClearAllPoints()
+	EasyDestroy_ToggleConfigurator:SetPoint("BOTTOMRIGHT", EasyDestroy_OpenBlacklist, "BOTTOMLEFT", -10, 0)
+end)
+
 EasyDestroySelectedFiltersScroll:SetToplevel(true)
+
+if EasyDestroy.DebugActive then
+	EasyDestroy:CreateBG(EasyDestroyFrameSearch, 1, 0, 0)
+	EasyDestroy:CreateBG(EasyDestroyConfiguration, 0, 1, 0)
+end
