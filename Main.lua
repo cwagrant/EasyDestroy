@@ -104,6 +104,11 @@ function EasyDestroy_EventHandler(self, event, ...)
 				UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, 0)
 			end
 
+			local showConfig = EasyDestroy_GetOptionValue("ConfiguratorShown")
+			if showConfig ~= nil then
+				EasyDestroyConfiguration:SetShown(showConfig)
+			end
+
 		end
 	elseif event=="PLAYER_LOGOUT" then
 		if EasyDestroy.DataLoaded then
@@ -215,6 +220,7 @@ EasyDestroyConfiguration:SetScript("OnHide", function()
 	UIDropDownMenu_SetWidth(EasyDestroyDropDown, EasyDestroyDropDown:GetWidth()-40)
 	EasyDestroy_ToggleConfigurator:ClearAllPoints()
 	EasyDestroy_ToggleConfigurator:SetPoint("BOTTOMRIGHT", EasyDestroy_OpenBlacklist, "TOPRIGHT", 0, 10)
+	EasyDestroy_SaveOptionValue("ConfiguratorShown", false)
 end)
 
 EasyDestroyConfiguration:SetScript("OnShow", function()
@@ -223,6 +229,7 @@ EasyDestroyConfiguration:SetScript("OnShow", function()
 	UIDropDownMenu_SetWidth(EasyDestroyDropDown, EasyDestroyDropDown:GetWidth()-40)
 	EasyDestroy_ToggleConfigurator:ClearAllPoints()
 	EasyDestroy_ToggleConfigurator:SetPoint("BOTTOMRIGHT", EasyDestroy_OpenBlacklist, "BOTTOMLEFT", -10, 0)
+	EasyDestroy_SaveOptionValue("ConfiguratorShown", true)
 end)
 
 EasyDestroySelectedFiltersScroll:SetToplevel(true)

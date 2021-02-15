@@ -391,3 +391,20 @@ function EasyDestroy:Initialize()
     end)
 
 end
+
+function EasyDestroy_SaveOptionValue(key, val)
+	if EasyDestroy.Data and EasyDestroy.Data.Options then
+		EasyDestroy.Data.Options[key] = val
+	end
+end
+
+function EasyDestroy_GetOptionValue(key)
+	if EasyDestroy.Data and EasyDestroy.Data.Options then
+		if EasyDestroy.Data.Options[key] ~= nil then
+			return EasyDestroy.Data.Options[key]
+		else
+			return nil
+		end
+	end
+	return nil
+end
