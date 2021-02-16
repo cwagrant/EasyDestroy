@@ -174,7 +174,7 @@ local function FindItemsToDestroy()
 				
 				if matchfound and typematch then
 					--tinsert(itemList, {bag=bag, slot=slot, itemlink=item.link, itemname=item.name, itemqual=item.quality, itemloc=item.location, ilvl=item.ilvl})
-					tinsert(items, {itemkey=itemkey, bag=bag, slot=slot, itemlink=item.link, itemname=item.name, itemqual=item.quality, ilvl=item.ilvl})
+					tinsert(items, {itemkey=itemkey, bag=bag, slot=slot, itemlink=item.link, itemname=item.name, itemqual=item.quality, ilvl=item.level})
 					itemkey = itemkey + 1
 				end
 			end

@@ -139,7 +139,7 @@ end
 
 local function OnClickBagItem(self)
     local itemid = GetContainerItemID(self.info.bag, self.info.slot);
-    print("Add Item to Blacklist", self.info.itemname, itemid)
+    EasyDestroy.Debug("Add Item to Blacklist", self.info.itemname, itemid)
     local tbl = {}
     local legendary = isItemShadowlandsLegendary(self.info.itemlink)
     tbl.itemid = itemid
@@ -154,7 +154,7 @@ local function OnClickBagItem(self)
 end
 
 local function OnClickBlacklistItem(self)
-    print("Remove Item From Blacklist", self.info.itemname, self.info.itemid)
+    EasyDestroy.Debug("Remove Item From Blacklist", self.info.itemname, self.info.itemid)
     for k, v in ipairs(EasyDestroy.Data.Blacklist) do
         -- if regular item, match on itemid, quality, ilvl
         -- if legendary item, match on itemid and name
