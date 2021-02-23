@@ -33,7 +33,7 @@ local separatorInfo = {
 function EasyDestroy_InitDropDown()
 	local info = UIDropDownMenu_CreateInfo()
 	local favoriteID = nil
-	info.text, info.value, info.checked, info.func, info.owner = "New Filter...", 0, false, EasyDestroy_DropDownSelect, EasyDestroyDropDown
+	info.text, info.value, info.checked, info.func, info.owner = EasyDestroy.Strings.FilterSelectionDropdownNew, 0, false, EasyDestroy_DropDownSelect, EasyDestroyDropDown
 	UIDropDownMenu_AddButton(info)
 	local hasSeparator = false
 	local includeSearches, includeBlacklists = EasyDestroy:IncludeSearches(), EasyDestroy:IncludeBlacklists()
@@ -44,6 +44,10 @@ function EasyDestroy_InitDropDown()
 		for fid, filter in EasyDestroy.spairs(EasyDestroy.Data.Filters, function(t, a, b) return (t[a].properties.type == t[b].properties.type and t[a].properties.name:lower() < t[b].properties.name:lower()) or t[a].properties.type < t[b].properties.type end) do
 			info.text, info.value, info.checked, info.func, info.owner = filter.properties.name, fid, false, EasyDestroy_DropDownSelect, EasyDestroyDropDown
 
+			if EasyDestroy.Cache.FilterCache and not EasyDestroy.Cache.FilterCache[fid] then
+				EasyDestroy.Cache.FilterCache[fid] = EasyDestroyFilter:Load(fid)
+			end
+			
 			if EasyDestroy.DebugActive then
 				info.text = filter.properties.name .. " | " .. fid
 			end
@@ -78,105 +82,168 @@ function EasyDestroySearchTypes_OnClick()
 	end
 end
 
-local function FindItemsToDestroy()
-	-- item = {keyinteger, bag, slot, itemlink}
+--[[
+	EasyDestroy.Cache.ItemCache {
+		[bag:slot:quality:itemLink] = item
+	}
+]]
+
+function EasyDestroy.EasyDestroyCacheID(bag, slot, quality, link)
+	
+	-- Create Cache ID from bag, slot, quality, and item link
+
+	if type(bag) ~= "number" or type(slot) ~= "number" or type(quality) ~= "number" or type(link) ~= "string" then 
+		error(
+			string.format("Usage: EasyDestroy.EasyDestroyCacheID(bag, slot, itemQuality, itemLink)\n (%s, %s, %s, %s)", bag or "nil", slot or "nil", quality or "nil", link or "nil")
+		)
+	end
+	return string.format("%i:%i:%i:%s", bag, slot, quality, link)
+
+end
+
+
+function EasyDestroy.GetBagItems()
+
+	-- Creates a list of items in the users bags and caches the items.
+
+	local itemList = {}
+	local filterRegistry = EasyDestroyFilters.Registry
+	local cachedItem = false
+
+	for bag = 0, NUM_BAG_SLOTS do
+		for slot=1, GetContainerNumSlots(bag) do
+			local item, EasyDestroyID
+			local quality, _, _, itemlink = select(4, GetContainerItemInfo(bag, slot))
+			
+			if itemlink then 
+				EasyDestroyID = EasyDestroy.EasyDestroyCacheID(bag, slot, quality, itemlink)
+			end
+
+			if EasyDestroyID and EasyDestroy.Cache.ItemCache[EasyDestroyID] then 
+				item = EasyDestroy.Cache.ItemCache[EasyDestroyID]
+				tinsert(itemList, item)
+				cachedItem = true
+			else
+				item = EasyDestroyItem:New(bag, slot)
+				cachedItem = false
+			end
+
+			while (true) do 
+				if item == nil then break end
+
+				if cachedItem then break end
+				
+				if item:GetItemID() and C_Item.IsItemKeystoneByID(item:GetItemID()) then break end
+
+				if item:GetItemLink() then
+					item.haveTransmog = item:HaveTransmog()
+
+					for k, v in pairs(filterRegistry) do
+						if v.GetItemInfo ~= nil and type(v.GetItemInfo) == "function" then
+							item:SetValueByKey(k, v:GetItemInfo(item:GetItemLink(), item.bag, item.slot))
+						end
+					end
+					EasyDestroy.Cache.ItemCache[EasyDestroyID] = item
+					tinsert(itemList, item)
+				end
+				break
+			end
+		end
+	end
+	return itemList
+end
+
+local function FindWhitelistItems()
+	
+	-- Applies the current Search(Whitelist) to all items in the users bags.
+	
 	local filter = EasyDestroy.CurrentFilter
 	local matchfound = nil
 	local typematch = false
 	local items = {}
-	local itemkey = 0
 	local filterRegistry = EasyDestroyFilters.Registry
-	
-	for bag = 0, NUM_BAG_SLOTS do
-		for slot=1, GetContainerNumSlots(bag) do
-			matchfound = nil
-			typematch = false
-			local item = {};
-			item.link = select(7, GetContainerItemInfo(bag, slot));
-			if item.link then 
-				item.name, _, item.quality, item.level, _, item._type, item._subtype, item.stack, item.slot, item.icon, item.price, item.type, item.subtype = GetItemInfo(item.link);
-				item.mog = EasyDestroyFilters:HaveTransmog(item.link);
-				item.id = GetContainerItemID(bag, slot);
-				item.bindtype = select(14, GetItemInfo(item.link))
-				-- GetContainerItemInfo GetContainerItemID
-				if not item.name then -- Because unlike Jim Croce, Mythic Keystones do not, in fact, have a name.
-					item.name = "Blizzard Didn't Name This Item"
+
+	for i, item in ipairs(EasyDestroy.GetBagItems()) do
+		matchfound = nil
+		typematch = false
+
+		if item:GetStaticBackingItem() then
+
+			--[[ a way to get "continue" statement functionality from break statements. ]]
+			while (true) do
+
+				-- Ignore items that are junk or > legendary.
+				if item.quality and (item.quality < Enum.ItemQuality.Common or item.quality > Enum.ItemQuality.Epic) then
+					matchfound = false
+					break
 				end
 
-				for k, v in pairs(filterRegistry) do
-					if v.GetItemInfo ~= nil and type(v.GetItemInfo) == 'function' then 
-						item[k] = v:GetItemInfo(item.link, bag, slot)
+				-- can't typically disenchant cosmetic items. This filters them out (hopefully)
+				-- Not sure about cosmetic weapons...
+				if item.classID==LE_ITEM_CLASS_ARMOR and item.subclassID == LE_ITEM_ARMOR_COSMETIC then
+					matchfound = false
+					break
+				end
+
+				--[[ 
+					If we're editing a filter/blacklist then we want to show the items it would catch.
+						However if we're looking at a blacklist and the filter has a special blacklist function we use that.
+						A "blacklist" function is essentially an inverse of the "check", but to make sure we can handle
+						any weird situations that could crop  up in the future, it's a special function rather than just
+						a direct inversion (not) of the check.
+
+					If we're editing a filter/whitelist then we want to show the items it would catch.
+				]]
+				for k, v in pairs(filter.filter) do
+					if not filterRegistry[k] then
+						print("Unsupported filter: " .. k)
+					else
+						if filter.properties.type == ED_FILTER_TYPE_BLACKLIST and filterRegistry[k].Blacklist ~= nil and type(filterRegistry[k].Blacklist) == "function" then
+							if not filterRegistry[k]:Blacklist(v, item) then
+								matchfound = false
+								break
+							end
+						elseif not filterRegistry[k]:Check(v, item) then
+							matchfound = false
+							break
+						end	
+					end
+					matchfound = true
+				end
+				
+				if not matchfound then break end
+
+				--[[ Filter out types/subtypes that don't matter for the current action ]]--
+				for k, v in ipairs(ED_ACTION_FILTERS[ED_ACTION_DISENCHANT]) do
+					if v.itype == item.classID then
+						if not v.stype then
+							typematch = true
+						elseif v.stype == item.subclassID then
+							typematch = true
+						end
 					end
 				end
 				
-				-- not a true loop, just an easy way to shortcircuit the checks if any of them fail
-				-- this way we can skip unnecessary checks and hopefully speed things up a bit
-				while (true) do
-					-- Ignore items that are junk or > legendary.
-					if item.quality and (item.quality < 1 or item.quality > 4) then
-						matchfound = false
-						break
-					end
 
-					for k, v in pairs(filter.filter) do
-						if not filterRegistry[k] then
-							print("Unsupported filter: " .. k)
-						else
-							if filter.properties.type == ED_FILTER_TYPE_BLACKLIST and filterRegistry[k].Blacklist ~= nil and type(filterRegistry[k].Blacklist) == "function" then
-								if not filterRegistry[k]:Blacklist(v, item) then
-									matchfound = false
-									break
-								end
-							elseif not filterRegistry[k]:Check(v, item) then
-								matchfound = false
-								break
-							end	
-						end
-						matchfound = true
-					end
-					
-					if not matchfound then break end
+				if not typematch then break end
 
-					--[[ Filter out types/subtypes that don't matter for the current action ]]--
-					if matchfound then
-						for k, v in ipairs(EasyDestroy.DestroyFilters[EasyDestroy.DestroyAction]) do
-							if v.itype == item.type then
-								if not v.stype then
-									typematch = true
-								elseif v.stype == item.subtype then
-									typematch = true
-								end
-							end
-						end
-					end
-					if not typematch then break end
-
-					-- this is a check of the "item" blacklist
-					if filter.properties.type ~= ED_FILTER_TYPE_BLACKLIST and EasyDestroy.ItemInBlacklist(item.id, item.name, item.quality, item.level) then
-						matchfound = false
-						break
-					end
-					
-					-- this is a check of blacklist type filters
-					if filter.properties.type ~= ED_FILTER_TYPE_BLACKLIST and EasyDestroy:InFilterBlacklist(item) then 
-						matchfound = false
-						break
-					end
-					
-					-- can't typically disenchant cosmetic items. This filters them out (hopefully)
-					-- Not sure about cosmetic weapons...
-					if item.type==LE_ITEM_CLASS_ARMOR and item.subtype == LE_ITEM_ARMOR_COSMETIC then
-						matchfound = false
-						break
-					end
+				-- this is a check of the "item" blacklist
+				if filter.properties.type ~= ED_FILTER_TYPE_BLACKLIST and EasyDestroy.ItemInBlacklist(item.itemID, item:GetItemName(), item.quality, item.level) then
+					matchfound = false
 					break
 				end
 				
-				if matchfound and typematch then
-					--tinsert(itemList, {bag=bag, slot=slot, itemlink=item.link, itemname=item.name, itemqual=item.quality, itemloc=item.location, ilvl=item.ilvl})
-					tinsert(items, {itemkey=itemkey, bag=bag, slot=slot, itemlink=item.link, itemname=item.name, itemqual=item.quality, ilvl=item.level})
-					itemkey = itemkey + 1
+				-- this is a check of blacklist type filters
+				if filter.properties.type ~= ED_FILTER_TYPE_BLACKLIST and EasyDestroy:InFilterBlacklist(item) then 
+					matchfound = false
+					break
 				end
+
+				break
+			end
+
+			if matchfound and typematch then 
+				tinsert(items, item)
 			end
 		end
 	end
@@ -224,17 +291,17 @@ function EasyDestroy:InFilterBlacklist(item)
 		end
 	end
 	return matchesAny
-	--return true
 end
 
 function EasyDestroy:DisenchantItem()
 
+	-- The actual process for disenchanting an item.
 	if not EasyDestroyFrame:IsVisible() then
 		EasyDestroyFrame:Show()
 		return
 	end
 
-	local iteminfo = EasyDestroyItemsFrameItem1.info or nil
+	local iteminfo = EasyDestroyItemsFrameItem1.item or nil
 	local bag, slot
 	
 	if iteminfo ~= nil then
@@ -251,12 +318,12 @@ function EasyDestroy:DisenchantItem()
 		print("You cannot disenchant that item right now.")
 		return
 	elseif #GetLootInfo() > 0 then
-		if not EasyDestroy.WarnedLootOpen then
+		if not EasyDestroy.Warnings.LootOpen then
 			print("Unable to disenchant while loot window is open.")
-			EasyDestroy.WarnedLootOpen = true
+				EasyDestroy.Warnings.LootOpen = true
 			-- lets only warn people every so often, don't want to fill their chat logs if they spam click.
 			C_Timer.After(30, function()
-				EasyDestroy.WarnedLootOpen = false
+				EasyDestroy.Warnings.LootOpen = false
 			end
 			)
 		end
@@ -272,7 +339,7 @@ function EasyDestroy:DisenchantItem()
 		
 	if(GetContainerItemInfo(bag, slot) ~= nil)then
 		EasyDestroy.Debug(format("Disenchanting item at (bag, slot): %d %d", bag, slot))
-		EasyDestroyButton:SetAttribute("type1", "macro")
+		EasyDestroyButton:SetAttribute("*type1", "macro")
 		EasyDestroyButton:SetAttribute("macrotext", format("/cast %s\n/use %d %d", spellname, bag, slot))
 	end	
 	-- Disable the button while we process the item being destroyed.
@@ -371,7 +438,7 @@ function EasyDestroy:Initialize()
 	EasyDestroy.EasyDestroyTest:SetPoint("BOTTOMLEFT", EasyDestroyFrame, "TOPLEFT", 0, 4)
 	EasyDestroy.EasyDestroyTest:SetText("Test")
 	EasyDestroy.EasyDestroyTest:SetScript("OnClick", function(self)
-		print("CountItemsFound", #FindItemsToDestroy() or 0)
+		print("CountItemsFound", #FindWhitelistItems() or 0)
 		print("Filter", UIDropDownMenu_GetSelectedValue(EasyDestroyDropDown))
 		print("Filter ID", EasyDestroyFilters.CurrentFilterID)
 		pprint(EasyDestroy.CurrentFilter)
@@ -383,7 +450,7 @@ function EasyDestroy:Initialize()
 		EasyDestroy.EasyDestroyTest:Hide()
 	end
 
-    EasyDestroyItemsFrame:Initialize(FindItemsToDestroy, 8, 24, nil)
+    EasyDestroyItemsFrame:Initialize(FindWhitelistItems, 8, 24, nil)
 	
 	EasyDestroyItemsFrame.ScrollFrame:SetScript("OnVerticalScroll", function(self, offset)
         EasyDestroyItemsFrame:OnVerticalScroll(offset)

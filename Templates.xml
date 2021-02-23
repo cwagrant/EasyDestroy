@@ -31,7 +31,10 @@
 				</OnEnterPressed>	
 				<OnEditFocusLost>
 					EasyDestroy.FilterChanged = true
-				</OnEditFocusLost>	
+				</OnEditFocusLost>
+				<OnLoad>
+					EasyDestroy.RegisterFrame(self, "EditBox")
+				</OnLoad>
 			</Scripts>
 		</EditBox>
 	</Frames>
@@ -64,7 +67,10 @@
 				</OnEnterPressed>	
 				<OnEditFocusLost>
 					EasyDestroy.FilterChanged = true
-				</OnEditFocusLost>	
+				</OnEditFocusLost>
+				<OnLoad>
+					EasyDestroy.RegisterFrame(self, "EditBox")
+				</OnLoad>
 			</Scripts>
 		</EditBox>
 		<EditBox inherits="InputBoxTemplate" name="$parentEditBoxTo" parentKey="inputto" autoFocus="false">
@@ -80,7 +86,10 @@
 				</OnEnterPressed>	
 				<OnEditFocusLost>
 					EasyDestroy.FilterChanged = true
-				</OnEditFocusLost>	
+				</OnEditFocusLost>
+				<OnLoad>
+					EasyDestroy.RegisterFrame(self, "EditBox")
+				</OnLoad>
 			</Scripts>
 		</EditBox>
 	</Frames>
@@ -133,9 +142,9 @@
 			local width = GetScreenWidth() or 0
 			local anchor = "ANCHOR_RIGHT"
 			if x > (width/2) then anchor="ANCHOR_LEFT" end
-			if self.Item.itemLink then 
+			if self.item.itemLink then 
 				GameTooltip:SetOwner(self, anchor)
-				GameTooltip:SetHyperlink(self.Item.itemLink)
+				GameTooltip:SetHyperlink(self.item.itemLink)
 				GameTooltip:Show()
 			end
 		</OnEnter>
@@ -158,6 +167,11 @@
 			</FontString>
 		</Layer>
 	</Layers>
+	<Scripts>
+		<OnLoad>
+			EasyDestroy.RegisterFrame(self, "CheckButton")
+		</OnLoad>
+	</Scripts>
 </CheckButton>
 
 <Frame name="EasyDestroyRarityFilter" virtual="true">

@@ -1,13 +1,6 @@
-local filter = {}
-
 local EasyDestroyFilters = EasyDestroyFilters
 
-filter.name="Ignore Items in Equipment Sets"
-filter.key = "eqset"
-filter.frame = nil
-filter.height = 20
-filter.parent = _G[EDFILTER_SCROLL_CHILD]
-
+local filter = EasyDestroyFilterCriteria:New("Ignore Items in Equipment Sets", "eqset", 20)
 
 function filter:GetFilterFrame()
     filter.frame = filter.frame or CreateFrame("Frame", "EDFilterItemInSet", filter.parent)
@@ -76,17 +69,10 @@ function filter:SetValues(values)
     end
 end
 
-function filter.IsShown()
-    if filter.frame then
-        return filter.frame:IsShown()
-    end
-    return false
-end
-
 function filter:Clear()
     if filter.frame then
         filter.checkbox:SetChecked(false)
     end
 end
 
-EasyDestroyFilters:RegisterFilter(filter)
+EasyDestroyFilters:RegisterFilterCriterion(filter)

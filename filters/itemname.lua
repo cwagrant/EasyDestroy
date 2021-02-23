@@ -7,16 +7,8 @@ Registerable filters require 4 things.
 
 
 ]]
-
-local filter = {}
-
 local EasyDestroyFilters = EasyDestroyFilters
-
-filter.name="Item Name"
-filter.key = "name"
-filter.frame = nil
-filter.height = 20
-filter.parent = _G[EDFILTER_SCROLL_CHILD]
+local filter = EasyDestroyFilterCriteria:New("Item Name", "name", 20)
 
 -- There's no reason a filter should show up more than once
 -- So we can treat it as a singleton and just use this to
@@ -28,15 +20,6 @@ function filter:GetFilterFrame()
     filter.frame.label:SetText( filter.name .. ":")
     return filter.frame
 end
-
-function filter:Toggle()
-    if filter.frame:IsShown() then
-        filter.frame:Hide()
-    else
-        filter.frame:Show()
-    end
-end
-
 
 -- check input vs item values
 function filter:Check(inputname, item)
@@ -64,17 +47,10 @@ function filter:SetValues(setvalueinput)
     end
 end
 
-function filter.IsShown()
-    if filter.frame then
-        return filter.frame:IsShown()
-    end
-    return false
-end
-
 function filter:Clear()
     if filter.frame then
         filter.frame.input:SetText("")
     end
 end
 
-EasyDestroyFilters:RegisterFilter(filter)
+EasyDestroyFilters:RegisterFilterCriterion(filter)

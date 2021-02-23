@@ -39,6 +39,7 @@ function EasyDestroy_EventHandler(self, event, ...)
 		-- EasyDestroyItemsScrollBar_Update(function() EasyDestroyButton:Enable() end)
 		EasyDestroyItemsFrame.UpdateItemList = true
 		EasyDestroyItemsFrame:ScrollUpdate(function() EasyDestroyButton:Enable() end)
+		EasyDestroyFrame_FoundItemsCount:SetText(EasyDestroyItemsFrame.ItemCount ..  " Item(s) Found")
 	elseif event=="PLAYER_ENTERING_WORLD" and EasyDestroy.AddonLoaded then
 		EasyDestroy.CurrentFilter=testfilter
 		-- EasyDestroyItemsScrollBar_Update()
@@ -120,6 +121,7 @@ end
 
 function EasyDestroy_OnUpdate(self, delay)
 	if EasyDestroy.FilterChanged then 
+		EasyDestroy.UpdateSkin = true
 		EasyDestroy.CurrentFilter = EasyDestroy:GenerateFilter()
 		EasyDestroyItemsFrame.UpdateItemList = true
 		EasyDestroyItemsFrame:ScrollUpdate()
@@ -199,6 +201,7 @@ EasyDestroyFilters_New:SetScript("OnClick", function()
 	EasyDestroy_ClearFilterFrame() 
 	EasyDestroy_InitDropDown()
 	EasyDestroy_ResetFilterStack()
+	EasyDestroy.CurrentFilter = EasyDestroy.EmptyFilter
 	UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, 0) 
 	if EasyDestroy:IncludeBlacklists() and not EasyDestroy:IncludeSearches() then
 		EasyDestroyFrameSearchTypes.Search:SetChecked(true)
@@ -238,3 +241,5 @@ if EasyDestroy.DebugActive then
 	EasyDestroy:CreateBG(EasyDestroyFrameSearch, 1, 0, 0)
 	EasyDestroy:CreateBG(EasyDestroyConfiguration, 0, 1, 0)
 end
+
+EasyDestroyFilters_FavoriteIcon:SetScript("OnClick", EasyDestroy_FavoriteIconOnClick)

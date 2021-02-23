@@ -1,27 +1,23 @@
 --[[ Logic for the Favoriting System ]]
+EasyDestroy.Favorites = {}
 
-
-function EasyDestroyFilters_FavoriteIconOnClick()
-    --[[
-	Sets the checked/unchecked state of the favorite icon.
-
-    If setting to checked and the user has an existing favorite
-    AND we are not using character favorites, then clear their
-    chosen favorite.
-
-    TODO: Is the part about unsetting a faovrite wanted here?
-    I think that's already handled in the save functionality.
-    ]]
-	if EasyDestroyFilters_FavoriteIcon:GetChecked() then
-		EasyDestroyFilters_FavoriteIcon:SetChecked(false)
-	else
-		local existingFavorite = EasyDestroy_GetFavorite()
-		if existingFavorite and existingFavorite ~= nil then
-			if not EasyDestroy_UsingCharacterFavorites() then
-				EasyDestroy.Data.Filters[existingFavorite].properties.favorite = false
-			end
+--[[ If using Character Favorites, then clicking the icon will immediately set the favorite. ]]
+function EasyDestroy_FavoriteIconOnClick()
+	local existingFavorite = EasyDestroy_GetFavorite()
+	local currentFID = UIDropDownMenu_GetSelectedValue(EasyDestroyDropDown)
+	if existingFavorite and existingFavorite ~= nil and existingFavorite ~= currentFID then
+		if EasyDestroy_UsingCharacterFavorites() then
+			StaticPopup_Show("ED_CONFIRM_NEW_CHARACTER_FAVORITE")
 		end
-		EasyDestroyFilters_FavoriteIcon:SetChecked(true)
+	elseif existingFavorite == currentFID then
+		--print(EasyDestroyFilters_FavoriteIcon:GetChecked())
+		if not EasyDestroyFilters_FavoriteIcon:GetChecked() and EasyDestroy_UsingCharacterFavorites() then
+			EasyDestroy.CharacterData.FavoriteID = nil
+		end
+	else
+		if EasyDestroy_UsingCharacterFavorites() then
+			EasyDestroy.CharacterData.FavoriteID = currentFID
+		end
 	end
 end
 
@@ -84,23 +80,31 @@ function EasyDestroy_UnsetFavorite()
 		for k, filterObj in pairs(EasyDestroy.Data.Filters) do
 			if filterObj.properties.favorite then
 				EasyDestroy.Data.Filters[k].properties.favorite = false
+				-- Need to update the cache as well.
+				if EasyDestroy.Cache.FilterCache and EasyDestroy.Cache.FilterCache[k] then
+					EasyDestroy.Cache.FilterCache[k]:SetFavorite(false)
+				end
 			end
 		end
 	end
 end
 
 function EasyDestroyFilters_ClearFavorite(fid)
-	if EasyDestroy.Data.Options.CharacterFavorites and EasyDestroy.CharacterData then
-		if EasyDestroy.CharacterData.FavoriteID then
-			EasyDestroy.CharacterData.FavoriteID = nil
-			return
-		end
+	if EasyDestroy_UsingCharacterFavorites() then
+		EasyDestroy.Favorites.ClearUserFavorite()
 	elseif not EasyDestroy.Data.Options.CharacterFavorites and fid then
 		EasyDestroy.Data.Filters[fid].properties.favorite = false
 	else
-		for fid, filter in pairs(EasyDestroy.Data.Filters) do
-			filter.properties.favorite=false
+		for fid, filter in pairs(EasyDestroy.Cache.FilterCache) do
+			filter:SetFavorite(false)
 		end
+		-- for fid, filter in pairs(EasyDestroy.Data.Filters) do
+		-- 	filter.properties.favorite=false
+		-- end
 	end
 	
+end
+
+function EasyDestroy.Favorites.ClearUserFavorite()
+	EasyDestroy.CharacterData.FavoriteID = nil
 end

@@ -8,19 +8,15 @@ Registerable filters require 4 things.
 
 ]]
 
-local filter = {}
+-- local filter = {}
 EasyDestroyFilters = EasyDestroyFilters
-
-filter.name = "Item Level"
-filter.key = "level"
-filter.frame = nil
-filter.height = 20
-filter.parent = _G[EDFILTER_SCROLL_CHILD]
+local filter = EasyDestroyFilterCriteria:New("Item Level", "level", 20)
 
 -- EasyDestroy passes 3 values to this function, itemlink, bag, and slot. 
-function filter:GetItemInfo(ilink)
-    return select(1, GetDetailedItemLevelInfo(ilink))
-end
+-- function filter:GetItemInfo(ilink)
+--     return select(1, GetDetailedItemLevelInfo(ilink))
+-- end
+
 -- There's no reason a filter should show up more than once
 -- So we can treat it as a singleton and just use this to
 -- get any previous creations of the filter frame, or
@@ -33,15 +29,6 @@ function filter:GetFilterFrame()
     filter.frame.inputto:SetNumeric(true)
     return filter.frame
 end
-
-function filter:Toggle()
-    if filter.frame:IsShown() then
-        filter.frame:Hide()
-    else
-        filter.frame:Show()
-    end
-end
-
 
 -- check input vs item values
 function filter:Check(inputlevel, item)
@@ -89,13 +76,6 @@ function filter:SetValues(values)
 
 end
 
-function filter.IsShown()
-    if filter.frame then
-        return filter.frame:IsShown()
-    end
-    return false
-end
-
 function filter:Clear()
     if filter.frame then
         filter.frame.inputfrom:SetText("")
@@ -103,4 +83,4 @@ function filter:Clear()
     end
 end
 
-EasyDestroyFilters:RegisterFilter(filter)
+EasyDestroyFilters:RegisterFilterCriterion(filter)

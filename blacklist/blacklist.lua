@@ -25,9 +25,53 @@ local function ItemInBlacklist(itemid, itemname, quality, ilvl)
     return false
 end
 
-local function GetItemsInBags() 
+local function GetItemsInBags()
+    local itemList = {}
+
+    for i, item in ipairs(EasyDestroy.GetBagItems()) do
+		matchfound = nil
+		typematch = false
+
+        if item:GetStaticBackingItem() then
+            item.location = item:GetItemLocation()
+
+            while (true) do
+
+                for k, v in ipairs(ED_ACTION_FILTERS[ED_ACTION_DISENCHANT]) do
+					if v.itype == item.classID then
+						if not v.stype then
+							typematch = true
+						elseif v.stype == item.subclassID then
+							typematch = true
+						end
+					end
+				end
+
+                if not typematch then
+                    break
+                elseif item.classID == LE_ITEM_CLASS_ARMOR and item.subclassID == LE_ITEM_ARMOR_COSMETIC then
+                    break
+                elseif ItemInBlacklist(item.itemID, item:GetItemName(), item.quality, item.level) then
+                    break
+                elseif tContains(ED_DEFAULT_BLACKLIST, item.id) then
+                    break
+                end
+                tinsert(itemList, item)
+                break
+            end
+        end
+    end
+
+    return itemList
+end
+
+
+
+
+local function RETIRED_GetItemsInBags() 
     local itemList = {}
     local item = {}
+
     for bag = 0, NUM_BAG_SLOTS do
         for slot=1, GetContainerNumSlots(bag) do
             wipe(item)
@@ -46,7 +90,7 @@ local function GetItemsInBags()
 
                 -- Default Item Filter: Only include armor/weapons
                 local typematch = false
-                for k, v in ipairs(EasyDestroy.DestroyFilters[EasyDestroy.DestroyAction]) do
+                for k, v in ipairs(ED_ACTION_FILTERS[ED_ACTION_DISENCHANT]) do
                     if v.itype == item.type then
                         if not v.stype then
                             typematch = true
@@ -103,15 +147,19 @@ local function GetItemsInBlacklist()
         return ( (t[a].legendary or t[a].name) == (t[b].legendary or t[b].name) and t[a].ilvl < t[b].ilvl) or 
         ((t[a].legendary or t[a].name) < (t[b].legendary or t[b].name ) ) end) do
     --for k, item in pairs(blacklist) do
-        local a = {}
-        a.itemid, a.itemname, a.itemlink, a.itemqual, a.ilvl = item.itemid, item.name, item.link, item.quality, item.ilvl
+        local a = EasyDestroyItem:New(nil, nil, item.link)
+        a.quality = a.quality or item.quality
+        a.level = a.level or item.ilvl
+        a.itemID = a.itemID or item.itemid
+        a.name = a.name or item.name
+        --a.itemid, a.itemname, a.itemlink, a.itemqual, a.ilvl = item.itemid, item.name, item.link, item.quality, item.ilvl
         --a.itemid, a.itemname, a.itemlink, a.itemqual = item.itemid, GetItemInfo(item.itemid)
         -- Overwrite with the quality level of the item we added.
 
-        if item and item.legendary then
-            a.itemname = item.legendary
-            a.itemqual = 5 --legendary
-        end
+        -- if item and item.legendary then
+        --     a.itemname = item.legendary
+        --     a.itemqual = 5 --legendary``````````````````````````
+        -- end
 
         tinsert(itemList, a)
     end
@@ -138,27 +186,27 @@ local function isItemShadowlandsLegendary(itemstring)
 end
 
 local function OnClickBagItem(self)
-    local itemid = GetContainerItemID(self.info.bag, self.info.slot);
-    EasyDestroy.Debug("Add Item to Blacklist", self.info.itemname, itemid)
+    local itemid = GetContainerItemID(self.item.bag, self.item.slot);
+    EasyDestroy.Debug("Add Item to Blacklist", self.item:GetItemName(), self.item.itemID)
     local tbl = {}
-    local legendary = isItemShadowlandsLegendary(self.info.itemlink)
-    tbl.itemid = itemid
+    local legendary = isItemShadowlandsLegendary(self.item.itemLink)
+    tbl.itemid = self.item.itemID
     tbl.legendary = legendary
-    tbl.quality = C_Item.GetItemQuality(self.info.itemloc)
-    tbl.ilvl = GetDetailedItemLevelInfo(self.info.itemlink)
-    tbl.link = self.info.itemlink
-    tbl.name = self.info.itemname
+    tbl.quality = self.item.quality
+    tbl.ilvl = self.item.level
+    tbl.link = self.item.itemLink
+    tbl.name = self.item:GetItemName()
     tinsert(EasyDestroy.Data.Blacklist, tbl)
     needsUpdate = true
     EasyDestroy.FilterChanged = true
 end
 
 local function OnClickBlacklistItem(self)
-    EasyDestroy.Debug("Remove Item From Blacklist", self.info.itemname, self.info.itemid)
+    EasyDestroy.Debug("Remove Item From Blacklist", self.item:GetItemName(), self.item.itemID)
     for k, v in ipairs(EasyDestroy.Data.Blacklist) do
         -- if regular item, match on itemid, quality, ilvl
         -- if legendary item, match on itemid and name
-        if v and ((v.itemid == self.info.itemid and v.quality == self.info.itemqual and v.ilvl == self.info.ilvl) or (v.legendary and v.itemid==self.info.itemid and v.legendary==self.info.itemname)) then
+        if v and ((v.itemid == self.item.itemID and v.quality == self.item.quality and v.ilvl == self.item.level) or (v.legendary and v.itemid==self.item.itemID and v.legendary==self.item:GetItemName())) then
             tremove(EasyDestroy.Data.Blacklist, k)
             needsUpdate = true
             EasyDestroy.FilterChanged = true

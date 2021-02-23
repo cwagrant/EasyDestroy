@@ -1,22 +1,5 @@
---[[
-Registerable filters require 4 things.
-1) A UI/Frame to show.
-2) Either using available information about the item, or provide a function to get the information you want to check against.
-3) A Check function to determine if the item meets the criteria of the filter.
-4) A call to EasyDestroy/EasyDestroyFilters to register the filter as useable.
-
-
-]]
-
-local filter = {}
-
 local EasyDestroyFilters = EasyDestroyFilters
-
-filter.name="Item Quality"
-filter.key = "quality"
-filter.frame = nil
-filter.height = 65
-filter.parent = _G[EDFILTER_SCROLL_CHILD]
+local filter = EasyDestroyFilterCriteria:New("Item Quality", "quality", 65)
 
 -- There's no reason a filter should show up more than once
 -- So we can treat it as a singleton and just use this to
@@ -32,15 +15,6 @@ function filter:GetFilterFrame()
 	filter.frame.epic.label:SetText("|c11a335ee" .. "Epic" .. "|r")
     return filter.frame
 end
-
-function filter:Toggle()
-    if filter.frame:IsShown() then
-        filter.frame:Hide()
-    else
-        filter.frame:Show()
-    end
-end
-
 
 -- check input vs item values
 function filter:Check(inputquality, item)
@@ -99,13 +73,6 @@ function filter:SetValues(values)
     end
 end
 
-function filter.IsShown()
-    if filter.frame then
-        return filter.frame:IsShown()
-    end
-    return false
-end
-
 function filter:Clear()
     if filter.frame then
         for iqname, iqvalue in pairs(Enum.ItemQuality) do
@@ -118,4 +85,4 @@ function filter:Clear()
 end
 
 
-EasyDestroyFilters:RegisterFilter(filter)
+EasyDestroyFilters:RegisterFilterCriterion(filter)

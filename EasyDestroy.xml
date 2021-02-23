@@ -239,6 +239,16 @@
 								<Anchor point="TOPLEFT" relativeTo="EasyDestroyFilters_New" relativePoint="BOTTOMLEFT" x="0" y="-4"/>
 							</Anchors>
 						</Button>
+
+						<!-- <Button name="EasyDestroySaveFavorite" inherits="UIPanelButtonTemplate" text="Save Favorite">
+							<Size>
+								<AbsDimension x="100" y="22"/>
+							</Size>
+							<Anchors>
+								<Anchor point="TOPRIGHT" relativeTo="EasyDestroyFilters_Save" relativePoint="BOTTOMRIGHT" x="0" y ="-4"/>
+							</Anchors>
+						</Button> -->
+
 					</Frames>
 				</Frame>
 			</Frames>

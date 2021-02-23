@@ -1,19 +1,22 @@
 EasyDestroyItemsMixin = {}
 
-function EasyDestroyItemsMixin:UpdateItemFrame(icon, link, name, quality, ilvl, onclick)
-    if self and link then
-        self.Icon:SetTexture(icon)
-        self.Item:SetText(name)
-        self.Item.itemLink = link
-        if ilvl and ilvl ~= nil then
-            if ilvl then
-                self.ItemLevel:SetText("(" .. ilvl .. ")")
+--TODO: update this to use an EasyDestroyItem
+function EasyDestroyItemsMixin:UpdateItemFrame(item, onclick)
+    if self and item:GetStaticBackingItem() then
+        item:ContinueWithCancelOnItemLoad(function()
+            self.Icon:SetTexture(item:GetItemIcon())
+            self.Item:SetText(item:GetItemName())
+        end)
+        --self.Item.itemLink = link
+        if item.level and item.level ~= nil and item.level ~= 0 then
+            if item.level then
+                self.ItemLevel:SetText("(" .. item.level .. ")")
             else
                 self.ItemLevel:SetText("")
             end
         end
 
-        local r,g,b = GetItemQualityColor(quality)
+        local r,g,b = GetItemQualityColor(item.quality)
         self:SetBackdrop({bgFile="Interface\\Tooltips\\UI-Tooltip-Background",})
         self:SetBackdropColor(r,g,b, 0.5)
 
@@ -60,6 +63,7 @@ function EasyDestroyScrollMixin:Initialize(listfunc, displayed, height, childfun
     end
 end
 
+-- TODO: Update to use EasyDestroyItem
 function EasyDestroyScrollMixin:ScrollUpdate(callbackFunction)
     local itemList = nil
 
@@ -90,11 +94,11 @@ function EasyDestroyScrollMixin:ScrollUpdate(callbackFunction)
 		local index = offset+i
 		local frame = _G[ self:GetName() .. "Item" .. i ]
         if index <= #itemList then
-            local data = itemList[index]
-            local item = Item:CreateFromItemLink(data.itemlink)
-            frame:UpdateItemFrame(item:GetItemIcon(), data.itemlink, data.itemname, data.itemqual, (data.ilvl or nil), self.ChildOnClick or nil)
+            local item = itemList[index]
+            --local item = Item:CreateFromItemLink(data.itemlink)
+            frame:UpdateItemFrame(item, self.ChildOnClick or nil)
             frame:Show()
-            frame.info = data
+            frame.item = item
             needsUpdate = true
         else
             frame:HideItemFrame()

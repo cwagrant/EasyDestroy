@@ -50,6 +50,18 @@ function EasyDestroyFilters:SetupWindow()
 		preferredIndex = 3,
 	}
 
+	StaticPopupDialogs["ED_CONFIRM_NEW_CHARACTER_FAVORITE"] = {
+		text = "You already have a favorite filter. Do you want to make this your new favorite filter?",
+		button1 = "Yes",
+		button2 = "No",
+		OnAccept = function(self) EasyDestroy.CharacterData.FavoriteID = UIDropDownMenu_GetSelectedValue(EasyDestroyDropDown) end,
+		OnCancel = function(self) EasyDestroyFilterSettings.Favorite:SetChecked(false) end,
+		timeout = 30,
+		whileDead = false,
+		hideOnEscape = true,
+		preferredIndex = 3,
+	}
+
 	StaticPopupDialogs["ED_BLACKLIST_NO_FAVORITE"] = {
 		text = "You cannot set a blacklist as a favorite. If you continue, this filter will be no longer be favorited. |n|n|cFFFF0000This applies to all characters that have this filter as a favorite.",
 		button1 = "Okay",
@@ -106,17 +118,17 @@ function EasyDestroyFilters:SetupWindow()
 	end )
 end
 
-function EasyDestroyFilters:RegisterFilter(filter)
+function EasyDestroyFilters:RegisterFilterCriterion(filter)
     --[[ 
     Register a filter with the addon.
     This should be called by the filters themselves.
     ]]
 	local filterKeys = EasyDestroy.Keys(filter)
 	if not tContains(filterKeys, 'name') then
-		EasyDestroy.Error('Error: Filter found with no name. Unable to register.')
+		EasyDestroy.Error('Error: Filter criterion found with no name. Unable to register.')
 		return
 	elseif not tContains(filterKeys, 'key') then 
-		EasyDestroy.Error('Error: Filter ' .. filter.name .. ' nunable to load. No key provided.')
+		EasyDestroy.Error('Error: Filter criterion ' .. filter.name .. ' nunable to load. No key provided.')
 		return
 	end
 
@@ -138,23 +150,23 @@ function EasyDestroyFilters.InitializeFilterTypesDropDown()
 	local info = UIDropDownMenu_CreateInfo()
 	local filterRegistry = EasyDestroyFilters.Registry
 	info.text, info.value, info.func, info.owner, info.isTitle, info.notCheckable = 
-	"Select filters ...", 0, nil, EasyDestroyFilterTypes, true, true
+	EasyDestroy.Strings.CriteriaSelectionDropdown, 0, nil, EasyDestroyFilterTypes, true, true
 	UIDropDownMenu_AddButton(info)
 	--refresh info w/o any of the above settings, not sure why disabled is getting set, may be a function of isTitle or notCheckable.
 	info.isTitle, info.notCheckable, info.disabled = false, false, false
 	--pprint(info)
 	for k, v in pairs(filterRegistry) do
 		info.text, info.value, info.checked, info.func, info.owner, info.keepShownOnClick =
-		v.name, v.key, v.IsShown(), EasyDestroyFilters.SelectFilterTypes, EasyDestroyFilterTypes, true
+		v.name, v.key, v:IsShown(), EasyDestroyFilters.SelectFilterTypes, EasyDestroyFilterTypes, true
 		UIDropDownMenu_AddButton(info)
 	end
-	UIDropDownMenu_SetText(EasyDestroyFilterTypes, "Select filters...")
+	UIDropDownMenu_SetText(EasyDestroyFilterTypes, EasyDestroy.Strings.CriteriaSelectionDropdown)
 end
 
 function EasyDestroyFilters.SelectFilterTypes(self, arg1, arg2, checked)
 	local selectedValue = self.value
 	local selectedFilter = EasyDestroyFilters.Registry[selectedValue]
-	UIDropDownMenu_SetText(EasyDestroyFilterTypes, "Select filters...")
+	UIDropDownMenu_SetText(EasyDestroyFilterTypes, EasyDestroy.Strings.CriteriaSelectionDropdown)
 
 	if checked then 
 		local frame = selectedFilter.GetFilterFrame()
@@ -210,56 +222,57 @@ function EasyDestroyFilters:HaveTransmog(itemlink)
 end
 
 --[[ This generates our filter table from settings in the EasyDestroyFilters window. ]]
-function EasyDestroy:GenerateFilter()
-	local filterObj = {}
-	filterObj.properties = {}
-	filterObj.filter = {}
+function EasyDestroy:GenerateFilter(fetchNewID)
 
-	for key, registeredFilter in pairs(EasyDestroyFilters.Registry) do
-		local val = registeredFilter:GetValues()
-		if val ~= nil then 
-			filterObj.filter[key] = val
-		end
-	end
+	-- Needs to updated cached filters or create a brand new filter
 
-	local filter_name = EasyDestroyFilters:GetFilterName()	
-	if not filter_name or filter_name == "" then 
-		filter_name = "Filter" .. tostring(EasyDestroyFilters:GetNextFilterID(true))
-	end
-		
-	filterObj.properties.name = filter_name
-	filterObj.properties.favorite = EasyDestroyFilters_FavoriteIcon:GetChecked()
+	local FilterID = UIDropDownMenu_GetSelectedValue(EasyDestroyDropDown)
+	local filter, ftype
+	
 	if EasyDestroyFilterSettings.Blacklist:GetChecked() then
-		filterObj.properties.type = ED_FILTER_TYPE_BLACKLIST
+		ftype = ED_FILTER_TYPE_BLACKLIST
 	else
-		filterObj.properties.type = ED_FILTER_TYPE_SEARCH
+		ftype = ED_FILTER_TYPE_SEARCH
 	end
-		
-	return filterObj
+
+	if EasyDestroy.Cache.FilterCache and EasyDestroy.Cache.FilterCache[FilterID] then
+		filter = EasyDestroy.Cache.FilterCache[FilterID]
+	else
+		filter = EasyDestroyFilter:New(ftype, EasyDestroyFilters:GetFilterName())
+	end
+
+	local temp = filter:ToTable()
+	temp.filter = filter:GetCriteriaFromWindow()
+
+	--filter:LoadCriteriaFromWindow()
+
+	return temp, filter
+	
 end
 
-function EasyDestroyFilters:GetNextFilterID(noiterate)
-	--[[
-		Every filter gets a unique id (Filter ID).
-		This ID is used to identify a filter as a
-		character favorite, and to simplify CRUD
-		functionality.
-	]]
-	local nextID = EasyDestroy.Data.Options.NextFilterID or 0
-	if nextID <= 0 then 
-		for _, v in pairs(EasyDestroy.Data.Filters) do
-			nextID = nextID + 1
-		end
-		nextID = nextID + 100
+function EasyDestroy.Reload(filterID)
+	EasyDestroy_LoadFilter(filterID)
+	EasyDestroy_InitDropDown()
+	EasyDestroy.FilterChanged = true
+	UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, filterID)
+end
+
+function EasyDestroy.UpdateFilterProperties(filter)
+
+	
+	local ftype
+	
+	if EasyDestroyFilterSettings.Blacklist:GetChecked() then
+		ftype = ED_FILTER_TYPE_BLACKLIST
+	else
+		ftype = ED_FILTER_TYPE_SEARCH
 	end
-	if not noiterate then
-		nextID = nextID + 1
-	end
-	EasyDestroy.Data.Options.NextFilterID = nextID
-	return nextID
+
+	filter:SetProperties(EasyDestroyFilters:GetFilterName(),  ftype, EasyDestroyFilters_FavoriteIcon:GetChecked())
 
 end
 
+-- On Click: Save Filter
 function EasyDestroyFilters_SaveFilter(skipFavoriteCheck)
 	--[[ 
 		Get the FID of the currently selected filter.
@@ -270,16 +283,12 @@ function EasyDestroyFilters_SaveFilter(skipFavoriteCheck)
 		If validation is clean (or we are ignoring the favorite check) then save the filter.
 	]]
 	local FilterID = UIDropDownMenu_GetSelectedValue(EasyDestroyDropDown)
+	
+	local _, filter = EasyDestroy:GenerateFilter()
 
-	-- if we are creating a new filter, then give it an ID
-	if FilterID == 0 and not EasyDestroyFilters.CurrentFilterID then
-		FilterID = "FilterID" .. EasyDestroyFilters:GetNextFilterID()
-	elseif EasyDestroyFilters.CurrentFilterID ~= nil and EasyDestroyFilters.CurrentFilterID ~= 0 then
-		FilterID = EasyDestroyFilters.CurrentFilterID
-	end
+	EasyDestroy.UpdateFilterProperties(filter)
 
-	local filter = EasyDestroy:GenerateFilter()
-	local valid, validationErrorType, validationMessage = EasyDestroyFilters_SaveValidation(FilterID, filter)
+	local valid, validationErrorType, validationMessage = filter:Validate()
 
 	-- if error and error is not type name and we haven't already warned them, warn the user
 	if not valid and validationErrorType == ED_ERROR_NAME then
@@ -299,9 +308,10 @@ function EasyDestroyFilters_SaveFilter(skipFavoriteCheck)
 			pprint(filter)
 		end
 		if validationErrorType == ED_ERROR_FAVORITE then
-			EasyDestroyFilters_ClearFavorite()
+			EasyDestroy_UnsetFavorite()
+			filter:SetFavorite(true)
 		end
-		EasyDestroyFilters__Save(FilterID, filter)
+		filter:SaveToData()
 
 	else
 		print("EasyDestroy: UNKNOWN ERROR when saving Filter " .. filter.properties.name)
@@ -309,16 +319,24 @@ function EasyDestroyFilters_SaveFilter(skipFavoriteCheck)
 
 end
 
+-- On Click: New From Current
 function EasyDestroyFilters_CreateNewFromCurrent()
 	-- This will allow you to create a copy of the currently selected filter after you edit it.
 	-- At the very least you would have to give it a differnt name before using this.
 
 	local CurrentFilterID = UIDropDownMenu_GetSelectedValue(EasyDestroyDropDown)
+	local filter, ftype
 
-	local FilterID = "FilterID" .. EasyDestroyFilters:GetNextFilterID()
+	--local FilterID = "FilterID" .. EasyDestroyFilters:GetNextFilterID()
+	if EasyDestroyFilterSettings.Blacklist:GetChecked() then
+		ftype = ED_FILTER_TYPE_BLACKLIST
+	else
+		ftype = ED_FILTER_TYPE_SEARCH
+	end
 
-	local filter = EasyDestroy:GenerateFilter()
-	local valid, validationErrorType, validationMessage = EasyDestroyFilters_SaveValidation(FilterID, filter, true)
+	local filter = EasyDestroyFilter:New(ftype, EasyDestroyFilters:GetFilterName())
+	filter:SetFavorite(false)
+	local valid, validationErrorType, validationMessage = filter:Validate()
 
 	-- if not valid because name is in use, print error
 	if not valid and validationErrorType == ED_ERROR_NAME then
@@ -327,8 +345,7 @@ function EasyDestroyFilters_CreateNewFromCurrent()
 
 	-- if not valid because the current filter is the favorite OR if valid, save
 	elseif (not valid and validationErrorType == ED_ERROR_FAVORITE) or valid then
-		filter.properties.favorite = false
-		EasyDestroyFilters__Save(FilterID, filter)
+		filter:SaveToData()
 
 	else
 		print("UNKNOWN ERROR when saving Filter " .. filter.properties.name)
@@ -336,72 +353,37 @@ function EasyDestroyFilters_CreateNewFromCurrent()
 
 end
 
-function EasyDestroyFilters__Save(filterID, filter)
-	--[[ 
-		This is the actual saving function.
-		If using Character Favorites and the filter is favorited then
-		set the character settings for this favorite.
-
-	]]
-	EasyDestroy:Debug("Saving Filter", filterID)
-	EasyDestroy.Data.Filters[filterID] = filter
-
-	if EasyDestroy.DebugActive then
-		pprint(filter)
-	end
-
-	-- update favorite id for character specific ids
-	if EasyDestroyFilterSettings.Favorite:GetChecked() then
-		if EasyDestroy_UsingCharacterFavorites() then
-			EasyDestroy.CharacterData.FavoriteID = filterID
-		end
-	end
-
-	-- not a fan of putting this stuff  over here in filters. But that's just how it is for now.
-	EasyDestroy_LoadFilter(filterID)
-	EasyDestroy_InitDropDown()
-	EasyDestroy.FilterChanged = true
-	UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, filterID)
-end
-
+-- On Click: Delete Filter
 function EasyDestroyFilters_DeleteFilter()
 	--[[ Delete current filter. Load user's favorite filter if one is available. ]]
 	local FilterID = UIDropDownMenu_GetSelectedValue(EasyDestroyDropDown)
 	EasyDestroy:Debug("Deleting Filter", FilterID)
 	EasyDestroy.Data.Filters[FilterID] = nil
 
+	-- when deleting a filter, we need to make sure to clear it from the cache.
+	if EasyDestroy.Cache.FilterCache and EasyDestroy.Cache.FilterCache[FilterID] then
+		EasyDestroy.Cache.FilterCache[FilterID] = nil
+	end
+
 	EasyDestroy_InitDropDown()
 
 	local favoriteID =  EasyDestroy_GetFavorite()
+
+	if EasyDestroy_UsingCharacterFavorites() and favoriteID == FilterID then
+		EasyDestroy.Favorites.ClearUserFavorite()
+		favoriteID = nil
+	end
+
 	if favoriteID ~= nil then
 		UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, favoriteID)
 		EasyDestroy_LoadFilter(favoriteID)
-		EasyDestroy.FilterChanged = true
-	end
-end
-
-function EasyDestroyFilters_SaveValidation(newFilterID, filter, skipFavoriteCheck)
-
-	local fid = EasyDestroy_GetFavorite()
-	local nameFid, nameFilter = EasyDestroyFilters_FindFilterWithName(filter.properties.name)
-
-	-- if the name already exists and the name does not belong to the filter we are checking
-	if nameFid and nameFid ~= newFilterID then
-		return false, ED_ERROR_NAME, filter.properties.name
-
-	elseif fid and fid ~= nil and EasyDestroy_UsingCharacterFavorites() and not skipFavoriteCheck then
-		if fid ~= newFilterID and EasyDestroyFilterSettings.Favorite:GetChecked() then
-			return false, ED_ERROR_FAVORITE, "This character already has a favorite."
-		end
-		
-	elseif fid and fid ~= nil and filter.properties.favorite and not skipFavoriteCheck then
-		EasyDestroy.Debug(fid, newFilterID, "Checking for filter id match.")
-		if fid ~= newFilterID and EasyDestroyFilterSettings.Favorite:GetChecked() then
-			return false, ED_ERROR_FAVORITE, 'Error: you already have a favorite filter, click save again to override.'
-		end
+	else
+		UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, 0)
+		EasyDestroy_ClearFilterFrame()
+		EasyDestroy_ResetFilterStack()
 	end
 
-	return true, ED_ERROR_NONE, ''
+	EasyDestroy.FilterChanged = true
 
 end
 
@@ -466,14 +448,15 @@ function EasyDestroy_LoadFilter(fid)
 	EasyDestroy_ClearFilterFrame()
 	EasyDestroy_ResetFilterStack()
 	EasyDestroy:Debug("Loading Filter", fid)
-	local filter = EasyDestroy.Data.Filters[fid]
+	-- local filter = EasyDestroy.Data.Filters[fid]
+	local filter = EasyDestroyFilter:Load(fid)
 	EasyDestroyFilters.CurrentFilterID = fid
 
-	EasyDestroyFilters:SetFilterName(filter.properties.name) --_FilterName.input:SetText(filter.properties.name)
+	EasyDestroyFilters:SetFilterName(filter:GetName()) --_FilterName.input:SetText(filter.properties.name)
 	if EasyDestroy_UsingCharacterFavorites() then
 		local fav = EasyDestroy_GetFavorite()
 		if fav and fav ~= nil and fav == fid then
-			if filter.properties.type ~= ED_FILTER_TYPE_BLACKLIST then
+			if filter:GetType() ~= ED_FILTER_TYPE_BLACKLIST then
 				EasyDestroyFilters_FavoriteIcon:SetChecked(true)
 			else
 				-- if a player tries to load a filter that's a blacklist and they have previously
@@ -482,10 +465,10 @@ function EasyDestroy_LoadFilter(fid)
 			end
 		end
 	else
-		EasyDestroyFilters_FavoriteIcon:SetChecked(filter.properties.favorite)
+		EasyDestroyFilters_FavoriteIcon:SetChecked(filter:GetFavorite())
 	end
 	
-	if filter.properties.type == ED_FILTER_TYPE_BLACKLIST then
+	if filter:GetType() == ED_FILTER_TYPE_BLACKLIST then
 		EasyDestroyFilterSettings.Blacklist:SetChecked(true)
 		EasyDestroyFilterSettings.Favorite:Disable()
 	else
@@ -495,10 +478,10 @@ function EasyDestroy_LoadFilter(fid)
 
 	for key, registeredFilter in pairs(EasyDestroyFilters.Registry) do
 		registeredFilter:Clear()
-		if filter.filter[key] ~= nil then
+		if filter:GetCriterionByKey(key) ~= nil then
 			tinsert(EasyDestroyFilters.FilterStack, registeredFilter)
 			EasyDestroy_PlaceFilterFrames()
-			registeredFilter:SetValues(filter.filter[key] or "")
+			registeredFilter:SetValues(filter:GetCriterionByKey(key) or "")
 		end
 	end
 end

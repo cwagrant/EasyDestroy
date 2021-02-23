@@ -1,3 +1,16 @@
+20210223 - 2.0.5b
+- Homogenized a number of areas in the code base for maintainability.
+- Vastly improved memory handling through caching
+- Created 3 classes of objects (EasyDestroyItem, EasyDestroyFilterCriteria, EasyDestroyFilter)
+    - EasyDestroyFilterCriteria is the main class for filter criteria.
+    - Has a few abstract methods that must be met in order for a filter to be valid.
+    - EasyDestroyItem simplifies how the items are shown, accessed, etc.
+    - EasyDestroyFilter handles most of the logic for the creation and modification of a filter.
+- Implemented the above classes throughout the addon.
+- Added experimental support for AddOnSkins
+- Bug fixes
+- Set the groundwork for implementing support for milling herbs and prospecting ore.
+
 20210216 - 2.0.4
 - Fixed issue with item level not displaying in the item list window.
 - Hid some debugging messages that previously got missed.

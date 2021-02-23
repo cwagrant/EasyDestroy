@@ -1,24 +1,5 @@
---[[
-Registerable filters require 4 things.
-1) A UI/Frame to show.
-2) Either using available information about the item, or provide a function to get the information you want to check against.
-3) A Check function to determine if the item meets the criteria of the filter.
-4) A call to EasyDestroy/EasyDestroyFilters to register the filter as useable.
-
-
-]]
-
-local filter = {}
---local ItemLocation, C_Item = ItemLocation, C_Item
-
 local EasyDestroyFilters = EasyDestroyFilters
-
-filter.name="Ignore BOE Items By Quality"
-filter.key = "boequality"
-filter.frame = nil
-filter.height = 65
-filter.parent = _G[EDFILTER_SCROLL_CHILD]
-
+local filter = EasyDestroyFilterCriteria:New("Ignore BOE Items By Quality", "boequality", 65)
 
 function filter:GetItemInfo(itemLink, bag, slot)
     local itemLoc = ItemLocation:CreateFromBagAndSlot(bag, slot)
@@ -40,15 +21,6 @@ function filter:GetFilterFrame()
 	filter.frame.epic.label:SetText("|c11a335ee" .. "Epic" .. "|r")
     return filter.frame
 end
-
-function filter:Toggle()
-    if filter.frame:IsShown() then
-        filter.frame:Hide()
-    else
-        filter.frame:Show()
-    end
-end
-
 
 -- check input vs item values
 function filter:Check(inputquality, item)
@@ -126,13 +98,6 @@ function filter:SetValues(values)
     end
 end
 
-function filter.IsShown()
-    if filter.frame then
-        return filter.frame:IsShown()
-    end
-    return false
-end
-
 function filter:Clear()
     if filter.frame then
         for iqname, iqvalue in pairs(Enum.ItemQuality) do
@@ -144,4 +109,4 @@ function filter:Clear()
     end
 end
 
-EasyDestroyFilters:RegisterFilter(filter)
+EasyDestroyFilters:RegisterFilterCriterion(filter)

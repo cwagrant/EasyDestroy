@@ -6,18 +6,49 @@ EasyDestroy.AddonName = "EasyDestroy"
 EasyDestroy.AddonLoaded = false
 EasyDestroy.CurrentFilter = {}
 EasyDestroy.FilterChanged = false
+EasyDestroy.UpdateSkin = false
 EasyDestroy.PlayerMoving = false
+EasyDestroy.Cache = { ItemCache = {}, FilterCache = {}}
+
+EasyDestroy.FrameRegistry = {}
 
 EasyDestroy.DestroyTypes = {}
 EasyDestroy.DestroyTypes.DISENCHANT = "DISENCHANT"
 EasyDestroy.DestroyTypes.MILL = "MILL"
 EasyDestroy.DestroyTypes.PROSPECT = "PROSPECT"
-EasyDestroy.WarnedLootOpen = false
-EasyDestroy.DestroyFilters = {}
-EasyDestroy.DestroyFilters[EasyDestroy.DestroyTypes.DISENCHANT] = {{itype=LE_ITEM_CLASS_WEAPON, stype=nil}, {itype=LE_ITEM_CLASS_ARMOR, stype=nil}}
 
--- This is the name of the frame that fitler types attach to for scrolling
+EasyDestroy.Warnings = {}
+EasyDestroy.Warnings.LootOpen = false
+EasyDestroy.WarnedLootOpen = false
+
+EasyDestroy.Strings = {}
+EasyDestroy.Strings.CriteriaSelectionDropdown = "Select filter criteria..."
+EasyDestroy.Strings.FilterSelectionDropdownNew = "New filter..."
+
+-- This is the name of the frame that filter types attach to for scrolling
 EDFILTER_SCROLL_CHILD = "EasyDestroySelectedFiltersScrollChild"
+
+-- ED_ACTION_FILTERS contains the different types of actions.
+-- Additionally, each of those points to a table that is the 
+-- basic item class/subclass filter for those actions.
+ED_ACTION_FILTERS = {}
+ED_ACTION_DISENCHANT = 1
+ED_ACTION_MILL = 2
+ED_ACTION_PROSPECT = 3
+
+tinsert(ED_ACTION_FILTERS, ED_ACTION_DISENCHANT, {{itype=LE_ITEM_CLASS_WEAPON, stype=nil}, {itype=LE_ITEM_CLASS_ARMOR, stype=nil}})
+tinsert(ED_ACTION_FILTERS, ED_ACTION_MILL, {{itype=LE_ITEM_CLASS_TRADEGOODS, stype=9}})
+tinsert(ED_ACTION_FILTERS, ED_ACTION_PROSPECT, {{itype=LE_ITEM_CLASS_TRADEGOODS, stype=7}})
+
+--[[
+ED_DESTROY_TYPES = {}
+ED_DESTROY_TYPE_DISENCHANT = 1
+ED_DESTROY_TYPE_MILL = 2
+ED_DESTROY_TYPE_PROSPECT = 3
+tinsert(ED_DESTROY_TYPES, ED_DESTROY_TYPE_DISENCHANT, 'Disenchant')
+tinsert(ED_DESTROY_TYPES, ED_DESTROY_TYPE_MILL, 'Mill')
+tinsert(ED_DESTROY_TYPES, ED_DESTROY_TYPE_PROSPECT, 'Prospect')
+]]
 
 ED_FILTER_TYPES = {}
 ED_FILTER_TYPE_SEARCH = 1
@@ -67,6 +98,14 @@ EasyDestroy.EmptyFilter = {filter={}, properties={}}
 EasyDestroy.Spells = {
 	13262, --Disenchant
 }
+
+function EasyDestroy.RegisterFrame(frame, ftype)
+    if EasyDestroy.FrameRegistry then
+		if not EasyDestroy.FrameRegistry[ftype] then print("unable to find", ftype) end
+        EasyDestroy.FrameRegistry[ftype] = EasyDestroy.FrameRegistry[ftype] or {}
+        tinsert(EasyDestroy.FrameRegistry[ftype], frame)
+    end
+end
 
 function pprint(tbl, level)
 	local newlevel = level or 0
