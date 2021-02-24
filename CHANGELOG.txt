@@ -1,3 +1,6 @@
+20210223 - 2.0.6b
+- Minor fix to items template window.
+
 20210223 - 2.0.5b
 - Homogenized a number of areas in the code base for maintainability.
 - Vastly improved memory handling through caching

@@ -1,5 +1,5 @@
 ## Interface: 90002
-## Version: 2.0.5b
+## Version: 2.0.6b
 ## Title: EasyDestroy
 ## Notes: Makes disenchanting easy!
 ## Author: Deeproot-Dalaran (C.W.A.Grant)
