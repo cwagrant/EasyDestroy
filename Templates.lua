@@ -25,7 +25,7 @@ function EasyDestroyItemsMixin:UpdateItemFrame(item, onclick)
 end
 
 function EasyDestroyItemsMixin:HideItemFrame()
-    self.info = nil
+    self.item = nil
     self:Hide()
     self:SetScript("OnClick", nil)
 end
