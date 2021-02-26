@@ -2,6 +2,9 @@ package-as: EasyDestroy
 
 ignore:
   - ignoreme
+  - Filters.xml
+  - README.txt
+  
 
 manual-changelog: CHANGELOG.txt
 

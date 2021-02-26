@@ -8,8 +8,6 @@ Registerable filters require 4 things.
 
 ]]
 
--- local filter = {}
-EasyDestroyFilters = EasyDestroyFilters
 local filter = EasyDestroyFilterCriteria:New("Item Level", "level", 20)
 
 -- EasyDestroy passes 3 values to this function, itemlink, bag, and slot. 
@@ -83,4 +81,4 @@ function filter:Clear()
     end
 end
 
-EasyDestroyFilters:RegisterFilterCriterion(filter)
+EasyDestroy:RegisterCriterion(filter)

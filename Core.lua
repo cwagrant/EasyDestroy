@@ -1,32 +1,80 @@
 EasyDestroy = {}
+
+--[[
+	TODO:
+	Want to move everything over to these Enum's/Dicts.
+	Want to move UI related functionality into a single file and/or structure.
+	   e.g. EasyDestroy.UI.GetFilterName(), EasyDestroy.UI.<Button>Onclick, EasyDestroy.UI.Initialize()
+
+	Clarify Whitelist v Blacklist v Filter Criteria (previously Filter Types). 
+
+	Setup EasyDestroyButton to do Disenchants, Milling, and Prospecting.
+		 - This will require an addition to the UI where a user can select the Destroy Action for a filter.
+		 - Destroy Actions will determine what items show up for the user.
+		 - What about stacking? Do we count all of the items together as one? Is there some kind of cleanup
+		 for when they have odd numbers? What about mass milling/mass prospecting?
+		 	- Maybe need some kind of "right click> temporary ignore" for the ItemWindow?
+]]
+
+--[[ Modules ]]
+EasyDestroy.Favorites = {}
 EasyDestroyFilters = {} -- Until 2.0 this was a frame
+EasyDestroy.Enum = {}
+EasyDestroy.Dict = {}
+EasyDestroy.Data = {}
+EasyDestroy.UI = {}
+EasyDestroy.Handlers = {}
+
+--[[ Settings/Info ]]
 EasyDestroy.Version =  GetAddOnMetadata("EasyDestroy", "version")
 EasyDestroy.DebugActive = false
 EasyDestroy.AddonName = "EasyDestroy"
 EasyDestroy.AddonLoaded = false
+-- This is the name of the frame that filter types attach to for scrolling
+EDFILTER_SCROLL_CHILD = "EasyDestroySelectedFiltersScrollChild"
+
+--[[ Utility Tables/Variables ]]
 EasyDestroy.CurrentFilter = {}
+EasyDestroy.EmptyFilter = { filter={}, properties={} }
+EasyDestroy.Cache = { ItemCache = {}, FilterCache = {}}
+EasyDestroy.FrameRegistry = {}
+
 EasyDestroy.FilterChanged = false
 EasyDestroy.UpdateSkin = false
 EasyDestroy.PlayerMoving = false
-EasyDestroy.Cache = { ItemCache = {}, FilterCache = {}}
-
-EasyDestroy.FrameRegistry = {}
-
-EasyDestroy.DestroyTypes = {}
-EasyDestroy.DestroyTypes.DISENCHANT = "DISENCHANT"
-EasyDestroy.DestroyTypes.MILL = "MILL"
-EasyDestroy.DestroyTypes.PROSPECT = "PROSPECT"
 
 EasyDestroy.Warnings = {}
 EasyDestroy.Warnings.LootOpen = false
 EasyDestroy.WarnedLootOpen = false
+EasyDestroy.DataLoaded = false
 
-EasyDestroy.Strings = {}
-EasyDestroy.Strings.CriteriaSelectionDropdown = "Select filter criteria..."
-EasyDestroy.Strings.FilterSelectionDropdownNew = "New filter..."
+EasyDestroy.CriteriaRegistry = {}
+EasyDestroy.CriteriaStack = {}
 
--- This is the name of the frame that filter types attach to for scrolling
-EDFILTER_SCROLL_CHILD = "EasyDestroySelectedFiltersScrollChild"
+
+--[[ Enumerations/Lookup Tables ]]
+EasyDestroy.Enum.FilterTypes = { Search=1, Blacklist=2 }
+EasyDestroy.Enum.Errors = { None=1, Name=2, Favorite=3 }
+
+EasyDestroy.Dict.Strings = {}
+EasyDestroy.Dict.Strings.CriteriaSelectionDropdown = "Select filter criteria..."
+EasyDestroy.Dict.Strings.FilterSelectionDropdownNew = "New filter..."
+
+EasyDestroy.Dict.Actions = {}
+EasyDestroy.Dict.Actions.Disenchant = {
+	spellID = 13262,
+	itemTypes = {{itype=LE_ITEM_CLASS_WEAPON, stype=nil}, {itype=LE_ITEM_CLASS_ARMOR, stype=nil}},
+}
+
+EasyDestroy.Dict.Actions.Mill = {
+	spellID = 0,
+	itemTypes = {{itype=LE_ITEM_CLASS_TRADEGOODS, stype=9}},
+}
+
+EasyDestroy.Dict.Actions.Prospect = {
+	spellID = 0,
+	itemTypes = {{itype=LE_ITEM_CLASS_TRADEGOODS, stype=7}},
+}
 
 -- ED_ACTION_FILTERS contains the different types of actions.
 -- Additionally, each of those points to a table that is the 
@@ -40,15 +88,6 @@ tinsert(ED_ACTION_FILTERS, ED_ACTION_DISENCHANT, {{itype=LE_ITEM_CLASS_WEAPON, s
 tinsert(ED_ACTION_FILTERS, ED_ACTION_MILL, {{itype=LE_ITEM_CLASS_TRADEGOODS, stype=9}})
 tinsert(ED_ACTION_FILTERS, ED_ACTION_PROSPECT, {{itype=LE_ITEM_CLASS_TRADEGOODS, stype=7}})
 
---[[
-ED_DESTROY_TYPES = {}
-ED_DESTROY_TYPE_DISENCHANT = 1
-ED_DESTROY_TYPE_MILL = 2
-ED_DESTROY_TYPE_PROSPECT = 3
-tinsert(ED_DESTROY_TYPES, ED_DESTROY_TYPE_DISENCHANT, 'Disenchant')
-tinsert(ED_DESTROY_TYPES, ED_DESTROY_TYPE_MILL, 'Mill')
-tinsert(ED_DESTROY_TYPES, ED_DESTROY_TYPE_PROSPECT, 'Prospect')
-]]
 
 ED_FILTER_TYPES = {}
 ED_FILTER_TYPE_SEARCH = 1
@@ -64,16 +103,6 @@ tinsert(ED_ERROR_TYPES, ED_ERROR_NONE, 'None')
 tinsert(ED_ERROR_TYPES, ED_ERROR_NAME, 'Name')
 tinsert(ED_ERROR_TYPES, ED_ERROR_FAVORITE, 'Favorite')
 
-StaticPopupDialogs["ED_CANT_DISENCHANT_BLACKLIST"] = {
-	text = "You cannot disenchant items on the blacklist.|n|nYou are currently viewing or editing a blacklist filter.",
-	button1 = "Okay",
-	timeout = 30,
-	whileDead = false,
-	hideOnEscape = true,
-	preferredIndex = 3,
-}
-
-
 --[[
 	EasyDestroy.DestroyFunc.DISENCHANT = {
 		{itype=LE_ITEM_CLASS_WEAPON, stype=nil},
@@ -87,17 +116,33 @@ StaticPopupDialogs["ED_CANT_DISENCHANT_BLACKLIST"] = {
 	}
 }]]--
 
-EasyDestroy.DestroyAction = EasyDestroy.DestroyTypes.DISENCHANT
 
-local ADDON_NAME = "EasyDestroy";
-local ADDON_IS_LOADED = false;
-
-EasyDestroy.DataLoaded = false
-EasyDestroy.Data = {}
-EasyDestroy.EmptyFilter = {filter={}, properties={}}
-EasyDestroy.Spells = {
-	13262, --Disenchant
-}
+EasyDestroy.separatorInfo = {
+	owner = EasyDestroyDropDown;
+	hasArrow = false;
+	dist = 0;
+	isTitle = true;
+	isUninteractable = true;
+	notCheckable = true;
+	iconOnly = true;
+	icon = "Interface\\Common\\UI-TooltipDivider-Transparent";
+	tCoordLeft = 0;
+	tCoordRight = 1;
+	tCoordTop = 0;
+	tCoordBottom = 1;
+	tSizeX = 0;
+	tSizeY = 8;
+	tFitDropDownSizeX = true;
+	iconInfo = {
+		tCoordLeft = 0,
+		tCoordRight = 1,
+		tCoordTop = 0,
+		tCoordBottom = 1,
+		tSizeX = 0,
+		tSizeY = 8,
+		tFitDropDownSizeX = true
+	},
+};
 
 function EasyDestroy.RegisterFrame(frame, ftype)
     if EasyDestroy.FrameRegistry then
@@ -126,7 +171,7 @@ end
 
 function EasyDestroy.Debug(...)
 	if EasyDestroy.DebugActive then
-		print(...)
+		print(date(), ...)
 	end
 end
 

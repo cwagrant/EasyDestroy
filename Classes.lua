@@ -1,3 +1,10 @@
+--[[ 
+
+    Classes used by the addon to homogenize access to various data structures.
+    Namely Filters, FilterCriteria, and Items.
+
+]]
+
 EasyDestroyFilterCriteria = {}
 EasyDestroyFilterCriteria.__index = EasyDestroyFilterCriteria
 
@@ -184,7 +191,7 @@ function EasyDestroyFilter:New(ftype, name)
     self.criteria = {}
     self.favorite = false
 
-    if EasyDestroy_UsingCharacterFavorites() then
+    if EasyDestroy.Favorites.UsingCharacterFavorites() then
         self.favorite = false
     else
         self.favorite = favorite or false
@@ -252,7 +259,7 @@ function EasyDestroyFilter:SetFavorite(state)
         error("Usage: EasyDestroyFilter:SetFavorite(bool)")
     end
 
-    if EasyDestroy_UsingCharacterFavorites() then
+    if EasyDestroy.Favorites.UsingCharacterFavorites() then
         self.favorite = false
     else
         self.favorite = state
@@ -324,7 +331,7 @@ end
 
 function EasyDestroyFilter:LoadCriteriaFromWindow()
     wipe(self.criteria)
-    for i, registeredFilter in ipairs(EasyDestroyFilters.FilterStack) do
+    for i, registeredFilter in ipairs(EasyDestroy.CriteriaStack) do
 		local val = registeredFilter:GetValues()
 		if val ~= nil then 
 			self.criteria[registeredFilter:GetKey()] = val
@@ -334,7 +341,7 @@ end
 
 function EasyDestroyFilter:GetCriteriaFromWindow()
     local out = {}
-    for i, registeredFilter in ipairs(EasyDestroyFilters.FilterStack) do
+    for i, registeredFilter in ipairs(EasyDestroy.CriteriaStack) do
 		local val = registeredFilter:GetValues()
 		if val ~= nil then 
 			out[registeredFilter:GetKey()] = val
@@ -357,22 +364,26 @@ function EasyDestroyFilter:SaveToData()
     self:LoadCriteriaFromWindow()
     
     EasyDestroy.Data.Filters[self.filterID] = self:ToTable()
-    EasyDestroy.Reload(self.filterID)
+    EasyDestroy.UI.ReloadFilter(self.filterID)
+
 end
 
 function EasyDestroyFilter:Validate(skipFavoriteCheck)
-    local favoriteFid = EasyDestroy_GetFavorite()
-	local nameFid, nameFilter = EasyDestroyFilters_FindFilterWithName(self.name)
+    local filterName = EasyDestroy.UI.GetFilterName()
+    local favChecked = EasyDestroy.UI.GetFavoriteChecked()
+
+    local favoriteFid = EasyDestroy.Favorites.GetFavorite()
+	local nameFid, nameFilter = EasyDestroy.FindFilterWithName(filterName)
 
     if nameFid and nameFid ~= self.filterID then
-		return false, ED_ERROR_NAME, self:GetName()
-    elseif favoriteFid and favoriteFid ~= nil and EasyDestroy_UsingCharacterFavorites() and not skipFavoriteCheck then
-		if favoriteFid ~= self.filterID and EasyDestroyFilterSettings.Favorite:GetChecked() then
+		return false, ED_ERROR_NAME, filterName
+    elseif favoriteFid and favoriteFid ~= nil and EasyDestroy.Favorites.UsingCharacterFavorites() and not skipFavoriteCheck then
+		if favoriteFid ~= self.filterID and favChecked then
 			return false, ED_ERROR_FAVORITE
 		end
     elseif favoriteFid and favoriteFid ~= nil and self:GetFavorite() and not skipFavoriteCheck then
 		EasyDestroy.Debug(favoriteFid, self.filterID, "Checking for filter id match.")
-		if favoriteFid ~= self.filterID and EasyDestroyFilterSettings.Favorite:GetChecked() then
+		if favoriteFid ~= self.filterID and favChecked then
 			return false, ED_ERROR_FAVORITE
 		end
 	end

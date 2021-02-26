@@ -1,9 +1,10 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/"
  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
  xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
- <Script file="Templates.lua"/>
 
-<Frame name="EasyDestroyEditBoxTemplate" virtual="true">
+<Script file="Templates.lua"/>
+
+<Frame name="EasyDestroyEditBoxTemplate" virtual="true" mixin="EasyDestroyEditBoxMixin">
 	<Size>
 		<AbsDimension x="0" y="20"/>
 	</Size>
@@ -40,7 +41,7 @@
 	</Frames>
 </Frame>
 
-<Frame name="EasyDestroyEditBoxRangeTemplate" virtual="true">
+<Frame name="EasyDestroyEditBoxRangeTemplate" virtual="true" mixin="EasyDestroyEditBoxRangeMixin">
 	<Size>
 		<AbsDimension x="0" y="20"/>
 	</Size>
@@ -154,7 +155,7 @@
 	</Scripts>
 </Frame>
 
-<CheckButton name="EasyDestroyCheckboxTemplate" virtual="true" inherits="ChatConfigBaseCheckButtonTemplate">
+<CheckButton name="EasyDestroyCheckboxTemplate" virtual="true" inherits="ChatConfigBaseCheckButtonTemplate" mixin="EasyDestroyCheckboxMixin">
 	<Size>
 		<AbsDimension x="24" y="24"/>
 	</Size>
@@ -267,7 +268,7 @@
 				<AbsDimension x="31" y="239"/>
 			</Size>
 		</ScrollFrame>
-		<Button name="$parentItem1" inherits="EasyDestroyItemTemplate">
+		<Button name="$parentItem1" inherits="EasyDestroyItemTemplate" parentKey="Item1">
 			<Anchors>
 				<Anchor point="TOPRIGHT" RelativePoint="TOPRIGHT" RelativeTo="$parent">
 					<Offset>
@@ -277,55 +278,55 @@
 				<Anchor point="LEFT" RelativePoint="LEFT" RelativeTo="$parent" />
 			</Anchors>
 		</Button>
-		<Button name="$parentItem2" inherits="EasyDestroyItemTemplate">
+		<Button name="$parentItem2" inherits="EasyDestroyItemTemplate" parentKey="Item2">
 			<Anchors>
 				<Anchor point="TOPLEFT" RelativePoint="BOTTOMLEFT" RelativeTo="$parentItem1" />
 				<Anchor point="TOPRIGHT" RelativePoint="BOTTOMRIGHT" RelativeTo="$parentItem1" />
 			</Anchors>
 		</Button>
-		<Button name="$parentItem3" inherits="EasyDestroyItemTemplate">
+		<Button name="$parentItem3" inherits="EasyDestroyItemTemplate" parentKey="Item3">
 			<Anchors>
 				<Anchor point="TOPLEFT" RelativePoint="BOTTOMLEFT" RelativeTo="$parentItem2" />
 				<Anchor point="TOPRIGHT" RelativePoint="BOTTOMRIGHT" RelativeTo="$parentItem2" />
 			</Anchors>
 		</Button>
-		<Button name="$parentItem4" inherits="EasyDestroyItemTemplate">
+		<Button name="$parentItem4" inherits="EasyDestroyItemTemplate" parentKey="Item4">
 			<Anchors>
 				<Anchor point="TOPLEFT" RelativePoint="BOTTOMLEFT" RelativeTo="$parentItem3" />
 				<Anchor point="TOPRIGHT" RelativePoint="BOTTOMRIGHT" RelativeTo="$parentItem3" />
 			</Anchors>
 		</Button>
-		<Button name="$parentItem5" inherits="EasyDestroyItemTemplate">
+		<Button name="$parentItem5" inherits="EasyDestroyItemTemplate" parentKey="Item5">
 			<Anchors>
 				<Anchor point="TOPLEFT" RelativePoint="BOTTOMLEFT" RelativeTo="$parentItem4" />
 				<Anchor point="TOPRIGHT" RelativePoint="BOTTOMRIGHT" RelativeTo="$parentItem4" />
 			</Anchors>
 		</Button>
-		<Button name="$parentItem6" inherits="EasyDestroyItemTemplate">
+		<Button name="$parentItem6" inherits="EasyDestroyItemTemplate" parentKey="Item6">
 			<Anchors>
 				<Anchor point="TOPLEFT" RelativePoint="BOTTOMLEFT" RelativeTo="$parentItem5" />
 				<Anchor point="TOPRIGHT" RelativePoint="BOTTOMRIGHT" RelativeTo="$parentItem5" />
 			</Anchors>
 		</Button>
-		<Button name="$parentItem7" inherits="EasyDestroyItemTemplate">
+		<Button name="$parentItem7" inherits="EasyDestroyItemTemplate" parentKey="Item7">
 			<Anchors>
 				<Anchor point="TOPLEFT" RelativePoint="BOTTOMLEFT" RelativeTo="$parentItem6" />
 				<Anchor point="TOPRIGHT" RelativePoint="BOTTOMRIGHT" RelativeTo="$parentItem6" />
 			</Anchors>
 		</Button>
-		<Button name="$parentItem8" inherits="EasyDestroyItemTemplate">
+		<Button name="$parentItem8" inherits="EasyDestroyItemTemplate" parentKey="Item8">
 			<Anchors>
 				<Anchor point="TOPLEFT" RelativePoint="BOTTOMLEFT" RelativeTo="$parentItem7" />
 				<Anchor point="TOPRIGHT" RelativePoint="BOTTOMRIGHT" RelativeTo="$parentItem7" />
 			</Anchors>
 		</Button>
-		<Button name="$parentItem9" inherits="EasyDestroyItemTemplate">
+		<Button name="$parentItem9" inherits="EasyDestroyItemTemplate" parentKey="Item19">
 			<Anchors>
 				<Anchor point="TOPLEFT" RelativePoint="BOTTOMLEFT" RelativeTo="$parentItem8" />
 				<Anchor point="TOPRIGHT" RelativePoint="BOTTOMRIGHT" RelativeTo="$parentItem8" />
 			</Anchors>
 		</Button>
-		<Button name="$parentItem10" inherits="EasyDestroyItemTemplate">
+		<Button name="$parentItem10" inherits="EasyDestroyItemTemplate" parentKey="Item10">
 			<Anchors>
 				<Anchor point="TOPLEFT" RelativePoint="BOTTOMLEFT" RelativeTo="$parentItem9" />
 				<Anchor point="TOPRIGHT" RelativePoint="BOTTOMRIGHT" RelativeTo="$parentItem9" />

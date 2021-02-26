@@ -30,6 +30,77 @@ function EasyDestroyItemsMixin:HideItemFrame()
     self:SetScript("OnClick", nil)
 end
 
+--[[ So that you don't have to remember which keys/names are used ]]
+EasyDestroyEditBoxMixin = {}
+function EasyDestroyEditBoxMixin:SetText(text)
+    self.input:SetText(text)
+end
+
+function EasyDestroyEditBoxMixin:SetNumeric(bool)
+    self.input:SetNumeric(bool)
+end
+
+function EasyDestroyEditBoxMixin:GetText()
+    return self.input:GetText()
+end
+
+function EasyDestroyEditBoxMixin:GetNumber()
+    return self.input:GetNumber()
+end
+
+function EasyDestroyEditBoxMixin:SetLabel(text)
+    self.label:SetText(text)
+end
+
+EasyDestroyEditBoxRangeMixin = {}
+function EasyDestroyEditBoxRangeMixin:SetFromText(text)
+    self.inputfrom:SetText(text)
+end
+
+function EasyDestroyEditBoxRangeMixin:SetToText(text)
+    self.inputto:SetText(text)
+end
+
+function EasyDestroyEditBoxRangeMixin:SetValues(textfrom, textto)
+    self:SetFromText(textfrom)
+    self:SetToText(textto)
+end
+
+function EasyDestroyEditBoxRangeMixin:GetFromText()
+    return self.inputfrom:GetText()
+end
+
+function EasyDestroyEditBoxRangeMixin:GetToText()
+    return self.inputto:GetText()
+end
+
+function EasyDestroyEditBoxRangeMixin:GetTextValues()
+    return self.inputfrom:GetText(), self.inputto:GetText()
+end
+
+function EasyDestroyEditBoxRangeMixin:SetNumeric(bool)
+    self.inputfrom:SetNumeric(bool)
+    self.inputto:SetNumeric(bool)
+end
+
+function EasyDestroyEditBoxRangeMixin:GetFromNumber()
+    return self.inputfrom:GetNumber()
+end
+
+function EasyDestroyEditBoxRangeMixin:GetToNumber()
+    return self.inputto:GetNumber()
+end
+
+function EasyDestroyEditBoxRangeMixin:GetNumberValues()
+    return self:GetFromNumber(), self:GetToNumber()
+end
+
+EasyDestroyCheckboxMixin = {}
+function EasyDestroyCheckboxMixin:SetLabel(text)
+    self.label:SetText(text)
+end
+
+
 EasyDestroyScrollMixin = {}
 function EasyDestroyScrollMixin:Initialize(listfunc, displayed, height, childfunc)
     if type(listfunc) == "function" then
@@ -74,14 +145,18 @@ function EasyDestroyScrollMixin:ScrollUpdate(callbackFunction)
         ListFunction is made, then self.UpdateItemList should be
         set to true. Otherwise, cache the current list in 
         self.ItemList. 
+
+        Basically, this makes it so that as a user scrolls, memory
+        usage doesn't increase.
     ]]
 
     if self.UpdateItemList then
-        EasyDestroy.Debug("Updating Item List: " .. (self:GetName() or "NoName"))
+        EasyDestroy.Debug((self:GetName() or "EasyDestroyScrollMixin") .. ":ScrollUpdate", "UpdateItemList")
         itemList = self.ListFunction()
         self.UpdateItemList = false
         self.ItemList = itemList
     else
+        EasyDestroy.Debug((self:GetName() or "EasyDestroyScrollMixin") .. ":ScrollUpdate", "Using Item Cache")
         itemList = self.ItemList
     end
     if not self and self.ScrollFrame then
@@ -108,8 +183,6 @@ function EasyDestroyScrollMixin:ScrollUpdate(callbackFunction)
     if callbackFunction ~= nil and type(callbackFunction) == "function" then
 		callbackFunction()
 	end
-
-	EasyDestroy.Debug("Completed Scroll Frame Update")
     
     self.ItemCount = #itemList
 

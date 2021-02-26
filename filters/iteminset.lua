@@ -75,4 +75,4 @@ function filter:Clear()
     end
 end
 
-EasyDestroyFilters:RegisterFilterCriterion(filter)
+EasyDestroy:RegisterCriterion(filter)

@@ -70,8 +70,7 @@ function EasyDestroy_EventHandler(self, event, ...)
 		local name = ...
 		if name == EasyDestroy.AddonName then
 			EasyDestroy.AddonLoaded = true
-			EasyDestroy:Initialize()
-			EasyDestroyFilters:SetupWindow()
+			EasyDestroy.UI.Initialize()
 
 			if EasyDestroyData then 
 				EasyDestroy.Data = EasyDestroyData
@@ -94,12 +93,12 @@ function EasyDestroy_EventHandler(self, event, ...)
 			EasyDestroy.Data.Blacklist = EasyDestroy.Data.Blacklist or {}
 			EasyDestroy.CurrentFilter = EasyDestroy.EmptyFilter
 
-			UIDropDownMenu_Initialize(EasyDestroyDropDown, EasyDestroy_InitDropDown)
+			UIDropDownMenu_Initialize(EasyDestroyDropDown, EasyDestroy.UI.FilterDropDown.Initialize)
 			
-			local fav = EasyDestroy_GetFavorite()
+			local fav = EasyDestroy.Favorites.GetFavorite()
 			if fav ~= nil then
 				UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, fav)
-				EasyDestroy_LoadFilter(fav)
+				EasyDestroy.UI.LoadFilter(fav)
 				EasyDestroy_Refresh()
 			else
 				UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, 0)
@@ -191,16 +190,15 @@ EasyDestroyButton:SetScript("PostClick", function(self)
 	end
 )
 
-EasyDestroyFrameSearchTypes.Search:SetScript("OnClick", EasyDestroySearchTypes_OnClick)
-EasyDestroyFrameSearchTypes.Blacklist:SetScript("OnClick", EasyDestroySearchTypes_OnClick)
+EasyDestroyFrameSearchTypes.Search:SetScript("OnClick", EasyDestroy.Handlers.FilterTypesOnClick)
+EasyDestroyFrameSearchTypes.Blacklist:SetScript("OnClick", EasyDestroy.Handlers.FilterTypesOnClick)
 
-EasyDestroyFilters_Save:SetScript("OnClick", function() EasyDestroyFilters_SaveFilter() end)
-EasyDestroyFilters_Delete:SetScript("OnClick", function() StaticPopup_Show("ED_CONFIRM_DELETE_FILTER", EasyDestroyFilters:GetFilterName()) end)
-EasyDestroyFilters_NewFromFilter:SetScript("OnClick", EasyDestroyFilters_CreateNewFromCurrent)
+EasyDestroyFilters_Save:SetScript("OnClick", function() EasyDestroy.Handlers.SaveFilterOnClick() end)
+EasyDestroyFilters_Delete:SetScript("OnClick", function() StaticPopup_Show("ED_CONFIRM_DELETE_FILTER", EasyDestroy.UI.GetFilterName()) end)
+EasyDestroyFilters_NewFromFilter:SetScript("OnClick", EasyDestroy.Handlers.CopyFilterOnClick)
 EasyDestroyFilters_New:SetScript("OnClick", function() 
-	EasyDestroy_ClearFilterFrame() 
-	EasyDestroy_InitDropDown()
-	EasyDestroy_ResetFilterStack()
+	EasyDestroy.UI.ClearFilter()
+	EasyDestroy.UI.FilterDropDown.Update()
 	EasyDestroy.CurrentFilter = EasyDestroy.EmptyFilter
 	UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, 0) 
 	if EasyDestroy:IncludeBlacklists() and not EasyDestroy:IncludeSearches() then
@@ -242,4 +240,6 @@ if EasyDestroy.DebugActive then
 	EasyDestroy:CreateBG(EasyDestroyConfiguration, 0, 1, 0)
 end
 
-EasyDestroyFilters_FavoriteIcon:SetScript("OnClick", EasyDestroy_FavoriteIconOnClick)
+EasyDestroyFilters_FavoriteIcon:SetScript("OnClick", EasyDestroy.Favorites.FavoriteIconOnClick)
+
+EasyDestroyFilterSettings.Blacklist:SetScript("OnClick", EasyDestroy.Handlers.FilterTypeOnClick)

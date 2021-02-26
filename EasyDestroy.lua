@@ -1,92 +1,38 @@
---Addon settings
-EasyDestroy = EasyDestroy
 
---local GetItemInfo, GetContainerItemInfo, GetContainerItemID = GetItemInfo, GetContainerItemInfo, GetContainerItemID
+--[[ 
+	This file is more about the state and actions of EasyDestroy. Almost an API.
 
-local separatorInfo = {
-	owner = EasyDestroyDropDown;
-	hasArrow = false;
-	dist = 0;
-	isTitle = true;
-	isUninteractable = true;
-	notCheckable = true;
-	iconOnly = true;
-	icon = "Interface\\Common\\UI-TooltipDivider-Transparent";
-	tCoordLeft = 0;
-	tCoordRight = 1;
-	tCoordTop = 0;
-	tCoordBottom = 1;
-	tSizeX = 0;
-	tSizeY = 8;
-	tFitDropDownSizeX = true;
-	iconInfo = {
-		tCoordLeft = 0,
-		tCoordRight = 1,
-		tCoordTop = 0,
-		tCoordBottom = 1,
-		tSizeX = 0,
-		tSizeY = 8,
-		tFitDropDownSizeX = true
-	},
-};
+	E.g. "IncludeSearches" means the addon should be currently including searches
+	vs. if I were to explicitly check for "GetChecked" that's "less" information
+	in that it just tells me whether or not the box is checked.
 
-function EasyDestroy_InitDropDown()
-	local info = UIDropDownMenu_CreateInfo()
-	local favoriteID = nil
-	info.text, info.value, info.checked, info.func, info.owner = EasyDestroy.Strings.FilterSelectionDropdownNew, 0, false, EasyDestroy_DropDownSelect, EasyDestroyDropDown
-	UIDropDownMenu_AddButton(info)
-	local hasSeparator = false
-	local includeSearches, includeBlacklists = EasyDestroy:IncludeSearches(), EasyDestroy:IncludeBlacklists()
+	The "grand scheme" is that UI should more or less handle the interfacing
+	(GetChecked) and this file gives those things meaning when necessary (IncludeSearches)
 
-	-- This monstrosity sorts by type=type and name<name or type<type
-	-- e.g. if types match, sort by name, otherwise sort by type
-	if EasyDestroy.Data.Filters then
-		for fid, filter in EasyDestroy.spairs(EasyDestroy.Data.Filters, function(t, a, b) return (t[a].properties.type == t[b].properties.type and t[a].properties.name:lower() < t[b].properties.name:lower()) or t[a].properties.type < t[b].properties.type end) do
-			info.text, info.value, info.checked, info.func, info.owner = filter.properties.name, fid, false, EasyDestroy_DropDownSelect, EasyDestroyDropDown
+	As for actions, this file covers more "API" type actions. Mostly for things that don't
+	fall into a clean category such as 'Filter', 'Criteria', or 'Item'.
 
-			if EasyDestroy.Cache.FilterCache and not EasyDestroy.Cache.FilterCache[fid] then
-				EasyDestroy.Cache.FilterCache[fid] = EasyDestroyFilter:Load(fid)
-			end
-			
-			if EasyDestroy.DebugActive then
-				info.text = filter.properties.name .. " | " .. fid
-			end
-			if filter.properties.type == ED_FILTER_TYPE_SEARCH and includeSearches then
-				UIDropDownMenu_AddButton(info)
-				if filter.properties.favorite == true then
-					favoriteID = info.value
-				end
-			elseif filter.properties.type == ED_FILTER_TYPE_BLACKLIST and includeBlacklists then
-				if not hasSeparator and includeSearches then
-					UIDropDownMenu_AddButton(separatorInfo)
-					hasSeparator = true
-				end
-				UIDropDownMenu_AddButton(info)
-			end
-		end
-	end
-end
+	E.g. "GetBagItems" will create the itemList for all items in the users bags. This information
+	is used elsewhere.
 
-function EasyDestroySearchTypes_OnClick()
-	EasyDestroy_InitDropDown()
-	local favoriteID = EasyDestroy_GetFavorite()
+	"EasyDestroyCacheID" generates a CacheID for an item based on the bag, slot, quality, and link.
 
-	if not(EasyDestroy:IncludeSearches()) and not(EasyDestroy:IncludeBlacklists()) then
-		UIDropDownMenu_SetText(EasyDestroyDropDown, 'You must select at least one type of filter.')
-	elseif EasyDestroy:IncludeSearches() and favoriteID then
-		UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, favoriteID)
-		EasyDestroy_LoadFilter(favoriteID)
-		EasyDestroy_Refresh()
-	else
-		UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, 0)
-	end
-end
 
---[[
-	EasyDestroy.Cache.ItemCache {
-		[bag:slot:quality:itemLink] = item
-	}
+
+
 ]]
+
+function EasyDestroy:IncludeBlacklists()
+
+	return EasyDestroy.UI.FilterDropDown.BlacklistsCheckbutton:GetChecked()
+
+end
+
+function EasyDestroy:IncludeSearches()
+
+	return EasyDestroy.UI.FilterDropDown.SearchesCheckbutton:GetChecked()
+
+end
 
 function EasyDestroy.EasyDestroyCacheID(bag, slot, quality, link)
 	
@@ -107,7 +53,7 @@ function EasyDestroy.GetBagItems()
 	-- Creates a list of items in the users bags and caches the items.
 
 	local itemList = {}
-	local filterRegistry = EasyDestroyFilters.Registry
+	local filterRegistry = EasyDestroy.CriteriaRegistry
 	local cachedItem = false
 
 	for bag = 0, NUM_BAG_SLOTS do
@@ -161,7 +107,7 @@ local function FindWhitelistItems()
 	local matchfound = nil
 	local typematch = false
 	local items = {}
-	local filterRegistry = EasyDestroyFilters.Registry
+	local filterRegistry = EasyDestroy.CriteriaRegistry
 
 	for i, item in ipairs(EasyDestroy.GetBagItems()) do
 		matchfound = nil
@@ -261,7 +207,7 @@ end
 	- if the item matches ANY blacklist, then the item is excluded (return true)
 ]]
 function EasyDestroy:InFilterBlacklist(item)
-	local filterRegistry = EasyDestroyFilters.Registry
+	local filterRegistry = EasyDestroy.CriteriaRegistry
 	local criteriaTable = {}
 	local matchesAny = false
 	for fid, blacklist in pairs(EasyDestroy.Data.Filters) do
@@ -348,36 +294,77 @@ function EasyDestroy:DisenchantItem()
 	EasyDestroyButton:Disable()
 end
 
-function EasyDestroy:IncludeBlacklists()
-	return EasyDestroyFrameSearchTypes.Blacklist:GetChecked()
-end
-
-function EasyDestroy:IncludeSearches()
-	return EasyDestroyFrameSearchTypes.Search:GetChecked()
-end
-
-function EasyDestroy:SelectAllFilterTypes()
-	EasyDestroyFrameSearchTypes.Blacklist:SetChecked(true)
-	EasyDestroyFrameSearchTypes.Search:SetChecked(true)
-end
-
--- Function of the window drop down, moved from Main.
-function EasyDestroy_DropDownSelect(self, arg1, arg2, checked)
-	EasyDestroy.Debug("SetSelectedValue", self.value)
-	UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, self.value)
-	if self.value == 0 then
-		EasyDestroy_ClearFilterFrame()
-		EasyDestroy_ResetFilterStack()
-		EasyDestroy.CurrentFilter = EasyDestroy.EmptyFilter
-	else
-		EasyDestroy_LoadFilter(self.value)
-		EasyDestroy.CurrentFilter = EasyDestroy.Data.Filters[self.value]
-		EasyDestroy.CurrentFilter.fid = self.value
+function EasyDestroy:RegisterCriterion(filter)
+    --[[ 
+    Register a filter with the addon.
+    This should be called by the filters themselves.
+    ]]
+	local filterKeys = EasyDestroy.Keys(filter)
+	if not tContains(filterKeys, 'name') then
+		EasyDestroy.Error('Error: Filter criterion found with no name. Unable to register.')
+		return
+	elseif not tContains(filterKeys, 'key') then 
+		EasyDestroy.Error('Error: Filter criterion ' .. filter.name .. ' nunable to load. No key provided.')
+		return
 	end
-	EasyDestroy_Refresh()
+
+	-- We want to generate the frame, but not show them.
+	filter:GetFilterFrame()
+	filter.frame:Hide()
+
+	EasyDestroy.CriteriaRegistry[filter.key] = filter
+	UIDropDownMenu_Initialize(EasyDestroyFilterTypes, EasyDestroy.UI.CriteriaDropdown.Initialize)
 end
 
-function EasyDestroy:Initialize()
+--[[ This generates our filter table from settings in the EasyDestroyFilters window. ]]
+function EasyDestroy:GenerateFilter(fetchNewID)
+
+	-- Needs to updated cached filters or create a brand new filter
+
+	local FilterID = EasyDestroy.UI.GetSelectedFilter() --UIDropDownMenu_GetSelectedValue(EasyDestroyDropDown)
+	local filter, ftype
+	
+	if EasyDestroyFilterSettings.Blacklist:GetChecked() then
+		ftype = ED_FILTER_TYPE_BLACKLIST
+	else
+		ftype = ED_FILTER_TYPE_SEARCH
+	end
+
+	if EasyDestroy.Cache.FilterCache and EasyDestroy.Cache.FilterCache[FilterID] then
+		filter = EasyDestroy.Cache.FilterCache[FilterID]
+	else
+		filter = EasyDestroyFilter:New(EasyDestroy.UI.GetFilterType(), EasyDestroy.UI.GetFilterName())
+	end
+
+	local temp = filter:ToTable()
+	temp.filter = filter:GetCriteriaFromWindow()
+
+	--filter:LoadCriteriaFromWindow()
+
+	return temp, filter
+	
+end
+
+function EasyDestroy.FindFilterWithName(filterName)
+
+	-- This could maybe be moved to the filters class? But it's more of a static function
+		
+	if EasyDestroy.Data.Filters then
+		for fid, filter in pairs(EasyDestroy.Data.Filters) do
+
+			if filter.properties.name == filterName then
+
+				return fid, filter
+
+			end
+
+		end
+	end
+
+	return nil
+end
+
+function EasyDestroy.UI.Initialize()
 	--[[ Title Bar ]]--
 	EasyDestroyFrame.Title:SetFontObject("GameFontHighlight");
 	EasyDestroyFrame.Title:SetText("Easy Destroy");		
@@ -440,7 +427,6 @@ function EasyDestroy:Initialize()
 	EasyDestroy.EasyDestroyTest:SetScript("OnClick", function(self)
 		print("CountItemsFound", #FindWhitelistItems() or 0)
 		print("Filter", UIDropDownMenu_GetSelectedValue(EasyDestroyDropDown))
-		print("Filter ID", EasyDestroyFilters.CurrentFilterID)
 		pprint(EasyDestroy.CurrentFilter)
 	end)
 	
@@ -456,6 +442,15 @@ function EasyDestroy:Initialize()
         EasyDestroyItemsFrame:OnVerticalScroll(offset)
         --EasyDestroy.FilterChanged = true
     end)
+
+	EasyDestroy.UI.FilterName:SetLabel("Filter Name:")
+	EasyDestroy.UI.SetFavoriteChecked(false)
+	EasyDestroy.UI.FilterType:SetLabel("Blacklist")
+	UIDropDownMenu_SetWidth(EasyDestroyFilterTypes, EasyDestroyFilterSettings:GetWidth()-50)
+
+	EasyDestroyFilterSettings.FilterName.label:SetText("Filter Name:")
+	EasyDestroyFilterSettings.Favorite:SetChecked(false);		
+	EasyDestroyFilterSettings.Blacklist.label:SetText("Blacklist")
 
 end
 
