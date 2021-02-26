@@ -12,15 +12,19 @@
 ## X-Curse-Project-ID: 414637
 ## X-Website: https://github.com/cwagrant/EasyDestroy
 
+Libs\LibStub\LibStub.lua
+Libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
+Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
+Libs\LibDBIcon-1.0\lib.xml
+
 Core.lua
 Classes.lua
-blacklist\lists.lua
+Data.lua
 Templates.xml
 EasyDestroy.xml
 UI.lua
 Handlers.lua
 EasyDestroy.lua
-Filters.lua
 Favorites.lua
 Dialogs.lua
 Main.lua
@@ -32,6 +36,5 @@ filters\rarity.lua
 filters\iteminset.lua
 filters\soulbound.lua
 
-blacklist\blacklist.lua
-
+Blacklist.lua
 AddOnSkin.lua

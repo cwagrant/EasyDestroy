@@ -324,12 +324,6 @@ function EasyDestroy:GenerateFilter(fetchNewID)
 	local FilterID = EasyDestroy.UI.GetSelectedFilter() --UIDropDownMenu_GetSelectedValue(EasyDestroyDropDown)
 	local filter, ftype
 	
-	if EasyDestroyFilterSettings.Blacklist:GetChecked() then
-		ftype = ED_FILTER_TYPE_BLACKLIST
-	else
-		ftype = ED_FILTER_TYPE_SEARCH
-	end
-
 	if EasyDestroy.Cache.FilterCache and EasyDestroy.Cache.FilterCache[FilterID] then
 		filter = EasyDestroy.Cache.FilterCache[FilterID]
 	else
@@ -348,7 +342,7 @@ end
 function EasyDestroy.FindFilterWithName(filterName)
 
 	-- This could maybe be moved to the filters class? But it's more of a static function
-		
+
 	if EasyDestroy.Data.Filters then
 		for fid, filter in pairs(EasyDestroy.Data.Filters) do
 

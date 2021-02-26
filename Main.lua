@@ -90,6 +90,7 @@ function EasyDestroy_EventHandler(self, event, ...)
 			
 			EasyDestroy.Data.Filters = EasyDestroy.Data.Filters or {}
 			EasyDestroy.Data.Options = EasyDestroy.Data.Options or {}
+			EasyDestroy.Data.Options.MinimapIcon = EasyDestroy.Data.Options.MinimapIcon or {}
 			EasyDestroy.Data.Blacklist = EasyDestroy.Data.Blacklist or {}
 			EasyDestroy.CurrentFilter = EasyDestroy.EmptyFilter
 
@@ -108,6 +109,30 @@ function EasyDestroy_EventHandler(self, event, ...)
 			if showConfig ~= nil then
 				EasyDestroyConfiguration:SetShown(showConfig)
 			end
+
+			local ldbicon = LibStub("LibDBIcon-1.0")
+			local ldb = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject("EasyDestroy", {
+				type = "launcher",
+				text = "EasyDestroy",
+				icon = 132885,
+				OnClick = function(self, button) EasyDestroyFrame:Show() end,
+				OnLeave = function(self) GameTooltip:Hide() end,
+				OnEnter = function(self)
+					local x, y = GetCursorPosition()
+					local width = GetScreenWidth() or 0
+					local anchor = "ANCHOR_RIGHT"
+					if x > (width/2) then anchor = "ANCHOR_LEFT" end
+					GameTooltip:SetOwner(self, anchor)
+					GameTooltip:ClearLines()
+					GameTooltip:AddLine("Easy Destroy")
+					GameTooltip:AddLine(" ")
+					GameTooltip:AddLine("Click to open.")
+					GameTooltip:Show()
+				end
+
+				})
+
+ldbicon:Register("EasyDestroy", ldb, EasyDestroy.Data.Options.MinimapIcon)
 
 		end
 	elseif event=="PLAYER_LOGOUT" then

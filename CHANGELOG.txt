@@ -1,3 +1,9 @@
+20210225 - 2.1.0b
+- Code cleanup, Libs added to directory, file structure updated.
+- NOTE: It would be best to delete the addon from your Interface\AddOns folder and then reinstall it. 
+    There has been a number of changes to files, file names, and file locations. 
+- Added Data Text (LDB) and Minimap Icon (LibDBIcon).
+
 20210223 - 2.0.6b
 - Minor fix to items template window.
 
