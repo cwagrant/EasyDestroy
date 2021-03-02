@@ -62,6 +62,9 @@ local function GetItemsInBags()
         end
     end
 
+    EasyDestroy.API.FindTradegoods(EasyDestroy.Dict.Herbs, itemList)
+	EasyDestroy.API.FindTradegoods(EasyDestroy.Dict.Ores, itemList)
+    
     return itemList
 end
 

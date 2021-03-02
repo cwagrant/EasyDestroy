@@ -1,3 +1,16 @@
+20210302 - 3.0.0b
+- Added support for keybinding the Destroy button to whatever you want.
+- Changed Disenchant button to Destroy
+- Added support for milling and prospecting.
+- Added Options window
+- Added Filter Criteria - Item Count
+- Added Filter Criteria - Item Types
+- Renamed New From Current to "Save Filter As"
+- Added support for auto-stacking herbs and ore when they show up in the Item window
+- Code cleanup, removing things from the global scope as much as possible, removing redundant code
+- Added in dictionary for herbs and ores that can be processed.
+- Bug fixes
+
 20210225 - 2.1.0b
 - Code cleanup, Libs added to directory, file structure updated.
 - NOTE: It would be best to delete the addon from your Interface\AddOns folder and then reinstall it. 

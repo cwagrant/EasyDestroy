@@ -7,7 +7,8 @@ function EasyDestroyItemsMixin:UpdateItemFrame(item, onclick)
             self.Item:SetText(item:GetItemName())
         end)
         --self.Item.itemLink = link
-        if item.count and item.count > 0 then
+
+        if item.classID == LE_ITEM_CLASS_TRADEGOODS and item.count and item.count > 1 then 
             self.Item:SetText(item:GetItemName() .. " (" .. item.count .. ")")
             self.ItemLevel:SetText("")
         elseif item.level and item.level ~= nil and item.level ~= 0 then
