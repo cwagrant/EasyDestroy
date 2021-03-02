@@ -22,6 +22,11 @@
 
 ]]
 
+local API = {}
+
+API.toCombine = {}
+API.toCombineQueue = {}
+
 function EasyDestroy:IncludeBlacklists()
 
 	return EasyDestroy.UI.FilterDropDown.BlacklistsCheckbutton:GetChecked()
@@ -78,11 +83,17 @@ function EasyDestroy.GetBagItems()
 				if item == nil then break end
 
 				if cachedItem then break end
+
+				if item.classID ~= LE_ITEM_CLASS_ARMOR and item.classID ~= LE_ITEM_CLASS_WEAPON then break end 
 				
 				if item:GetItemID() and C_Item.IsItemKeystoneByID(item:GetItemID()) then break end
 
 				if item:GetItemLink() then
 					item.haveTransmog = item:HaveTransmog()
+					
+					-- if item.classID == LE_ITEM_CLASS_TRADEGOODS then
+					-- 	item.count = GetItemCount(item.itemLink)
+					-- end
 
 					for k, v in pairs(filterRegistry) do
 						if v.GetItemInfo ~= nil and type(v.GetItemInfo) == "function" then
@@ -96,20 +107,32 @@ function EasyDestroy.GetBagItems()
 			end
 		end
 	end
+
+	EasyDestroy.API.FindTradegoods(EasyDestroy.Dict.Herbs, itemList)
+	EasyDestroy.API.FindTradegoods(EasyDestroy.Dict.Ores, itemList)
+
+	-- EasyDestroy.Dict.Ores EasyDestroy.Dict.Herbs
+
 	return itemList
 end
 
-local function FindWhitelistItems()
+function EasyDestroy.API.FindWhitelistItems()
 	
 	-- Applies the current Search(Whitelist) to all items in the users bags.
 	
-	local filter = EasyDestroy.CurrentFilter
+	local activeFilter = EasyDestroy:GenerateFilter()
+
+	-- The old way of getting filter information
+	local filter = activeFilter:ToTable()
+	filter.filter = EasyDestroy.UI.GetCriteria()
+
 	local matchfound = nil
 	local typematch = false
 	local items = {}
 	local filterRegistry = EasyDestroy.CriteriaRegistry
+	local input = EasyDestroy.GetBagItems() 
 
-	for i, item in ipairs(EasyDestroy.GetBagItems()) do
+	for i, item in ipairs(input) do
 		matchfound = nil
 		typematch = false
 
@@ -117,6 +140,11 @@ local function FindWhitelistItems()
 
 			--[[ a way to get "continue" statement functionality from break statements. ]]
 			while (true) do
+
+				if item.classID ~= LE_ITEM_CLASS_ARMOR and item.classID ~= LE_ITEM_CLASS_WEAPON and item.count and item.count <= 0 then
+					matchfound = false
+					break
+				end
 
 				-- Ignore items that are junk or > legendary.
 				if item.quality and (item.quality < Enum.ItemQuality.Common or item.quality > Enum.ItemQuality.Epic) then
@@ -140,11 +168,12 @@ local function FindWhitelistItems()
 
 					If we're editing a filter/whitelist then we want to show the items it would catch.
 				]]
-				for k, v in pairs(filter.filter) do
+
+				for k, v in pairs(EasyDestroy.UI.GetCriteria()) do
 					if not filterRegistry[k] then
-						print("Unsupported filter: " .. k)
+						print("Unsupported filter: " .. k or "UNK")
 					else
-						if filter.properties.type == ED_FILTER_TYPE_BLACKLIST and filterRegistry[k].Blacklist ~= nil and type(filterRegistry[k].Blacklist) == "function" then
+						if activeFilter:GetType() == ED_FILTER_TYPE_BLACKLIST and filterRegistry[k].Blacklist ~= nil and type(filterRegistry[k].Blacklist) == "function" then
 							if not filterRegistry[k]:Blacklist(v, item) then
 								matchfound = false
 								break
@@ -152,15 +181,17 @@ local function FindWhitelistItems()
 						elseif not filterRegistry[k]:Check(v, item) then
 							matchfound = false
 							break
-						end	
+						end
 					end
 					matchfound = true
 				end
 				
 				if not matchfound then break end
 
+				-- A list of actions is generated based on bit flags. 0x00, 0x01, 0x02, 0x04 for none, DE, Mill, and Prospect
 				--[[ Filter out types/subtypes that don't matter for the current action ]]--
-				for k, v in ipairs(ED_ACTION_FILTERS[ED_ACTION_DISENCHANT]) do
+				-- for k, v in ipairs(ED_ACTION_FILTERS[ED_ACTION_DISENCHANT]) do
+				for k, v in ipairs(EasyDestroy.ItemTypeFilterByFlags(EasyDestroy.Data.Options.Actions)) do
 					if v.itype == item.classID then
 						if not v.stype then
 							typematch = true
@@ -169,7 +200,11 @@ local function FindWhitelistItems()
 						end
 					end
 				end
-				
+
+				if EasyDestroy.API.Blacklist.HasSessionItem(item) then
+					matchfound = false
+					break
+				end				
 
 				if not typematch then break end
 
@@ -190,6 +225,15 @@ local function FindWhitelistItems()
 
 			if matchfound and typematch then 
 				tinsert(items, item)
+
+				-- queue up found trade good items in bags for restacking
+
+				if EasyDestroy.API.ItemNeedsRestacked(item) then
+
+					EasyDestroy.Debug("AddItemToQueue", item.itemLink)
+					tinsert(API.toCombineQueue, item)
+				end
+
 			end
 		end
 	end
@@ -239,59 +283,250 @@ function EasyDestroy:InFilterBlacklist(item)
 	return matchesAny
 end
 
-function EasyDestroy:DisenchantItem()
+--[[ 
+	Probably the way to handle this will be to actually put itemlinks in the dictionary
 
-	-- The actual process for disenchanting an item.
-	if not EasyDestroyFrame:IsVisible() then
-		EasyDestroyFrame:Show()
-		return
-	end
+	For now this seems to work. Will probably make it so that all herbs and ore come
+	through this function and all other item types come the "normal" way. This way
+	we can list them a single time w/ the count included.
 
-	local iteminfo = EasyDestroyItemsFrameItem1.item or nil
-	local bag, slot
-	
-	if iteminfo ~= nil then
-		bag, slot = iteminfo.bag, iteminfo.slot	
-	end
-	
-	if not IsSpellKnown(13262) then
-		print ("You must have disenchanting to disenchant this item.")
-		return
-	elseif EasyDestroyFilterSettings.Blacklist:GetChecked() then
-		StaticPopup_Show("ED_CANT_DISENCHANT_BLACKLIST")
-		return
-	elseif not IsUsableSpell(13262) then
-		print("You cannot disenchant that item right now.")
-		return
-	elseif #GetLootInfo() > 0 then
-		if not EasyDestroy.Warnings.LootOpen then
-			print("Unable to disenchant while loot window is open.")
-				EasyDestroy.Warnings.LootOpen = true
-			-- lets only warn people every so often, don't want to fill their chat logs if they spam click.
-			C_Timer.After(30, function()
-				EasyDestroy.Warnings.LootOpen = false
-			end
-			)
-		end
-		return
-	elseif IsCurrentSpell(13262) then
-		-- fail quietly as they are already casting
-		return
-	elseif iteminfo == nil then
-		return
-	end
+	Do I want to make it so that the disenchant button gets stuff magically based on 
+	if it's possible to mass mill/prospect? I could make a filter criteria for
+	"allow regular milling", "allow mass milling". 
 
-	local spellname = GetSpellInfo(13262)
+	if "allow regular milling" is not checked, then items with a count < 20 won't show
+
+]]
+
+function EasyDestroy.API.FindTradegoods(dict, addToTable)
+
+	-- Find Herbs/Ore based on which Dict is passed. 
+	-- Inserts the matches into the passed table.
+
+	-- EasyDestroy.Dict.Ores EasyDestroy.Dict.Herbs
+
+	local item 
+	for k, v in ipairs(dict) do
 		
-	if(GetContainerItemInfo(bag, slot) ~= nil)then
-		EasyDestroy.Debug(format("Disenchanting item at (bag, slot): %d %d", bag, slot))
+		if v.itemid then 
+			local _, reagent = GetItemInfo(v.itemid)
+			if reagent then 
+				local EasyDestroyID = EasyDestroy.EasyDestroyCacheID(0, 0, 1, reagent)
+
+				if EasyDestroyID and EasyDestroy.Cache.ItemCache[EasyDestroyID] then
+					item = EasyDestroy.Cache.ItemCache[EasyDestroyID]
+				else
+					item = EasyDestroyItem:New(nil, nil, reagent)
+				end
+
+				item.count = GetItemCount(item:GetItemLink(), false)
+
+				-- placeholder, will need to look to see if mass destroying/regular destroying are enabled and handle approrpiately
+				if item.count > 4 then 
+					tinsert(addToTable, item)					
+				end
+			end
+		end
+	end
+end
+
+function EasyDestroy.API.ItemNeedsRestacked(item)
+
+	-- Find if at least 2 partial stacks of an item exists
+
+	local incompleteStack = false
+
+	if item and item.maxStackSize then 
+
+		for bag = 0, NUM_BAG_SLOTS do
+			for slot=1, GetContainerNumSlots(bag) do
+	
+				local _, count, _, _, _, _, _, _, _, itemID = GetContainerItemInfo(bag, slot)
+
+				if item:GetItemID() == itemID and count < item.maxStackSize then
+					
+					if incompleteStack then
+						return true
+					end
+
+					incompleteStack = true
+
+				end
+			end
+	
+		end
+
+	end
+
+	return false
+
+end
+
+
+function EasyDestroy.API.GetDestroyActionForItem(item)
+
+	if item then 
+		if item.classID == LE_ITEM_CLASS_ARMOR or item.classID == LE_ITEM_CLASS_WEAPON then
+			return EasyDestroy.Enum.Actions.Disenchant
+		elseif item.classID == LE_ITEM_CLASS_TRADEGOODS and item.subclassID == 7 then
+			return EasyDestroy.Enum.Actions.Prospect
+		elseif item.classID == LE_ITEM_CLASS_TRADEGOODS and item.subclassID == 9 then
+			return EasyDestroy.Enum.Actions.Mill
+		end
+	end
+
+	return nil
+
+end
+
+function EasyDestroy.API.FindTradegoodInBags(item)
+
+	for bag = 0, NUM_BAG_SLOTS do
+		for slot=1, GetContainerNumSlots(bag) do
+
+			local itemID = select(10, GetContainerItemInfo(bag, slot))
+
+			if item:GetItemID() == itemID then
+				return bag, slot, GetItemCount(itemID, false)
+			end
+		end
+
+	end
+
+	return nil
+
+end
+
+function EasyDestroy.API.CombineItemsInQueue()
+
+	-- Called when doing filter change updates so that if an item that is included in the
+	-- current search needs to be restacked, it gets restacked.
+
+	EasyDestroy.Thread = coroutine.create(EasyDestroy.API.CombineStacks)
+
+end
+
+
+
+function EasyDestroy.API.GetItemsToCombine(item)
+
+	-- Get a list of items, for a given item, that can be combined into stacks.
+
+
+	for bag = 0, NUM_BAG_SLOTS do
+
+		for slot=1, GetContainerNumSlots(bag) do
+
+			local _, count, _, _, _, _, _, _, _, itemID = GetContainerItemInfo(bag, slot)
+
+			if itemID == item.itemID then 
+
+				if count < item.maxStackSize then 
+					tinsert(API.toCombine, {bag=bag, slot=slot})
+				end
+			end
+		end
+	end
+
+	
+end
+	
+EasyDestroy.toCombineQueue = API.toCombineQueue
+
+function EasyDestroy.API.CombineStacks()
+
+	-- Combine stacks of items onto one another. 
+
+	EasyDestroy.ProcessingItemCombine = true
+
+	EasyDestroy.Debug("EasyDestroy.API.CombineStacks")
+	local item 
+	while true do 
+
+		if #API.toCombineQueue > 0 and #API.toCombine == 0 then
+
+			EasyDestroy.Debug("EasyDestroy.API.CombineStacks", "GetItemFromQueue" )
+			item = tremove(API.toCombineQueue, 1)
+			EasyDestroy.API.GetItemsToCombine(item)
+
+		elseif #API.toCombineQueue == 0 and #API.toCombine == 0 then
+
+			EasyDestroy.Debug("EasyDestroy.API.CombineStacks", "Close")
+			break
+
+		end
+
+
+		ClearCursor()
+
+		local sourceItem, destItem 
+		while true do
+
+			sourceItem = API.toCombine[#API.toCombine]
+			destItem = API.toCombine[1]
+
+			local _, _, locked1 = GetContainerItemInfo(sourceItem.bag, sourceItem.slot)
+			local _, _, locked2 = GetContainerItemInfo(destItem.bag, destItem.slot)
+
+			if locked1 or locked2 then
+				coroutine.yield()
+			else
+				break
+			end
+
+		end
+
+		EasyDestroy.Debug("EasyDestroy.API.CombineStacks", "CombineItems")
+		PickupContainerItem(sourceItem.bag, sourceItem.slot)
+		PickupContainerItem(destItem.bag, destItem.slot)
+
+		ClearCursor()
+
+		local _, count = GetContainerItemInfo(destItem.bag, destItem.slot)
+
+		table.remove(API.toCombine) -- pop
+
+		if count >= item.maxStackSize then
+			table.remove(API.toCombine, 1)
+		end
+
+		EasyDestroy.Debug(string.format("Count of items %d", #API.toCombine))
+
+		EasyDestroy.Debug(#API.toCombine)
+		if #API.toCombine <= 1 then
+			EasyDestroy.Debug("EasyDestroy.API.CombineStacks", "Clear list", #API.toCombine)
+			wipe(API.toCombine)
+			coroutine.yield()
+		else
+			EasyDestroy.Debug(#API.toCombine)
+			coroutine.yield()
+		end
+
+	end
+
+	EasyDestroy.Thread = nil
+	EasyDestroy.ProcessingItemCombine = false
+
+end
+
+function EasyDestroy.API.DestroyItem(item)
+
+	EasyDestroy.Debug("EasyDestroy.API.DestroyItem", item.itemLink)
+
+	local action = EasyDestroy.API.GetDestroyActionForItem(item)
+
+	if action then
+
+		local ActionDict = EasyDestroy.Dict.Actions[action]
+		local spellname = GetSpellInfo(ActionDict.spellID)
+
+		local bag, slot = EasyDestroy.API.FindTradegoodInBags(item)
+
 		EasyDestroyButton:SetAttribute("*type1", "macro")
-		EasyDestroyButton:SetAttribute("macrotext", format("/cast %s\n/use %d %d", spellname, bag, slot))
-	end	
-	-- Disable the button while we process the item being destroyed.
-	-- We'll reenable it when we update the item scroll frame via a
-	-- callback
-	EasyDestroyButton:Disable()
+		EasyDestroyButton:SetAttribute("macrotext", string.format(EasyDestroy.Dict.Strings.DestroyMacro, spellname, bag, slot))
+
+	end
+
 end
 
 function EasyDestroy:RegisterCriterion(filter)
@@ -308,20 +543,31 @@ function EasyDestroy:RegisterCriterion(filter)
 		return
 	end
 
-	-- We want to generate the frame, but not show them.
-	filter:GetFilterFrame()
-	filter.frame:Hide()
+	filter:Initialize()
+
+	if filter and filter.scripts then 
+		for scriptType, frames in pairs(filter.scripts) do
+
+			for _, frame in ipairs(frames) do
+				EasyDestroy.UI.ItemWindow:RegisterScript(frame, scriptType)
+
+			end
+			
+		end
+	end
+
 
 	EasyDestroy.CriteriaRegistry[filter.key] = filter
 	UIDropDownMenu_Initialize(EasyDestroyFilterTypes, EasyDestroy.UI.CriteriaDropdown.Initialize)
 end
 
 --[[ This generates our filter table from settings in the EasyDestroyFilters window. ]]
-function EasyDestroy:GenerateFilter(fetchNewID)
+--[[ 2021-02-26 Removed old table, now uses a proper Filter object for downstream work.]]
+function EasyDestroy:GenerateFilter()
 
 	-- Needs to updated cached filters or create a brand new filter
 
-	local FilterID = EasyDestroy.UI.GetSelectedFilter() --UIDropDownMenu_GetSelectedValue(EasyDestroyDropDown)
+	local FilterID = EasyDestroy.UI.GetSelectedFilter()
 	local filter, ftype
 	
 	if EasyDestroy.Cache.FilterCache and EasyDestroy.Cache.FilterCache[FilterID] then
@@ -330,12 +576,7 @@ function EasyDestroy:GenerateFilter(fetchNewID)
 		filter = EasyDestroyFilter:New(EasyDestroy.UI.GetFilterType(), EasyDestroy.UI.GetFilterName())
 	end
 
-	local temp = filter:ToTable()
-	temp.filter = filter:GetCriteriaFromWindow()
-
-	--filter:LoadCriteriaFromWindow()
-
-	return temp, filter
+	return filter
 	
 end
 
@@ -358,94 +599,80 @@ function EasyDestroy.FindFilterWithName(filterName)
 	return nil
 end
 
-function EasyDestroy.UI.Initialize()
-	--[[ Title Bar ]]--
-	EasyDestroyFrame.Title:SetFontObject("GameFontHighlight");
-	EasyDestroyFrame.Title:SetText("Easy Destroy");		
-	
-	--[[ Frame Movement Information ]]--
-	EasyDestroyFrame.TitleBar:EnableMouse(true)
-	EasyDestroyFrame.TitleBar:SetScript("OnMouseDown", function(self, button)
-	  if button == "LeftButton" and not EasyDestroyFrame.isMoving then
-	   EasyDestroyFrame:StartMoving();
-	   EasyDestroyFrame.isMoving = true;
-	  end
-	end)
-	EasyDestroyFrame.TitleBar:SetScript("OnMouseUp", function(self, button)
-	  if button == "LeftButton" and EasyDestroyFrame.isMoving then
-	   EasyDestroyFrame:StopMovingOrSizing();
-	   EasyDestroyFrame.isMoving = false;
-	  end
-	end)
-	EasyDestroyFrame.TitleBar:SetScript("OnHide", function(self)
-	  if ( EasyDestroyFrame.isMoving ) then
-	   EasyDestroyFrame:StopMovingOrSizing();
-	   EasyDestroyFrame.isMoving = false;
-	  end
-	end)
-	
-	--[[ Item View Scrolling Area ]]--
-	EasyDestroyItems:SetBackdrop({
-		bgFile="Interface\\Tooltips\\UI-Tooltip-Background",
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-		edgeSize=16,
-		tile=true, 
-		tileEdge=false, 
-		insets={left=4, right=4, top=4, bottom=4}
-	})
+EasyDestroy.API.Blacklist = {}
 
-	EasyDestroySelectedFilters:SetBackdrop({
-		bgFile="Interface\\Tooltips\\UI-Tooltip-Background",
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-		edgeSize=8,
-		tile=true, 
-		tileEdge=false, 
-		insets={left=4, right=4, top=4, bottom=4}
-	})
+function EasyDestroy.API.Blacklist.AddSessionItem(item)
+	
+	tinsert(EasyDestroy.SessionBlacklist, item:ToTable())
 
-	EasyDestroyItems:SetBackdropColor(0,0,0,0.5)
-	EasyDestroySelectedFilters:SetBackdropColor(0,0,0,0.5)
+	EasyDestroy.UI.ItemWindow.Update()
+	EasyDestroy.UI.UpdateBlacklistWindow()
+
+end
+
+function EasyDestroy.API.Blacklist.HasSessionItem(item)
+	EasyDestroy.Debug("EasyDestroy.API.Blacklist.HasSessionItem", item:GetItemName(), item.itemID)
+
+    for k, v in ipairs(EasyDestroy.SessionBlacklist) do
+        -- if regular item, match on itemid, quality, ilvl
+        -- if legendary item, match on itemid and name
+        if v and ((v.itemid == item.itemID and v.quality == item.quality and v.ilvl == item.level) or (v.legendary and v.itemid==item.itemID and v.legendary==item:GetItemName())) then
+            return true
+        end
+    end
+
+	return false
+end
+
+function EasyDestroy.API.Blacklist.AddItem(item)
+	
+	tinsert(EasyDestroy.Data.Blacklist, item:ToTable())
+
+	EasyDestroy.UI.ItemWindow.Update()
+	EasyDestroy.UI.UpdateBlacklistWindow()
+
+end
+
+function EasyDestroy.API.Blacklist.HasItem(item)
+	EasyDestroy.Debug("EasyDestroy.API.GetItemInBlacklist", item:GetItemName(), item.itemID)
+
+    for k, v in ipairs(EasyDestroy.Data.Blacklist) do
+        -- if regular item, match on itemid, quality, ilvl
+        -- if legendary item, match on itemid and name
+        if v and ((v.itemid == item.itemID and v.quality == item.quality and v.ilvl == item.level) or (v.legendary and v.itemid==item.itemID and v.legendary==item:GetItemName())) then
+            return true
+        end
+    end
+
+	return false
+end
+
+function EasyDestroy.API.Blacklist.RemoveItem(item)
+	for k, v in ipairs(EasyDestroy.Data.Blacklist) do
+        -- if regular item, match on itemid, quality, ilvl
+        -- if legendary item, match on itemid and name
+        if v and ((v.itemid == item.itemID and v.quality == item.quality and v.ilvl == item.level) or (v.legendary and v.itemid==item.itemID and v.legendary==item:GetItemName())) then
+            tremove(EasyDestroy.Data.Blacklist, k)
+			EasyDestroy.UI.ItemWindow.Update()
+			EasyDestroy.UI.UpdateBlacklistWindow()
+        end
+    end
+end
+
+function EasyDestroy.UI.ItemOnClick(self, button)
+	if button == "RightButton" then 
 		
-	EasyDestroyFrameSearchTypes.Search.label:SetText("Searches")
-	EasyDestroyFrameSearchTypes.Search:SetChecked(true)
-	EasyDestroyFrameSearchTypes.Blacklist.label:SetText("Blacklists")
 
-	--[[ Filter View Area ]]--
-	UIDropDownMenu_SetWidth(EasyDestroyDropDown, EasyDestroyDropDown:GetWidth()-40)
-		
-	--[[ Test Button for debugging various information ]]--
-	EasyDestroy.EasyDestroyTest = CreateFrame("Button", "EDTest", EasyDestroyFrame, "UIPanelButtonTemplate")
-	EasyDestroy.EasyDestroyTest:SetSize(80, 22)
-	EasyDestroy.EasyDestroyTest:SetPoint("BOTTOMLEFT", EasyDestroyFrame, "TOPLEFT", 0, 4)
-	EasyDestroy.EasyDestroyTest:SetText("Test")
-	EasyDestroy.EasyDestroyTest:SetScript("OnClick", function(self)
-		print("CountItemsFound", #FindWhitelistItems() or 0)
-		print("Filter", UIDropDownMenu_GetSelectedValue(EasyDestroyDropDown))
-		pprint(EasyDestroy.CurrentFilter)
-	end)
-	
-	if EasyDestroy.DebugActive then
-		EasyDestroy.EasyDestroyTest:Show()
-	else
-		EasyDestroy.EasyDestroyTest:Hide()
+		self.item.menu = {
+			{ text = self.item:GetItemName(), notCheckable = true, isTitle = true},
+			{ text = "Add Item to Blacklist", notCheckable = true, func = function() EasyDestroy.API.Blacklist.AddItem(self.item) end },
+			{ text = "Ignore Item for Session", notCheckable = true, func = function() EasyDestroy.API.Blacklist.AddSessionItem(self.item) end},
+		}
+
+
+		EasyMenu(self.item.menu, EasyDestroy.ContextMenu, "cursor", 0, 0, "MENU")
 	end
-
-    EasyDestroyItemsFrame:Initialize(FindWhitelistItems, 8, 24, nil)
 	
-	EasyDestroyItemsFrame.ScrollFrame:SetScript("OnVerticalScroll", function(self, offset)
-        EasyDestroyItemsFrame:OnVerticalScroll(offset)
-        --EasyDestroy.FilterChanged = true
-    end)
-
-	EasyDestroy.UI.FilterName:SetLabel("Filter Name:")
-	EasyDestroy.UI.SetFavoriteChecked(false)
-	EasyDestroy.UI.FilterType:SetLabel("Blacklist")
-	UIDropDownMenu_SetWidth(EasyDestroyFilterTypes, EasyDestroyFilterSettings:GetWidth()-50)
-
-	EasyDestroyFilterSettings.FilterName.label:SetText("Filter Name:")
-	EasyDestroyFilterSettings.Favorite:SetChecked(false);		
-	EasyDestroyFilterSettings.Blacklist.label:SetText("Blacklist")
-
 end
 
 function EasyDestroy_SaveOptionValue(key, val)
@@ -464,3 +691,4 @@ function EasyDestroy_GetOptionValue(key)
 	end
 	return nil
 end
+

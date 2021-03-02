@@ -1,9 +1,9 @@
 EasyDestroy = EasyDestroy
-local addonName, addonSpace = ...
 
 local frame = CreateFrame("Frame", "ED_Blacklist", InterfaceOptionsFramePanelContainer)
 local needsUpdate = false
-frame.name = EasyDestroy.AddonName
+frame.name = "Blacklist"
+frame.parent = EasyDestroy.AddonName
 frame:Hide()
 
 -- On Load do Mixin of item frames 
@@ -29,8 +29,8 @@ local function GetItemsInBags()
     local itemList = {}
 
     for i, item in ipairs(EasyDestroy.GetBagItems()) do
-		matchfound = nil
-		typematch = false
+		local matchfound = nil
+		local typematch = false
 
         if item:GetStaticBackingItem() then
             item.location = item:GetItemLocation()
@@ -62,76 +62,6 @@ local function GetItemsInBags()
         end
     end
 
-    return itemList
-end
-
-
-
-
-local function RETIRED_GetItemsInBags() 
-    local itemList = {}
-    local item = {}
-
-    for bag = 0, NUM_BAG_SLOTS do
-        for slot=1, GetContainerNumSlots(bag) do
-            wipe(item)
-            item.link = select(7, GetContainerItemInfo(bag, slot));
-			if item.link then 
-				item.name, _, item.quality, item.level, _, item._type, item._subtype, item.stack, item.slot, item.icon, item.price, item.type, item.subtype = GetItemInfo(item.link);
-                item.id = GetContainerItemID(bag, slot);
-                item.iskeystone = C_Item.IsItemKeystoneByID(item.id)
-                item.location = ItemLocation:CreateFromBagAndSlot(bag, slot)
-                item.ilvl = select(1, GetDetailedItemLevelInfo(item.link))
-                if not item.name and not item.iskeystone then -- Because unlike Jim Croce, Mythic Keystones do not, in fact, have a name.
-                    item.name = "Blizzard Didn't Name This Item"
-                elseif item.iskeystone then
-                    item.name = "Keystone"
-                end
-
-                -- Default Item Filter: Only include armor/weapons
-                local typematch = false
-                for k, v in ipairs(ED_ACTION_FILTERS[ED_ACTION_DISENCHANT]) do
-                    if v.itype == item.type then
-                        if not v.stype then
-                            typematch = true
-                        elseif v.stype == item.subtype then
-                            typematch = true
-                        end
-                    end
-                end
-
-                -- because LUA sucks in some regards and I don't want to have the worlds longest if statement,
-                -- this little "hack" allows the break statements in the loop to more or less act as a "continue"
-                -- by ending the "loop" early if an item fails a check. If an item passes all the checks then
-                -- the "loop" ends anyways.
-                local passCheck = true
-                while(true) do
-                    if not typematch then
-                        passCheck = false
-                        break
-                    elseif item.type == LE_ITEM_CLASS_ARMOR and item.subtype == LE_ITEM_ARMOR_COSMETIC then
-                        passCheck = false
-                        break
-                    elseif ItemInBlacklist(item.id, item.name, item.quality, item.ilvl) then
-                        passCheck = false
-                        break
-                    elseif tContains(ED_DEFAULT_BLACKLIST, item.id) then
-                        passCheck = false
-                        break
-                    end
-                    break
-                end
-
-                -- data.itemlink, data.itemname, data.itemqual, (data.ilvl or nil)
-                if passCheck then
-                    tinsert(itemList, {bag=bag, slot=slot, itemlink=item.link, itemname=item.name, itemqual=item.quality, itemloc=item.location, ilvl=item.ilvl})
-				end
-                
-                -- Eventually will need to filter out items already on the blacklist
-                --tinsert(itemList, {itemkey=itemkey, bag=bag, slot=slot, itemlink=item.link, itemname=item.name, itemloc=item.location})
-            end
-        end
-    end
     return itemList
 end
 
@@ -168,50 +98,26 @@ local function GetItemsInBlacklist()
     return itemList
 end
 
-local function isItemShadowlandsLegendary(itemstring)
-    local splitLink = {strsplit(':', itemstring)}
-    local bonusIDCount = splitLink[14]
-    if bonusIDCount and tonumber(bonusIDCount) and tonumber(bonusIDCount) > 0 then
-        for i=15, 15 + bonusIDCount do
-            for k, v in ipairs(ED_LEGENDARY_IDS) do
-                if v and v.name and v.bonus_id then
-                    if splitLink[i] and tonumber(splitLink[i]) and v.bonus_id == tonumber(splitLink[i]) then
-                        return v.name
-                    end
-                end
-            end
-        end
-    end
-    return nil
-end
+local function OnClickBagItem(self, button)
 
-local function OnClickBagItem(self)
-    local itemid = GetContainerItemID(self.item.bag, self.item.slot);
-    EasyDestroy.Debug("Add Item to Blacklist", self.item:GetItemName(), self.item.itemID)
-    local tbl = {}
-    local legendary = isItemShadowlandsLegendary(self.item.itemLink)
-    tbl.itemid = self.item.itemID
-    tbl.legendary = legendary
-    tbl.quality = self.item.quality
-    tbl.ilvl = self.item.level
-    tbl.link = self.item.itemLink
-    tbl.name = self.item:GetItemName()
-    tinsert(EasyDestroy.Data.Blacklist, tbl)
+    if button ~= "LeftButton" then return end
+
+    -- tinsert(EasyDestroy.Data.Blacklist, self.item:ToTable())
+
+    EasyDestroy.API.Blacklist.AddItem(self.item)
+
     needsUpdate = true
-    EasyDestroy.FilterChanged = true
+
 end
 
-local function OnClickBlacklistItem(self)
+local function OnClickBlacklistItem(self, button)
+
+    if button ~= "LeftButton" then return end
+
     EasyDestroy.Debug("Remove Item From Blacklist", self.item:GetItemName(), self.item.itemID)
-    for k, v in ipairs(EasyDestroy.Data.Blacklist) do
-        -- if regular item, match on itemid, quality, ilvl
-        -- if legendary item, match on itemid and name
-        if v and ((v.itemid == self.item.itemID and v.quality == self.item.quality and v.ilvl == self.item.level) or (v.legendary and v.itemid==self.item.itemID and v.legendary==self.item:GetItemName())) then
-            tremove(EasyDestroy.Data.Blacklist, k)
-            needsUpdate = true
-            EasyDestroy.FilterChanged = true
-        end
-    end
+
+    EasyDestroy.API.Blacklist.RemoveItem(self.item)
+
 end
 
 local function OnFrameShow()
@@ -266,11 +172,12 @@ local function OnFrameShow()
 
     frame:SetScript("OnUpdate", function()
         if needsUpdate == true then 
-            itemsInBags.UpdateItemList = true
-            itemsInBags:ScrollUpdate()
+            -- itemsInBags.UpdateItemList = true
+            -- itemsInBags:ScrollUpdate()
 
-            itemsInBlacklist.UpdateItemList = true
-            itemsInBlacklist:ScrollUpdate()
+            -- itemsInBlacklist.UpdateItemList = true
+            -- itemsInBlacklist:ScrollUpdate()
+            EasyDestroy.UI.UpdateBlacklistWindow()
             needsUpdate = false
         end
     end)
@@ -279,12 +186,27 @@ local function OnFrameShow()
     frame:SetScript("OnShow", nil)
 end
 
+function EasyDestroy.UI.UpdateBlacklistWindow()
+    local itemsInBags = _G['EDBLBagItems']
+    if itemsInBags then
+        itemsInBags.UpdateItemList = true
+        itemsInBags:ScrollUpdate()
+    end
+
+    local itemsInBlacklist = _G['EDBLBlacklistItems']
+    if itemsInBlacklist then
+        itemsInBlacklist.UpdateItemList = true
+        itemsInBlacklist:ScrollUpdate()
+    end
+
+end
+
 frame:SetScript("OnShow", OnFrameShow)
 
 EasyDestroy.ItemInBlacklist = ItemInBlacklist
 InterfaceOptions_AddCategory(frame)
 
 EasyDestroy_OpenBlacklist:SetScript("OnClick", function()
-    InterfaceOptionsFrame_OpenToCategory(EasyDestroy.AddonName)
-    InterfaceOptionsFrame_OpenToCategory(EasyDestroy.AddonName)
+    InterfaceOptionsFrame_OpenToCategory(frame)
+    InterfaceOptionsFrame_OpenToCategory(frame)
 end)

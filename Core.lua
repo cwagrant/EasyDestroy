@@ -1,29 +1,15 @@
 EasyDestroy = {}
 
---[[
-	TODO:
-	Want to move everything over to these Enum's/Dicts.
-	Want to move UI related functionality into a single file and/or structure.
-	   e.g. EasyDestroy.UI.GetFilterName(), EasyDestroy.UI.<Button>Onclick, EasyDestroy.UI.Initialize()
-
-	Clarify Whitelist v Blacklist v Filter Criteria (previously Filter Types). 
-
-	Setup EasyDestroyButton to do Disenchants, Milling, and Prospecting.
-		 - This will require an addition to the UI where a user can select the Destroy Action for a filter.
-		 - Destroy Actions will determine what items show up for the user.
-		 - What about stacking? Do we count all of the items together as one? Is there some kind of cleanup
-		 for when they have odd numbers? What about mass milling/mass prospecting?
-		 	- Maybe need some kind of "right click> temporary ignore" for the ItemWindow?
-]]
-
 --[[ Modules ]]
 EasyDestroy.Favorites = {}
-EasyDestroyFilters = {} -- Until 2.0 this was a frame
+-- EasyDestroyFilters = {} -- Until 2.0 this was a frame, as of 3.0 this is no longer used.
 EasyDestroy.Enum = {}
 EasyDestroy.Dict = {}
 EasyDestroy.Data = {}
 EasyDestroy.UI = {}
 EasyDestroy.Handlers = {}
+EasyDestroy.API = {}
+
 
 --[[ Settings/Info ]]
 EasyDestroy.Version =  GetAddOnMetadata("EasyDestroy", "version")
@@ -33,11 +19,17 @@ EasyDestroy.AddonLoaded = false
 -- This is the name of the frame that filter types attach to for scrolling
 EDFILTER_SCROLL_CHILD = "EasyDestroySelectedFiltersScrollChild"
 
+EASY_DESTROY_CATEGORY = "EasyDestroy"
+_G["BINDING_NAME_CLICK EasyDestroyButton:LeftButton"] = "Destroy Button"
+
+EasyDestroy.ProcessingItemCombine = false
+
 --[[ Utility Tables/Variables ]]
 EasyDestroy.CurrentFilter = {}
 EasyDestroy.EmptyFilter = { filter={}, properties={} }
 EasyDestroy.Cache = { ItemCache = {}, FilterCache = {}}
 EasyDestroy.FrameRegistry = {}
+EasyDestroy.SessionBlacklist = {}
 
 EasyDestroy.FilterChanged = false
 EasyDestroy.UpdateSkin = false
@@ -51,29 +43,72 @@ EasyDestroy.DataLoaded = false
 EasyDestroy.CriteriaRegistry = {}
 EasyDestroy.CriteriaStack = {}
 
+EasyDestroy.DebugFrame = nil
+EasyDestroy.DebugState = nil
+ED_LOG_DEBUG = 0x01
+ED_LOG_INFO = 0x02
+ED_LOG_ERROR = 0x04
+
 
 --[[ Enumerations/Lookup Tables ]]
 EasyDestroy.Enum.FilterTypes = { Search=1, Blacklist=2 }
 EasyDestroy.Enum.Errors = { None=1, Name=2, Favorite=3 }
+EasyDestroy.Enum.Actions = { 
+	None = 0x0000, 
+	Disenchant=0x0001, Mill=0x0002, Prospect=0x0004, 
+	MassDestroy=0x0010,
+	IncludeBank=0x0100
+}
 
 EasyDestroy.Dict.Strings = {}
 EasyDestroy.Dict.Strings.CriteriaSelectionDropdown = "Select filter criteria..."
 EasyDestroy.Dict.Strings.FilterSelectionDropdownNew = "New filter..."
 
+
+
+
+-- Do I want to allow a filter to be available to multiple actions?
+-- If it is - what determines the "destroy" action.
+
+function EasyDestroy.ItemTypeFilterByFlags(flag)
+
+	local out = {}
+
+	for k, v in pairs(EasyDestroy.Dict.Actions) do 
+		local chk = bit.band(k, flag)
+		if chk > 0 then
+			for k,v in pairs(v.itemTypes) do
+				tinsert(out, v)
+			end
+		end
+	end
+
+	return out
+
+end
+
+-- 773 = mill, 755 prospect
+EasyDestroy.Dict.Strings.MassDestroyMacro = "/cast %1$s \n/run C_TradeSkillUI.CraftRecipe(%2$d, 1);\n/cast %1$s";
+EasyDestroy.Dict.Strings.DestroyMacro = "/cast %s\n/use %d %d"
+
 EasyDestroy.Dict.Actions = {}
-EasyDestroy.Dict.Actions.Disenchant = {
+
+EasyDestroy.Dict.Actions[1] = {
 	spellID = 13262,
 	itemTypes = {{itype=LE_ITEM_CLASS_WEAPON, stype=nil}, {itype=LE_ITEM_CLASS_ARMOR, stype=nil}},
 }
 
-EasyDestroy.Dict.Actions.Mill = {
-	spellID = 0,
+EasyDestroy.Dict.Actions[2] = {
+	spellID = 51005,
 	itemTypes = {{itype=LE_ITEM_CLASS_TRADEGOODS, stype=9}},
+	tradeskill = 773,
 }
 
-EasyDestroy.Dict.Actions.Prospect = {
-	spellID = 0,
+EasyDestroy.Dict.Actions[4] = {
+	spellID = 31252,
 	itemTypes = {{itype=LE_ITEM_CLASS_TRADEGOODS, stype=7}},
+	tradeskill = 755,
+	
 }
 
 -- ED_ACTION_FILTERS contains the different types of actions.
@@ -102,19 +137,6 @@ ED_ERROR_FAVORITE = 3
 tinsert(ED_ERROR_TYPES, ED_ERROR_NONE, 'None')
 tinsert(ED_ERROR_TYPES, ED_ERROR_NAME, 'Name')
 tinsert(ED_ERROR_TYPES, ED_ERROR_FAVORITE, 'Favorite')
-
---[[
-	EasyDestroy.DestroyFunc.DISENCHANT = {
-		{itype=LE_ITEM_CLASS_WEAPON, stype=nil},
-		{itype=LE_ITEM_CLASS_ARMOR, stype=nil}
-	},
-	EasyDestroy.DestroyFunc.MILL = {
-		{itype=LE_ITEM_TRADEGOODS, stype=9}
-	},
-	EasyDestroy.DestroyFunc.PROSPECT = {
-		{itype=LE_ITEM_TRADEGOODS, stype=7}
-	}
-}]]--
 
 
 EasyDestroy.separatorInfo = {
@@ -146,7 +168,7 @@ EasyDestroy.separatorInfo = {
 
 function EasyDestroy.RegisterFrame(frame, ftype)
     if EasyDestroy.FrameRegistry then
-		if not EasyDestroy.FrameRegistry[ftype] then print("unable to find", ftype) end
+		EasyDestroy.Debug("EasyDestroy.RegisterFrame", ftype, frame:GetName())
         EasyDestroy.FrameRegistry[ftype] = EasyDestroy.FrameRegistry[ftype] or {}
         tinsert(EasyDestroy.FrameRegistry[ftype], frame)
     end
@@ -169,9 +191,24 @@ function pprint(tbl, level)
 	end
 end
 
+local function handler(...)
+	local ret = ""
+	for k, v in ipairs({...}) do
+		ret = ret .. (v or "nil") .. " "
+	end
+
+	return ret
+end
+
 function EasyDestroy.Debug(...)
+
 	if EasyDestroy.DebugActive then
-		print(date(), ...)
+		if EasyDestroy.DebugFrame then
+			EasyDestroy.DebugFrame:AddMessage(handler(...) .. "\n")
+		else
+			print(date(), ...)
+		end
+
 	end
 end
 
@@ -268,6 +305,12 @@ function EasyDestroy:UpdateDBFormat(data)
 	if (version > 1) then
 		if data.Options and data.Options.CharacterFavorites == nil then
 			data.Options.CharacterFavorites = false
+		end
+	end
+
+	if (version > 1) then
+		if data.Options and data.Options.Actions == nil then
+			data.Options.Actions = EasyDestroy.Enum.Actions.Disenchant
 		end
 	end
 

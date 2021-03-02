@@ -1,13 +1,3 @@
---[[
-Registerable filters require 4 things.
-1) A UI/Frame to show.
-2) Either using available information about the item, or provide a function to get the information you want to check against.
-3) A Check function to determine if the item meets the criteria of the filter.
-4) A call to EasyDestroy/EasyDestroyFilters to register the filter as useable.
-
-
-]]
-
 local filter = EasyDestroyFilterCriteria:New("Item Level", "level", 20)
 
 -- EasyDestroy passes 3 values to this function, itemlink, bag, and slot. 
@@ -19,13 +9,18 @@ local filter = EasyDestroyFilterCriteria:New("Item Level", "level", 20)
 -- So we can treat it as a singleton and just use this to
 -- get any previous creations of the filter frame, or
 -- create it if it's not yet been made
-function filter:GetFilterFrame()
+function filter:Initialize()
     -- We create the frame here, we'll leave the details on size/anchors to the Filters window.
-    filter.frame = filter.frame or CreateFrame("Frame", "EDFilterItemLevel", filter.parent, "EasyDestroyEditBoxRangeTemplate")
-    filter.frame.label:SetText( filter.name .. ":")
-	filter.frame.inputfrom:SetNumeric(true)
-    filter.frame.inputto:SetNumeric(true)
-    return filter.frame
+    self.frame = self.frame or CreateFrame("Frame", "EDFilterItemLevel", self.parent, "EasyDestroyEditBoxRangeTemplate")
+    self.frame.label:SetText( filter.name .. ":")
+	self.frame.inputfrom:SetNumeric(true)
+    self.frame.inputto:SetNumeric(true)
+
+    self.scripts.OnEditFocusLost = { self.frame.inputfrom, self.frame.inputto }
+
+    self.frame:Hide()
+
+
 end
 
 -- check input vs item values
@@ -44,9 +39,9 @@ function filter:Check(inputlevel, item)
 end
 
 function filter:GetValues()
-    if filter.frame then
-        local inputfrom = filter.frame.inputfrom:GetNumber() or 0
-	    local inputto = filter.frame.inputto:GetNumber() or 0
+    if self.frame then
+        local inputfrom = self.frame.inputfrom:GetNumber() or 0
+	    local inputto = self.frame.inputto:GetNumber() or 0
 
         if inputto ~= 0 and inputto ~= nil then
             if inputfrom ~= nil then
@@ -63,21 +58,21 @@ function filter:GetValues()
 end
 
 function filter:SetValues(values)
-    if filter.frame then
+    if self.frame then
         if type(values) == "table" then
-            filter.frame.inputfrom:SetText(values.levelfrom)
-            filter.frame.inputto:SetText(values.levelto)
+            self.frame.inputfrom:SetText(values.levelfrom)
+            self.frame.inputto:SetText(values.levelto)
         else
-            filter.frame.inputfrom:SetText(values)
+            self.frame.inputfrom:SetText(values)
         end
     end
 
 end
 
 function filter:Clear()
-    if filter.frame then
-        filter.frame.inputfrom:SetText("")
-        filter.frame.inputto:SetText("")
+    if self.frame then
+        self.frame.inputfrom:SetText("")
+        self.frame.inputto:SetText("")
     end
 end
 

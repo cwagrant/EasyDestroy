@@ -30,9 +30,6 @@
 				<OnEnterPressed>
 					self:ClearFocus()
 				</OnEnterPressed>	
-				<OnEditFocusLost>
-					EasyDestroy.FilterChanged = true
-				</OnEditFocusLost>
 				<OnLoad>
 					EasyDestroy.RegisterFrame(self, "EditBox")
 				</OnLoad>
@@ -66,9 +63,6 @@
 				<OnEnterPressed>
 					self:ClearFocus()
 				</OnEnterPressed>	
-				<OnEditFocusLost>
-					EasyDestroy.FilterChanged = true
-				</OnEditFocusLost>
 				<OnLoad>
 					EasyDestroy.RegisterFrame(self, "EditBox")
 				</OnLoad>
@@ -85,9 +79,6 @@
 				<OnEnterPressed>
 					self:ClearFocus()
 				</OnEnterPressed>	
-				<OnEditFocusLost>
-					EasyDestroy.FilterChanged = true
-				</OnEditFocusLost>
 				<OnLoad>
 					EasyDestroy.RegisterFrame(self, "EditBox")
 				</OnLoad>
@@ -175,6 +166,73 @@
 	</Scripts>
 </CheckButton>
 
+<Frame name="EasyDestroyFramedCheckboxTemplate" virtual="true" mixin="EasyDestroyFramedCheckboxMixin">
+	<Size>
+		<AbsDimension x="0" y="24"/>
+	</Size>
+	<Frames>
+		<Frame parentKey="OnHover" setAllPoints="true">
+			<Scripts>
+				<OnLoad>
+					self:SetMouseClickEnabled(false)
+				</OnLoad>
+				<OnEnter>
+					if self.SetTooltip and type(self.SetTooltip) == "function" then
+						self:SetTooltip()
+					end
+				</OnEnter>
+				<OnLeave>
+					if self.SetTooltip and type(self.SetTooltip) == "function" then
+						GameTooltip:Hide()
+					end
+				</OnLeave>
+			</Scripts>
+		</Frame>
+		<CheckButton name="$parentCheckbutton" parentKey="Checkbutton" inherits="ChatConfigBaseCheckButtonTemplate" enableMouse="true">
+			<Size>
+				<AbsDimension x="24" y="24"/>
+			</Size>
+			<Anchors>
+				<Anchor point="LEFT"/>
+			</Anchors>
+			<Layers>
+				<Layer level="OVERLAY">
+					<FontString name="$parentLabel" parentKey="label" inherits="GameFontNormalSmall" wordwrap="true" maxLines="2">
+						<Anchors>
+							<Anchor point="LEFT" relativePoint="RIGHT"/>
+						</Anchors>
+					</FontString>
+				</Layer>
+			</Layers>
+			<Scripts>
+				<OnLoad>
+					EasyDestroy.RegisterFrame(self, "CheckButton")
+				</OnLoad>
+			</Scripts>
+		</CheckButton>
+	</Frames>
+	<Scripts>
+		<OnLoad>
+			self.allowresize = true
+		</OnLoad>
+		<OnShow>
+			if self.allowresize then 
+				self:SetWidth(self.Checkbutton.label:GetStringWidth() + self.Checkbutton:GetWidth())
+			end
+		</OnShow>
+		<!-- <OnEnter>
+			if self.SetTooltip and type(self.SetTooltip) == "function" then
+				self:SetTooltip()
+			end
+		</OnEnter>
+		<OnLeave>
+			if self.SetTooltip and type(self.SetTooltip) == "function" then
+				GameTooltip:Hide()
+			end
+		</OnLeave> -->
+	</Scripts>
+</Frame>
+
 <Frame name="EasyDestroyRarityFilter" virtual="true">
 	<Size>
 		<AbsDimension x="0" y="70"/>
@@ -197,46 +255,25 @@
 	</Layers>
 	
 	<Frames>
-	
 		<CheckButton name="$parentCommon" parentKey="common" parentArray="Rarity" inherits="EasyDestroyCheckboxTemplate">
 			<Anchors>
 				<Anchor point="TOPLEFT" x="20" y="-12"/>
 			</Anchors>
-			<Scripts>
-				<OnClick>
-					EasyDestroy.FilterChanged = true
-				</OnClick>
-			</Scripts>
 		</CheckButton>
 		<CheckButton name="$parentUncommon" inherits="EasyDestroyCheckboxTemplate" parentKey="uncommon" parentArray="Rarity" >
 			<Anchors>
 				<Anchor point="TOPLEFT" relativePoint="TOP" x="30" y="-12"/>
 			</Anchors>
-			<Scripts>
-				<OnClick>
-					EasyDestroy.FilterChanged = true
-				</OnClick>
-			</Scripts>
 		</CheckButton>
 		<CheckButton name="$parentRare" inherits="EasyDestroyCheckboxTemplate" parentKey="rare" parentArray="Rarity" >
 			<Anchors>
 				<Anchor point="TOPLEFT" relativeTo="$parentCommon" relativePoint="BOTTOMLEFT"/>
 			</Anchors>
-			<Scripts>
-				<OnClick>
-					EasyDestroy.FilterChanged = true
-				</OnClick>
-			</Scripts>
 		</CheckButton>
 		<CheckButton name="$parentEpic" inherits="EasyDestroyCheckboxTemplate" parentKey="epic" parentArray="Rarity" >
 			<Anchors>
 				<Anchor point="TOPLEFT" relativeTo="$parentUncommon" relativePoint="BOTTOMLEFT"/>
 			</Anchors>
-			<Scripts>
-				<OnClick>
-					EasyDestroy.FilterChanged = true
-				</OnClick>
-			</Scripts>
 		</CheckButton>
 		
 		<!-- Apparently SecureActionButtonTemplate doesnt' like being too many frames down as a child and refuses to show up

@@ -1,5 +1,4 @@
 local AS = nil
-local FrameRegistry = EasyDestroy.FrameRegistry
 
 if not IsAddOnLoaded("AddOnSkins") then return end
 

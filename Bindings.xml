@@ -1,0 +1,5 @@
+<Bindings>
+    <Binding name="CLICK EasyDestroyButton:LeftButton" description="Bind the Destroy button." category="EASY_DESTROY_CATEGORY">
+        --clicky
+    </Binding>
+</Bindings>

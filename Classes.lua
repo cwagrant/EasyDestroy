@@ -16,6 +16,7 @@ function EasyDestroyFilterCriteria:New(name, key, height)
     self.height = height
     self.parent = _G[EDFILTER_SCROLL_CHILD]
     self.frame = nil
+    self.scripts = {}
 
     return self
 end
@@ -26,6 +27,12 @@ function EasyDestroyFilterCriteria:GetName()
     else
         error("Unable to get filter name")
     end
+end
+
+function EasyDestroyFilterCriteria:GetFilterFrame()
+
+    return self.frame
+
 end
 
 function EasyDestroyFilterCriteria:GetKey()
@@ -72,9 +79,6 @@ function EasyDestroyFilterCriteria:Clear()
     error("Filter " .. self.GetName() .. " does not yet have a Clear function implemented.")
 end
 
-function EasyDestroyFilterCriteria:GetFilterFrame()
-    error("Filter " .. self.GetName() .. " does not yet have a GetFilterFrame function implemented.")
-end
 
 -- ######################################################################
 -- # ITEMS CLASS SO I DON'T HAVE SO MUCH RANDOM BULLSHIT EVERYWHERE     #
@@ -84,11 +88,13 @@ end
 EasyDestroyItem = {}
 EasyDestroyItem.__index = EasyDestroyItem
 
-function EasyDestroyItem:New(bag, slot, link)
+function EasyDestroyItem:New(bag, slot, link, itemid)
 
     local self
     if (bag == nil or slot == nil) and link then
         self = Item:CreateFromItemLink(link)
+    elseif (bag == nil or slot == nil) and itemid then 
+        self = Item:CreateFromItemID(itemid)
     else
         self = Item:CreateFromBagAndSlot(bag, slot)
     end
@@ -109,6 +115,9 @@ function EasyDestroyItem:New(bag, slot, link)
     self.isKeystone = C_Item.IsItemKeystoneByID(self.itemID or self.itemLink)
     self.classID, self.subclassID, self.bindtype, self.expansion = select(12, GetItemInfo(self:GetItemLink()))
     self.name = self:GetItemName()
+    self.count = 1
+
+    self.maxStackSize  = select(8, GetItemInfo(self:GetItemLink()))
     --self.guid = C_Item.GetItemGUID(self:GetItemLocation())
 
     return self
@@ -132,7 +141,7 @@ function EasyDestroyItem:GetValueByKey(key)
     if self and self[key] then
         return self[key]
     else
-        error(string.foramt("Unable to locate item information with key (%s)", key))
+        error(string.format("Unable to locate item information with key (%s)", key))
     end
 end
 
@@ -159,6 +168,36 @@ function EasyDestroyItem:HaveTransmog()
 		end
 	end
 	return false
+end
+
+function EasyDestroyItem:IsItemShadowlandsLegendary()
+    local splitLink = {strsplit(':', self.itemLink)}
+    local bonusIDCount = splitLink[14]
+    if bonusIDCount and tonumber(bonusIDCount) and tonumber(bonusIDCount) > 0 then
+        for i=15, 15 + bonusIDCount do
+            for k, v in ipairs(ED_LEGENDARY_IDS) do
+                if v and v.name and v.bonus_id then
+                    if splitLink[i] and tonumber(splitLink[i]) and v.bonus_id == tonumber(splitLink[i]) then
+                        return v.name
+                    end
+                end
+            end
+        end
+    end
+    return nil
+end
+
+function EasyDestroyItem:ToTable()
+
+    return {
+        itemid = self.itemID,
+        legendary = self:IsItemShadowlandsLegendary(),
+        quality = self.quality,
+        ilvl = self.level,
+        link = self.itemLink,
+        name = self:GetItemName()
+    }
+
 end
 
 
@@ -190,11 +229,12 @@ function EasyDestroyFilter:New(ftype, name)
     self.filterType = ftype
     self.criteria = {}
     self.favorite = false
+    self.actions = nil
 
     if EasyDestroy.Favorites.UsingCharacterFavorites() then
         self.favorite = false
     else
-        self.favorite = favorite or false
+        self.favorite = self.favorite or false
     end    
 
     return self
@@ -203,8 +243,7 @@ end
 function EasyDestroyFilter:Load(fid)
 
     if type(fid) ~= "string" then
-        print(fid, type(fid))
-        error("Usage: EasyDestroyFilter:Load(FilterID)")
+        error("Usage: EasyDestroyFilter:Load(FilterID)", 2)
     end
 
     if EasyDestroy.Data.Filters and not EasyDestroy.Data.Filters[fid] then
@@ -229,6 +268,7 @@ function EasyDestroyFilter:Load(fid)
     self.filterType = savedData.properties.type
     self.criteria = savedData.filter
     self.favorite = savedData.properties.favorite
+    self.actions = savedData.properties.actions or nil
 
     return self
 
@@ -329,6 +369,27 @@ function EasyDestroyFilter:GetNextFilterID()
 
 end
 
+function EasyDestroyFilter:SetActions(action, unset)
+	for k, v in pairs(EasyDestroy.Enum.Actions) do
+		if v == action then
+			if not unset then
+				self.actions = bit.bor(self.actions, action)
+			else
+				self.actions = bit.band(self.actions, bit.bnot(action))
+			end
+		end
+	end
+end
+
+function EasyDestroyFilter:ToggleAction(action)
+	for k, v in pairs(EasyDestroy.Enum.Actions) do
+		if v == action then
+			self.actions = bit.bxor(self.actions, action)
+		end
+	end
+end
+
+
 function EasyDestroyFilter:LoadCriteriaFromWindow()
     wipe(self.criteria)
     for i, registeredFilter in ipairs(EasyDestroy.CriteriaStack) do
@@ -339,15 +400,16 @@ function EasyDestroyFilter:LoadCriteriaFromWindow()
 	end
 end
 
-function EasyDestroyFilter:GetCriteriaFromWindow()
-    local out = {}
-    for i, registeredFilter in ipairs(EasyDestroy.CriteriaStack) do
-		local val = registeredFilter:GetValues()
-		if val ~= nil then 
-			out[registeredFilter:GetKey()] = val
-		end
-	end
-    return out
+function EasyDestroyFilter:SetCriteria(criteriaTable)
+
+    wipe(self.criteria)
+
+    for k, v in pairs(criteriaTable) do
+        if v ~= nil then
+            self.criteria[k] = v
+        end
+    end
+
 end
 
 function EasyDestroyFilter:GetCriterionByKey(key)
@@ -357,13 +419,25 @@ function EasyDestroyFilter:GetCriterionByKey(key)
     return nil
 end
 
+function EasyDestroyFilter:GetActions()
+    if self.actions ~= nil then
+        return self.actions
+    end
+
+    return EasyDestroy.Enum.Actions.Disenchant
+end
+
 function EasyDestroyFilter:SaveToData()
-    -- This gets called here to pull in the criteria for the filter.
-    -- What users see is temporary until this is called. This "actually"
-    -- saves it for the user (because LUA tables suck)
-    self:LoadCriteriaFromWindow()
     
+    -- Now that we want to save the criteria the user has selected 
+    -- we'll pull it all in one last time and then set it in the filter
+
+    self:SetCriteria(EasyDestroy.UI.GetCriteria())
+    
+    -- Generate the table-formatted filter for saving
     EasyDestroy.Data.Filters[self.filterID] = self:ToTable()
+
+    -- Reload the filter
     EasyDestroy.UI.ReloadFilter(self.filterID)
 
 end
@@ -373,7 +447,7 @@ function EasyDestroyFilter:Validate(skipFavoriteCheck)
     local favChecked = EasyDestroy.UI.GetFavoriteChecked()
 
     local favoriteFid = EasyDestroy.Favorites.GetFavorite()
-	local nameFid, nameFilter = EasyDestroy.FindFilterWithName(filterName)
+	local nameFid = EasyDestroy.FindFilterWithName(filterName)
 
     if nameFid and nameFid ~= self.filterID then
 		return false, ED_ERROR_NAME, filterName

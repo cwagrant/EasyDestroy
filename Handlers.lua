@@ -53,7 +53,7 @@ function EasyDestroy.Handlers.SaveFilterOnClick(skipFavoriteCheck)
 
 	local FilterID = UIDropDownMenu_GetSelectedValue(EasyDestroyDropDown)
 	
-	local _, filter = EasyDestroy:GenerateFilter()
+	local filter = EasyDestroy:GenerateFilter()
 
 	local valid, validationErrorType, validationMessage = filter:Validate()
 
@@ -96,7 +96,6 @@ end
 function EasyDestroy.Handlers.CopyFilterOnClick()
 
     -- Handler for EasyDestroy.UI.Buttons.NewFilterFromCurrent
-    --[[ TODO: Change Unique Name validation to a window that lets you set the name? ]]
 
     EasyDestroy.Debug("EasyDestroy.Handlers.CopyFilterOnClick")
 
@@ -109,7 +108,7 @@ function EasyDestroy.Handlers.CopyFilterOnClick()
 
 	-- if not valid because name is in use, print error
 	if not valid and validationErrorType == ED_ERROR_NAME then
-		StaticPopup_Show("ED_FILTER_UNIQUE_NAME", validationMessage)
+		StaticPopup_Show("ED_FILTER_RENAME", validationMessage)
 		EasyDestroy.Debug("Name must be unique")
 
 	-- if not valid because the current filter is the favorite OR if valid, save
@@ -131,7 +130,7 @@ function EasyDestroy.Handlers.DeleteFilterOnClick()
 
 	--[[ Delete current filter. Load user's favorite filter if one is available. ]]
 	local FilterID = UIDropDownMenu_GetSelectedValue(EasyDestroyDropDown)
-	EasyDestroy:Debug("Deleting Filter", FilterID)
+	EasyDestroy.Debug("Deleting Filter", FilterID)
 	EasyDestroy.Data.Filters[FilterID] = nil
 
 	-- when deleting a filter, we need to make sure to clear it from the cache.
@@ -170,7 +169,7 @@ function EasyDestroy.Handlers.CriteriaDropDownOnSelect(self, arg1, arg2, checked
 	UIDropDownMenu_SetText(EasyDestroyFilterTypes, EasyDestroy.Dict.Strings.CriteriaSelectionDropdown)
 
 	if checked then 
-		local frame = selectedFilter.GetFilterFrame()
+		local frame = selectedFilter:GetFilterFrame()
 		local lastFrame = nil
 		local scrollFrame = _G[EDFILTER_SCROLL_CHILD]
 		if EasyDestroy.CriteriaStack[#EasyDestroy.CriteriaStack] and EasyDestroy.CriteriaStack[#EasyDestroy.CriteriaStack].frame then
@@ -194,11 +193,11 @@ function EasyDestroy.Handlers.CriteriaDropDownOnSelect(self, arg1, arg2, checked
 		tinsert(EasyDestroy.CriteriaStack, selectedFilter)
 		lastFrame = frame
 	else
-		local frame = selectedFilter.GetFilterFrame()
+		local frame = selectedFilter:GetFilterFrame()
 		for k, v in ipairs(EasyDestroy.CriteriaStack) do
 			if v.key == selectedFilter.key then
 				v.frame:Hide()
-				v.Clear()
+				v:Clear()
 				tremove(EasyDestroy.CriteriaStack, k)
 			end
 		end
@@ -228,3 +227,72 @@ function EasyDestroy.Handlers.FilterTypeOnClick(self)
     EasyDestroy.FilterChanged = true
 
 end 
+
+function EasyDestroy.Handlers.DestroyPreClick(self)
+
+	EasyDestroy.Debug("EasyDestroy.Handlers.DestroyPreClick")
+	-- The actual process for disenchanting an item.
+	if not EasyDestroyFrame:IsVisible() then
+		EasyDestroyFrame:Show()
+		return
+	end
+
+	local iteminfo = EasyDestroyItemsFrameItem1.item or nil
+	local bag, slot
+	
+	if iteminfo ~= nil then
+		bag, slot = iteminfo.bag, iteminfo.slot	
+	else
+		return 
+	end
+
+	local action = EasyDestroy.API.GetDestroyActionForItem(iteminfo)
+	local actionDict = EasyDestroy.Dict.Actions[action]
+	local spellName = GetSpellInfo(actionDict.spellID)
+	
+	if not IsSpellKnown(actionDict.spellID) then
+		print ("EasyDestroy: You must have " .. GetSpellLink(actionDict.spellID) .. " to destroy this item.")
+		return
+	elseif EasyDestroyFilterSettings.Blacklist:GetChecked() then
+		StaticPopup_Show("ED_CANT_DISENCHANT_BLACKLIST")
+		return
+	elseif not IsUsableSpell(actionDict.spellID) then
+		print("EasyDestroy: You cannot destroy that item right now.")
+		return
+	elseif #GetLootInfo() > 0 then
+		if not EasyDestroy.Warnings.LootOpen then
+			print("EasyDestroy: Unable to destroy while loot window is open.")
+				EasyDestroy.Warnings.LootOpen = true
+			-- lets only warn people every so often, don't want to fill their chat logs if they spam click.
+			C_Timer.After(30, function()
+				EasyDestroy.Warnings.LootOpen = false
+			end
+			)
+		end
+		return
+	elseif IsCurrentSpell(actionDict.spellID) then
+		-- fail quietly as they are already casting
+		return
+	elseif iteminfo == nil then
+		return
+	end
+
+	EasyDestroy.Debug("EasyDestroy.Handlers.DestroyPreClick", iteminfo.itemLink)
+	EasyDestroy.API.DestroyItem(iteminfo)
+
+end
+
+function EasyDestroy.Handlers.OnFilterUpdate()
+	local iteminfo = EasyDestroyItemsFrameItem1.item or nil
+	local bag, slot
+	
+	if iteminfo ~= nil then
+		bag, slot = iteminfo.bag, iteminfo.slot	
+	else
+		return 
+	end
+
+	EasyDestroyButton:SetAttribute("macrotext", "")		
+
+	EasyDestroy.API.DestroyItem(iteminfo)
+end

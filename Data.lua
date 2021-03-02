@@ -5,6 +5,150 @@ ED_DEFAULT_BLACKLIST = {
     167555, -- pocket-sized computation device
 }
 
+--[[
+    Probably going to need to create a list of all the herbs/ores that can be mass destroyed and the tradeskill spells that do it.
+        
+    e.g. {itemid=1337, spellid=2345, subclass=7}
+
+    itemid being the item's id, spellid being the tradeskill spell for mass destroy, and subclass being whether it is an herb or metal.
+
+    items of these subclasses that don't have a spell will use the default mill/prospect spells or if there are < items required to
+    do mass destroy.
+
+    Should indivdiual filters determine which actions are available? Or should we just have an "Options" window that lets the user
+    turn off/on the ability to Disenchant, Mill, and/or Prospect.
+
+    If Milling/Prospecting are turned on then the user is able to set whether or not the "small" amount spell is available.
+
+    [ ] Allow Disenchanting
+    [ ] Allow Milling [ ] Mass Milling when available [ ] Milling when available
+    [ ] Allow Prospecting [ ] Mass Milling when available [ ] Prospecting when available
+
+    
+]]
+
+EasyDestroy.Dict.Herbs = {
+    {itemid=168487, spellid=298927, }, --zinanthid
+    {itemid=169701, spellid=311413, }, --death-blossom
+    {itemid=170554, spellid=311414, }, --vigils-torch
+    {itemid=168583, spellid=311415, }, --widowbloom
+    {itemid=168589, spellid=311416, }, --marrowroot
+    {itemid=168586, spellid=311417, }, --rising-glory
+    {itemid=171315, spellid=311418, }, --nightshade
+    {itemid=152505, spellid=256217, }, --riverbud
+    {itemid=152506, spellid=256218, }, --star-moss
+    {itemid=152507, spellid=256219, }, --akundas-bite
+    {itemid=152508, spellid=256220, }, --winters-kiss
+    {itemid=152509, spellid=256221, }, --sirens-pollen
+    {itemid=152511, spellid=256223, }, --sea-stalk
+    {itemid=152510, spellid=256308, }, --anchor-weed
+    {itemid=114931, spellid=190381, }, --frostweed
+    {itemid=114931, spellid=190382, }, --fireweed
+    {itemid=114931, spellid=190383, }, --gorgrond-flytrap
+    {itemid=114931, spellid=190384, }, --starflower
+    {itemid=114931, spellid=190385, }, --nagrand-arrowbloom
+    {itemid=114931, spellid=190386, }, --talador-orchid
+    {itemid=129100, spellid=209658, }, --aethril
+    {itemid=136926, spellid=209659, }, --dreamleaf
+    {itemid=128304, spellid=209660, }, --foxflower
+    {itemid=129032, spellid=209661, }, --fjarnskaggl
+    {itemid=129032, spellid=209662, }, --starlight-rose
+    {itemid=129034, spellid=209664, }, --felwort
+    {itemid=129032, spellid=210116, }, --yseralline-seed
+    {itemid=129034, spellid=247861, }, --astral-glory
+    {itemid=89639, }, --desecrated-herb
+    {itemid=72234, }, --green-tea-leaf
+    {itemid=72237, }, --rain-poppy
+    {itemid=52987, }, --twilight-jasmine
+    {itemid=36906, }, --icethorn
+    {itemid=36905, }, --lichbloom
+    {itemid=22793, }, --mana-thistle
+    {itemid=22791, }, --netherbloom
+    {itemid=22792, }, --nightmare-vine
+    {itemid=22786, }, --dreaming-glory
+    {itemid=22785, }, --felweed
+    {itemid=22789, }, --terocone
+    {itemid=36903, }, --adders-tongue
+    {itemid=22790, }, --ancient-lichen
+    {itemid=8836, }, --arthas-tears
+    {itemid=52985, }, --azsharas-veil
+    {itemid=8839, }, --blindweed
+    {itemid=2450, }, --briarthorn
+    {itemid=2453, }, --bruiseweed
+    {itemid=52983, }, --cinderbloom
+    {itemid=37921, }, --deadnettle
+    {itemid=3819, }, --dragons-teeth
+    {itemid=13463, }, --dreamfoil
+    {itemid=2449, }, --earthroot
+    {itemid=3818, }, --fadeleaf
+    {itemid=39970, }, --fire-leaf
+    {itemid=4625, }, --firebloom
+    {itemid=79011, }, --fools-cap
+    {itemid=8845, }, --ghost-mushroom
+    {itemid=36901, }, --goldclover
+    {itemid=13464, }, --golden-sansam
+    {itemid=3821, }, --goldthorn
+    {itemid=3369, }, --grave-moss
+    {itemid=8846, }, --gromsblood
+    {itemid=52986, }, --heartblossom
+    {itemid=13467, }, --icecap
+    {itemid=3358, }, --khadgars-whisker
+    {itemid=3356, }, --kingsblood
+    {itemid=3357, }, --liferoot
+    {itemid=785, }, --mageroyal
+    {itemid=13465, }, --mountain-silversage
+    {itemid=2447, }, --peacebloom
+    {itemid=8831, }, --purple-lotus
+    {itemid=22787, }, --ragveil
+    {itemid=72235, }, --silkweed
+    {itemid=765, }, --silverleaf
+    {itemid=79010, }, --snow-lily
+    {itemid=13466, }, --sorrowmoss
+    {itemid=52984, }, --stormvine
+    {itemid=3820, }, --stranglekelp
+    {itemid=8838, }, --sungrass
+    {itemid=2452, }, --swiftthistle
+    {itemid=36907, }, --talandras-rose
+    {itemid=36904, }, --tiger-lily
+    {itemid=52988, }, --whiptail
+    {itemid=3355, }, --wild-steelbloom
+}
+
+EasyDestroy.Dict.Ores = {
+    {itemid=168185, spellid=300619, }, --osmenite-ore
+    {itemid=152512, spellid=256611, }, --monelite-ore
+    {itemid=152579, spellid=256613, }, --storm-silver-ore
+    {itemid=152513, spellid=256622, }, --platinum-ore
+    {itemid=171833, spellid=311953, }, --elethium-ore
+    {itemid=171829, spellid=311949, }, --solenium-ore
+    {itemid=171830, spellid=311950, }, --oxxein-ore
+    {itemid=171831, spellid=311951, }, --phaedrum-ore
+    {itemid=171832, spellid=311952, }, --sinvyr-ore
+    {itemid=171828, spellid=311948, }, --laestrite-ore
+    {itemid=123918, spellid=225902, }, --leystone-ore
+    {itemid=123919, spellid=225904, }, --felslate
+    {itemid=151564, spellid=247761, }, --empyrium
+    {itemid=72094, }, --black-trillium-ore
+    {itemid=72103, }, --white-trillium-ore
+    {itemid=52183, }, --pyrite-ore
+    {itemid=36910, }, --titanium-ore
+    {itemid=23424, }, --fel-iron-ore
+    {itemid=23425, }, --adamantite-ore
+    {itemid=36909, }, --cobalt-ore
+    {itemid=2770, }, --copper-ore
+    {itemid=52185, }, --elementium-ore
+    {itemid=151564, }, --empyrium
+    {itemid=72092, }, --ghost-iron-ore
+    {itemid=2772, }, --iron-ore
+    {itemid=72093, }, --kyparite
+    {itemid=3858, }, --mithril-ore
+    {itemid=53038, }, --obsidium-ore
+    {itemid=36912, }, --saronite-ore
+    {itemid=10620, }, --thorium-ore
+    {itemid=2771, }, --tin-ore
+}
+
+
 ED_LEGENDARY_IDS = {
     {name='Slick Ice', bonus_id=6823},
     {name='Cold Front', bonus_id=6828},

@@ -86,3 +86,30 @@ StaticPopupDialogs["ED_FILTER_UNIQUE_NAME"] = {
     hideOnEscape = true,
     preferredIndex = 3,
 }
+
+StaticPopupDialogs["ED_FILTER_RENAME"] = {
+    text = "You must give this filter a unique name.",
+    hasEditBox = true,
+    button1 = "Rename",
+    button2 = "Cancel",
+    OnAccept = function(self) EasyDestroy.UI.SetFilterName(self.editBox:GetText()); EasyDestroy.Handlers.CopyFilterOnClick(); end, 
+    timeout = 30,
+    whileDead = false,
+    hideOnEscape = true,
+    preferredIndex = 3,
+}
+
+StaticPopupDialogs["ED_RELOAD_CURRENT_FILTER"] = {
+    text = "This requires reloading the current filter. Do you wish to proceed?",
+    button1 = "Rename",
+    button2 = "Cancel",
+    OnAccept = function(self) 
+        EasyDestroy.Data.Options.CharacterFavorites = not EasyDestroy.Data.Options.CharacterFavorites 
+        EasyDestroy.UI.ReloadCurrentFilter()
+    end, 
+    OnCancel = function(self) EasyDestroy.UI.SetCharacterFavoriteFromOptions() end,
+    timeout = 30,
+    whileDead = false,
+    hideOnEscape = true,
+    preferredIndex = 3,
+}

@@ -63,7 +63,7 @@
 						<AbsDimension x="0" y="20"/>
 					</Size>
 					<Frames>
-						<CheckButton name="$parentSearch" parentKey="Search" parentArray="Types" inherits="EasyDestroyCheckboxTemplate">
+						<CheckButton name="$parentSearch" parentKey="Search" parentArray="Types" inherits="EasyDestroyFramedCheckboxTemplate">
 							<Anchors>
 								<Anchor point="TOPLEFT" x="20" y="0"/>
 							</Anchors>
@@ -73,9 +73,9 @@
 								</OnClick>
 							</Scripts>
 						</CheckButton>
-						<CheckButton name="$parentBlacklist" inherits="EasyDestroyCheckboxTemplate" parentKey="Blacklist" parentArray="Types" >
+						<CheckButton name="$parentBlacklist" inherits="EasyDestroyFramedCheckboxTemplate" parentKey="Blacklist" parentArray="Types" >
 							<Anchors>
-								<Anchor point="LEFT" relativeTo="$parentSearchLabel" relativePoint="RIGHT" x="20" y="0"/>
+								<Anchor point="LEFT" relativeTo="$parentSearch" relativePoint="RIGHT" x="20" y="0"/>
 							</Anchors>
 							<Scripts>
 								<OnClick>
@@ -213,7 +213,7 @@
 							</Anchors>
 						</Button>
 
-						<Button name="EasyDestroyFilters_NewFromFilter" inherits="UIPanelButtonTemplate" text="New From Current">
+						<Button name="EasyDestroyFilters_NewFromFilter" inherits="UIPanelButtonTemplate" text="Save Filter As">
 							<Size>
 								<AbsDimension x="100" y="22"/>
 							</Size>
@@ -239,22 +239,12 @@
 								<Anchor point="TOPLEFT" relativeTo="EasyDestroyFilters_New" relativePoint="BOTTOMLEFT" x="0" y="-4"/>
 							</Anchors>
 						</Button>
-
-						<!-- <Button name="EasyDestroySaveFavorite" inherits="UIPanelButtonTemplate" text="Save Favorite">
-							<Size>
-								<AbsDimension x="100" y="22"/>
-							</Size>
-							<Anchors>
-								<Anchor point="TOPRIGHT" relativeTo="EasyDestroyFilters_Save" relativePoint="BOTTOMRIGHT" x="0" y ="-4"/>
-							</Anchors>
-						</Button> -->
-
 					</Frames>
 				</Frame>
 			</Frames>
 		</Frame>
 
-		<Button name="EasyDestroyButton" inherits="InsecureActionButtonTemplate,UIPanelButtonTemplate" text="Disenchant">
+		<Button name="EasyDestroyButton" inherits="InsecureActionButtonTemplate,UIPanelButtonTemplate" text="Destroy">
 			<Size>
 				<AbsDimension x="100" y="22"/>
 			</Size>

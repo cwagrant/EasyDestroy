@@ -1,5 +1,5 @@
 ## Interface: 90002
-## Version: 2.1.0b
+## Version: 3.0.0b
 ## Title: EasyDestroy
 ## Notes: Makes disenchanting easy!
 ## Author: Deeproot-Dalaran (C.W.A.Grant)
@@ -18,6 +18,7 @@ Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
 Libs\LibDBIcon-1.0\lib.xml
 
 Core.lua
+Options.lua
 Classes.lua
 Data.lua
 Templates.xml
@@ -35,6 +36,8 @@ filters\itemid.lua
 filters\rarity.lua
 filters\iteminset.lua
 filters\soulbound.lua
+filters\itemtype.lua
+filters\count.lua
 
 Blacklist.lua
 AddOnSkin.lua

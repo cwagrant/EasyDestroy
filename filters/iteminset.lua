@@ -1,14 +1,15 @@
-local EasyDestroyFilters = EasyDestroyFilters
-
 local filter = EasyDestroyFilterCriteria:New("Ignore Items in Equipment Sets", "eqset", 20)
 
-function filter:GetFilterFrame()
-    filter.frame = filter.frame or CreateFrame("Frame", "EDFilterItemInSet", filter.parent)
-    filter.checkbox = filter.checkbox or CreateFrame("CheckButton", "EDFilterItemInSetCheck", filter.frame, "EasyDestroyCheckboxTemplate")
-    filter.checkbox:SetPoint("LEFT")
-    filter.checkbox.label:SetText(filter.name)
-    filter.checkbox:SetScript("OnClick", EasyDestroy_Refresh)
-    return filter.frame
+function filter:Initialize()
+    self.frame = self.frame or CreateFrame("Frame", "EDFilterItemInSet", self.parent)
+    self.checkbox = filter.checkbox or CreateFrame("CheckButton", "EDFilterItemInSetCheck", self.frame, "EasyDestroyCheckboxTemplate")
+    self.checkbox:SetPoint("LEFT")
+    self.checkbox:SetLabel(filter.name)
+    self.checkbox:SetScript("OnClick", EasyDestroy_Refresh)
+    
+    self.frame:Hide()
+
+    self.scripts.OnClick = { self.checkbox, }
 end
 
 function filter:GetItemInfo(itemlink, bag, slot)
@@ -49,8 +50,8 @@ end
 
 
 function filter:GetValues()
-    if filter.frame then
-        if filter.checkbox:GetChecked() then
+    if self.frame then
+        if self.checkbox:GetChecked() then
             return true
         else
             return false
@@ -60,18 +61,18 @@ function filter:GetValues()
 end
 
 function filter:SetValues(values)
-    if filter.frame then
+    if self.frame then
         if values == "" then
-            filter.checkbox:SetChecked(false)
+            self.checkbox:SetChecked(false)
         else
-            filter.checkbox:SetChecked(values)
+            self.checkbox:SetChecked(values)
         end
     end
 end
 
 function filter:Clear()
-    if filter.frame then
-        filter.checkbox:SetChecked(false)
+    if self.frame then
+        self.checkbox:SetChecked(false)
     end
 end
 

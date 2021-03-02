@@ -1,6 +1,5 @@
 EasyDestroyItemsMixin = {}
 
---TODO: update this to use an EasyDestroyItem
 function EasyDestroyItemsMixin:UpdateItemFrame(item, onclick)
     if self and item:GetStaticBackingItem() then
         item:ContinueWithCancelOnItemLoad(function()
@@ -8,7 +7,10 @@ function EasyDestroyItemsMixin:UpdateItemFrame(item, onclick)
             self.Item:SetText(item:GetItemName())
         end)
         --self.Item.itemLink = link
-        if item.level and item.level ~= nil and item.level ~= 0 then
+        if item.count and item.count > 0 then
+            self.Item:SetText(item:GetItemName() .. " (" .. item.count .. ")")
+            self.ItemLevel:SetText("")
+        elseif item.level and item.level ~= nil and item.level ~= 0 then
             if item.level then
                 self.ItemLevel:SetText("(" .. item.level .. ")")
             else
@@ -29,6 +31,7 @@ function EasyDestroyItemsMixin:HideItemFrame()
     self:Hide()
     self:SetScript("OnClick", nil)
 end
+
 
 --[[ So that you don't have to remember which keys/names are used ]]
 EasyDestroyEditBoxMixin = {}
@@ -95,10 +98,56 @@ function EasyDestroyEditBoxRangeMixin:GetNumberValues()
     return self:GetFromNumber(), self:GetToNumber()
 end
 
+--[[
+
+    CHECKBUTTON MIXIN
+
+]]
 EasyDestroyCheckboxMixin = {}
 function EasyDestroyCheckboxMixin:SetLabel(text)
     self.label:SetText(text)
 end
+
+
+EasyDestroyFramedCheckboxMixin = {}
+function EasyDestroyFramedCheckboxMixin:SetLabel(text)
+    self.Checkbutton.label:SetText(text)
+end
+
+function EasyDestroyFramedCheckboxMixin:GetChecked()
+    return self.Checkbutton:GetChecked()
+end
+
+function EasyDestroyFramedCheckboxMixin:SetChecked(bool)
+    self.Checkbutton:SetChecked(bool)
+end
+
+
+-- function EasyDestroyCheckboxMixin:SetScript(...)
+
+--     -- pass SetScript to the actual checkbutton
+
+--     self.Checkbutton:SetScript(...)
+
+-- end
+
+-- function EasyDestroyCheckboxMixin:HookScript(...)
+
+--     -- pass HookScript to the actual checkbutton
+
+--     self.Checkbutton:HookScript(...)
+
+-- end
+
+-- function EasyDestroyCheckboxMixin:HasScript(...)
+
+--     -- pass HasScript to the actual checkbutton
+
+--     return self.Checkbutton:HasScript(...)
+
+-- end
+
+
 
 
 EasyDestroyScrollMixin = {}
@@ -134,9 +183,10 @@ function EasyDestroyScrollMixin:Initialize(listfunc, displayed, height, childfun
     end
 end
 
--- TODO: Update to use EasyDestroyItem
 function EasyDestroyScrollMixin:ScrollUpdate(callbackFunction)
     local itemList = nil
+
+    if not self.ListFunction then return end
 
     --[[ 
         !!This significantly reduces memory usage!!
@@ -170,11 +220,11 @@ function EasyDestroyScrollMixin:ScrollUpdate(callbackFunction)
 		local frame = _G[ self:GetName() .. "Item" .. i ]
         if index <= #itemList then
             local item = itemList[index]
-            --local item = Item:CreateFromItemLink(data.itemlink)
+            frame:RegisterForClicks("LeftButtonUp", "RightButtonUp")
             frame:UpdateItemFrame(item, self.ChildOnClick or nil)
             frame:Show()
             frame.item = item
-            needsUpdate = true
+            -- needsUpdate = true
         else
             frame:HideItemFrame()
 		end
