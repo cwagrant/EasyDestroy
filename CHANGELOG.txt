@@ -1,3 +1,10 @@
+20210302 - 3.0.1b 
+- Fixed issue with the herb/ore restacking (infinite loops or failing to complete).
+
+20210302 - 3.0.0b addenda
+- Missed noting the addition of a context menu on the item window for adding items to
+    a session blacklist and the normal blacklist.
+
 20210302 - 3.0.0b
 - Added support for keybinding the Destroy button to whatever you want.
 - Changed Disenchant button to Destroy

@@ -13,7 +13,7 @@ EasyDestroy.API = {}
 
 --[[ Settings/Info ]]
 EasyDestroy.Version =  GetAddOnMetadata("EasyDestroy", "version")
-EasyDestroy.DebugActive = false
+EasyDestroy.DebugActive = true
 EasyDestroy.AddonName = "EasyDestroy"
 EasyDestroy.AddonLoaded = false
 -- This is the name of the frame that filter types attach to for scrolling
@@ -194,7 +194,8 @@ end
 local function handler(...)
 	local ret = ""
 	for k, v in ipairs({...}) do
-		ret = ret .. (v or "nil") .. " "
+		if tostring(v) then v = tostring(v) end
+		ret = ret .. v .. " "
 	end
 
 	return ret
@@ -204,7 +205,7 @@ function EasyDestroy.Debug(...)
 
 	if EasyDestroy.DebugActive then
 		if EasyDestroy.DebugFrame then
-			EasyDestroy.DebugFrame:AddMessage(handler(...) .. "\n")
+			EasyDestroy.DebugFrame:AddMessage(date("[%H:%M:%S]") .. " " .. handler(...) .. "\n")
 		else
 			print(date(), ...)
 		end

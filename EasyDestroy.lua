@@ -215,7 +215,7 @@ function EasyDestroy.API.FindWhitelistItems()
 				end
 				
 				-- this is a check of blacklist type filters
-				if filter.properties.type ~= ED_FILTER_TYPE_BLACKLIST and EasyDestroy:InFilterBlacklist(item) then 
+				if filter.properties.type ~= ED_FILTER_TYPE_BLACKLIST and EasyDestroy.API.InFilterBlacklist(item) then 
 					matchfound = false
 					break
 				end
@@ -229,7 +229,6 @@ function EasyDestroy.API.FindWhitelistItems()
 				-- queue up found trade good items in bags for restacking
 
 				if EasyDestroy.API.ItemNeedsRestacked(item) then
-
 					EasyDestroy.Debug("AddItemToQueue", item.itemLink)
 					tinsert(API.toCombineQueue, item)
 				end
@@ -250,7 +249,7 @@ end
 	- if there are no false values in criteriaTable, an item matches the blacklist
 	- if the item matches ANY blacklist, then the item is excluded (return true)
 ]]
-function EasyDestroy:InFilterBlacklist(item)
+function EasyDestroy.API.InFilterBlacklist(item)
 	local filterRegistry = EasyDestroy.CriteriaRegistry
 	local criteriaTable = {}
 	local matchesAny = false
@@ -432,7 +431,7 @@ function EasyDestroy.API.GetItemsToCombine(item)
 end
 	
 EasyDestroy.toCombineQueue = API.toCombineQueue
-
+EasyDestroy.toCombine = API.toCombine
 function EasyDestroy.API.CombineStacks()
 
 	-- Combine stacks of items onto one another. 
@@ -441,33 +440,40 @@ function EasyDestroy.API.CombineStacks()
 
 	EasyDestroy.Debug("EasyDestroy.API.CombineStacks")
 	local item 
+
 	while true do 
 
+		-- If the queue has an item and we're not actively combining then grab off queue
 		if #API.toCombineQueue > 0 and #API.toCombine == 0 then
 
 			EasyDestroy.Debug("EasyDestroy.API.CombineStacks", "GetItemFromQueue" )
 			item = tremove(API.toCombineQueue, 1)
 			EasyDestroy.API.GetItemsToCombine(item)
 
+		-- if queue is empty and we're not actively combining then end
 		elseif #API.toCombineQueue == 0 and #API.toCombine == 0 then
-
-			EasyDestroy.Debug("EasyDestroy.API.CombineStacks", "Close")
+			-- work's done!
 			break
-
 		end
 
 
 		ClearCursor()
 
-		local sourceItem, destItem 
+		local sourceItem, destItem, sourceCount, destCount
+
+		sourceItem = API.toCombine[#API.toCombine]
+		destItem = API.toCombine[1]
+
+		EasyDestroy.Debug("EasyDestroy.API.CombineStacks", "Check Locks", sourceItem.bag, sourceItem.slot, destItem.bag, destItem.slot)
+		
 		while true do
 
-			sourceItem = API.toCombine[#API.toCombine]
-			destItem = API.toCombine[1]
+			local _, count1, locked1 = GetContainerItemInfo(sourceItem.bag, sourceItem.slot)
+			local _, count2, locked2 = GetContainerItemInfo(destItem.bag, destItem.slot)
 
-			local _, _, locked1 = GetContainerItemInfo(sourceItem.bag, sourceItem.slot)
-			local _, _, locked2 = GetContainerItemInfo(destItem.bag, destItem.slot)
-
+			sourceCount = count1
+			destCount = count2
+			-- suspend if either item is locked
 			if locked1 or locked2 then
 				coroutine.yield()
 			else
@@ -482,28 +488,46 @@ function EasyDestroy.API.CombineStacks()
 
 		ClearCursor()
 
-		local _, count = GetContainerItemInfo(destItem.bag, destItem.slot)
+		-- wait for process to finish before we determine what to do next
+		EasyDestroy.Debug("EasyDestroy.API.CombineStacks", "Recount Items")
+		local finalCount1, finalCount2
+		while true do 
+			local _, count1, locked1 = GetContainerItemInfo(sourceItem.bag, sourceItem.slot)
+			local _, count2, locked2 = GetContainerItemInfo(destItem.bag, destItem.slot)
 
-		table.remove(API.toCombine) -- pop
+			finalCount1 = count1
+			finalCount2 = count2
 
-		if count >= item.maxStackSize then
+			if not locked2 and (locked1 == nil or locked1 == false) then 
+				break
+			else
+				coroutine.yield()
+			end
+		end
+
+		-- remove completely moved items from table (e.g. whole stack has moved)
+		if finalCount1 == nil or finalCount1 < 1 then
+			EasyDestroy.Debug("EasyDestroy.API.CombineStacks", "Remove empty slot")
+			table.remove(API.toCombine)
+		end
+
+		-- remove full stack from table (e.g. our destination stack is full)
+		if finalCount2 >= item.maxStackSize then
+			EasyDestroy.Debug("EasyDestroy.API.CombineStacks", "Remove full stack", destItem.bag, destItem.slot)
 			table.remove(API.toCombine, 1)
 		end
 
-		EasyDestroy.Debug(string.format("Count of items %d", #API.toCombine))
+		EasyDestroy.Debug(string.format("Count of items Source: %d, Dest: %d, Final: %d", sourceCount, destCount, finalCount2))
 
-		EasyDestroy.Debug(#API.toCombine)
 		if #API.toCombine <= 1 then
 			EasyDestroy.Debug("EasyDestroy.API.CombineStacks", "Clear list", #API.toCombine)
 			wipe(API.toCombine)
-			coroutine.yield()
-		else
-			EasyDestroy.Debug(#API.toCombine)
-			coroutine.yield()
 		end
 
 	end
 
+
+	EasyDestroy.Debug("EasyDestroy.API.CombineStacks", "Item Combine Completed")
 	EasyDestroy.Thread = nil
 	EasyDestroy.ProcessingItemCombine = false
 

@@ -173,8 +173,10 @@ function EasyDestroy_OnUpdate(self, delay)
 
 	-- If an action has been taken that modifies the current filter then we update the item window
 
-	if EasyDestroy.Thread then
+	if EasyDestroy.Thread and coroutine.status(EasyDestroy.Thread) ~= "dead" then
 		coroutine.resume(EasyDestroy.Thread)
+	-- elseif #EasyDestroy.toCombineQueue > 0 then
+	-- 	EasyDestroy.API.CombineItemsInQueue()
 	end
 
 	if EasyDestroy.FilterChanged then 
@@ -223,6 +225,8 @@ function SlashCmdList.EASYDESTROY(msg)
 		else
 			print("Unrecognized setting: " .. b)
 		end
+	elseif msg=="debug" and EasyDestroy.DebugActive then
+		EasyDestroy.DebugFrame:GetParent():Show()
 	else
 		if EasyDestroyFrame:IsVisible() then
 			EasyDestroyFrame:Hide()

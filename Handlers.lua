@@ -282,17 +282,9 @@ function EasyDestroy.Handlers.DestroyPreClick(self)
 
 end
 
-function EasyDestroy.Handlers.OnFilterUpdate()
-	local iteminfo = EasyDestroyItemsFrameItem1.item or nil
-	local bag, slot
-	
-	if iteminfo ~= nil then
-		bag, slot = iteminfo.bag, iteminfo.slot	
-	else
-		return 
-	end
+function EasyDestroy.Handlers.OnCriteriaUpdate()
 
-	EasyDestroyButton:SetAttribute("macrotext", "")		
 
-	EasyDestroy.API.DestroyItem(iteminfo)
+	EasyDestroy.FilterChanged = true
+
 end

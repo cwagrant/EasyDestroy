@@ -54,7 +54,7 @@ function EasyDestroy.UI.ItemWindow:RegisterScript(frame, scriptType)
 	-- Should be used by buttons/fields that will update a filter
 
 	if frame:HasScript(scriptType) then
-		frame:HookScript(scriptType, EasyDestroy.UI.ItemWindow.Update)
+		frame:HookScript(scriptType, EasyDestroy.Handlers.OnCriteriaUpdate)
 	else
 		error("RegisterScript requires a valid scriptType", 2)
 	end
