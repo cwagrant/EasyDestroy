@@ -13,7 +13,7 @@ EasyDestroy.API = {}
 
 --[[ Settings/Info ]]
 EasyDestroy.Version =  GetAddOnMetadata("EasyDestroy", "version")
-EasyDestroy.DebugActive = true
+EasyDestroy.DebugActive = false
 EasyDestroy.AddonName = "EasyDestroy"
 EasyDestroy.AddonLoaded = false
 -- This is the name of the frame that filter types attach to for scrolling
