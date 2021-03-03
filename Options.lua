@@ -2,10 +2,88 @@ local optionsFrame = CreateFrame("Frame", nil, InterfaceOptionsFramePanelContain
 optionsFrame.name = EasyDestroy.AddonName
 
 local function ShowTooltip(frame, tt)
-    GameTooltip:SetOwner(frame)
+    GameTooltip:SetOwner(frame, "ANCHOR_TOP")
     GameTooltip:ClearLines()
     GameTooltip:AddLine(tt, 1, 1, 1, 1)
     GameTooltip:Show()
+end
+
+local function CreateOptionsForFrame(frame, optionTable)
+
+    local column, rowFirstFrame, rowLastFrame = 0, nil, nil
+
+    for k, v in ipairs(optionTable) do
+        column = 0
+        if v and v.key and v.text then
+
+            local f = CreateFrame("Frame", nil, frame, "EasyDestroyFramedCheckboxTemplate")
+            f.allowresize = false
+            f:SetLabel(v.text)
+            f:SetWidth(v.width or 128)
+
+            if not rowFirstFrame then
+                f:SetPoint("TOPLEFT", 20, -20)
+            else
+                f:SetPoint("TOPLEFT", rowFirstFrame, "BOTTOMLEFT")
+            end
+
+            f:Show()
+            if v.tooltip then 
+                f.OnHover.SetTooltip = function(self) ShowTooltip(self, v.tooltip) end 
+            --f:HookScript("OnEnter", function(self) ShowTooltip(self, v.tooltip) end )
+            end
+
+            if v.OnClick then f.Checkbutton:HookScript("OnClick", v.OnClick) end
+
+            if v.optionType == "boolean" then 
+                f:SetChecked(EasyDestroy.Data.Options[v.key])
+            elseif v.value then
+                if bit.band(EasyDestroy.Data.Options.Actions, v.value) > 0 then
+                    f:SetChecked(true)
+                end
+            end
+
+            rowFirstFrame = f
+        else
+            for i, j in ipairs(v) do
+                if j and j.key and j.text then
+                    local f = CreateFrame("Checkbutton", nil, frame, "EasyDestroyFramedCheckboxTemplate")
+                    f.allowresize = false
+                    f:SetLabel(j.text)
+                    f:SetWidth(j.width or 128)
+
+                    if not rowFirstFrame then
+                        f:SetPoint("TOPLEFT", 20, -20)
+                        rowFirstFrame = f
+                    elseif column == 0 then
+                        f:SetPoint("TOPLEFT", rowFirstFrame, "BOTTOMLEFT")
+                        rowFirstFrame = f
+                    else
+                        f:SetPoint("LEFT", rowLastFrame, "RIGHT")
+                    end
+                    f:Show()
+                    if j.tooltip then 
+                        f.OnHover.SetTooltip = function(self) ShowTooltip(self, j.tooltip) end 
+                    end
+                    f:SetScript("OnLeave", function(self) GameTooltip:Hide() end)
+
+                    if j.OnClick then f.Checkbutton:HookScript("OnClick", j.OnClick) end
+
+                    if j.optionType == "boolean" then 
+                        f:SetChecked(EasyDestroy.Data.Options[j.key])
+                    elseif j.value then
+                        if bit.band(EasyDestroy.Data.Options.Actions, j.value) > 0 then
+                            f:SetChecked(true)
+                        end
+                    end
+
+                    rowLastFrame = f
+                    column = column + 1
+
+                end
+            end
+        end
+    end
 end
 
 local function OnOptionsShow()
@@ -14,7 +92,29 @@ local function OnOptionsShow()
 
     baseFrame:SetAllPoints()
 
-    local checkboxOptions = {
+    local easyDestroyOptionsTable = {
+        {
+            {
+                key = "CharacterFavorites",
+                text = "Character Favorites",
+                OnClick = function(self) 
+                    local dialog = StaticPopup_Show("ED_RELOAD_CURRENT_FILTER")
+                    if dialog then dialog.data = self end
+                end,
+                tooltip = "Enables/Disables the use of character-specific favorites.\n\n|cFFFF2934Changing this will require reloading the current filter.|r",
+                optionType = "boolean",
+            },
+            {
+                key="AutoBlacklist",
+                text = "Auto-Blacklist None Destroyables",
+                width = 196,
+                OnClick = function() EasyDestroy.Data.Options.AutoBlacklist = not EasyDestroy.Data.Options.AutoBlacklist end,
+                tooltip = "If selected, when you try to destroy items that cannot be destroyed they will automatically be added to the blacklist.",
+                optionType = "boolean",
+            }
+        }
+    }
+    local destroyOptionsTable = {
         {
             {
                 key="allowdisenchant", 
@@ -50,7 +150,6 @@ local function OnOptionsShow()
         },
     }
     
-    local column, rowFirstFrame, rowLastFrame = 0, nil, nil
 
     local addonOptions = CreateFrame("Frame", nil, baseFrame, BackdropTemplateMixin and "BackdropTemplate")
     addonOptions:SetPoint("TOPLEFT", 30, -30)
@@ -72,20 +171,7 @@ local function OnOptionsShow()
     addonOptions.label:SetPoint("BOTTOMLEFT", addonOptions, "TOPLEFT", 4 , 2)
     addonOptions.label:SetText("EasyDestroy Options")
 
-    local charFav = CreateFrame("Frame", nil, addonOptions, "EasyDestroyFramedCheckboxTemplate")
-    charFav:SetLabel("Character Favorites")
-    charFav:SetPoint("TOPLEFT", 20, -15)
-    charFav:SetChecked(EasyDestroy.Favorites.UsingCharacterFavorites())
-    
-    -- Toggle the character favorites selection
-
-    charFav.Checkbutton:SetScript("OnClick", function()
-        -- Realistically this needs a Dialog and force the user to reload UI after changing this
-        -- EasyDestroy.Data.Options.CharacterFavorites = not EasyDestroy.Data.Options.CharacterFavorites
-        StaticPopup_Show("ED_RELOAD_CURRENT_FILTER")
-    end)
-
-    EasyDestroy.UI.SetCharacterFavoriteFromOptions = function() charFav:SetChecked(EasyDestroy.Favorites.UsingCharacterFavorites()) end
+    CreateOptionsForFrame(addonOptions, easyDestroyOptionsTable)
 
     local destroyOptions = CreateFrame("Frame", nil, baseFrame, BackdropTemplateMixin and "BackdropTemplate")
     destroyOptions:SetPoint("TOPLEFT", addonOptions, "BOTTOMLEFT", 0, -30)
@@ -107,77 +193,7 @@ local function OnOptionsShow()
     destroyOptions.label:SetPoint("BOTTOMLEFT", destroyOptions, "TOPLEFT", 4, 2)
     destroyOptions.label:SetText("Search & Destroy Options")
 
-
-
-    -- Turning the table above into an actual options menu
-    for k, v in ipairs(checkboxOptions) do
-        column = 0
-        if v and v.key and v.text then
-
-            local f = CreateFrame("Frame", nil, destroyOptions, "EasyDestroyFramedCheckboxTemplate")
-            f.allowresize = false
-            f:SetLabel(v.text)
-            f:SetWidth(128)
-
-            if not rowFirstFrame then
-                f:SetPoint("TOPLEFT", 20, -20)
-            else
-                f:SetPoint("TOPLEFT", rowFirstFrame, "BOTTOMLEFT")
-            end
-
-            f:Show()
-            if v.tooltip then 
-                f.OnHover.SetTooltip = function(self) ShowTooltip(self, v.tooltip) end 
-               --f:HookScript("OnEnter", function(self) ShowTooltip(self, v.tooltip) end )
-            end
-
-            if v.OnClick then f.Checkbutton:HookScript("OnClick", v.OnClick) end
-
-            if v.value then
-                if bit.band(EasyDestroy.Data.Options.Actions, v.value) > 0 then
-                    f:SetChecked(true)
-                end
-            end
-
-            rowFirstFrame = f
-        else
-            for i, j in ipairs(v) do
-                if j and j.key and j.text then
-                    local f = CreateFrame("Checkbutton", nil, destroyOptions, "EasyDestroyFramedCheckboxTemplate")
-                    f.allowresize = false
-                    f:SetLabel(j.text)
-                    f:SetWidth(128)
-
-                    if not rowFirstFrame then
-                        f:SetPoint("TOPLEFT", 20, -20)
-                        rowFirstFrame = f
-                    elseif column == 0 then
-                        f:SetPoint("TOPLEFT", rowFirstFrame, "BOTTOMLEFT")
-                        rowFirstFrame = f
-                    else
-                        f:SetPoint("LEFT", rowLastFrame, "RIGHT")
-                    end
-                    f:Show()
-                    if j.tooltip then 
-                        f.OnHover.SetTooltip = function(self) ShowTooltip(self, j.tooltip) end 
-                    end
-                    f:SetScript("OnLeave", function(self) GameTooltip:Hide() end)
-
-                    if j.OnClick then f.Checkbutton:HookScript("OnClick", j.OnClick) end
-
-                    if j.value then
-                        if bit.band(EasyDestroy.Data.Options.Actions, j.value) > 0 then
-                            f:SetChecked(true)
-                        end
-                    end
-
-                    rowLastFrame = f
-                    column = column + 1
-
-                end
-            end
-        end
-    end
+    CreateOptionsForFrame(destroyOptions, destroyOptionsTable)
 
     optionsFrame:SetScript("OnShow", nil)
     baseFrame:Show()

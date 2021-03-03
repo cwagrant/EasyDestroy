@@ -101,13 +101,13 @@ StaticPopupDialogs["ED_FILTER_RENAME"] = {
 
 StaticPopupDialogs["ED_RELOAD_CURRENT_FILTER"] = {
     text = "This requires reloading the current filter. Do you wish to proceed?",
-    button1 = "Rename",
+    button1 = "Okay",
     button2 = "Cancel",
     OnAccept = function(self) 
         EasyDestroy.Data.Options.CharacterFavorites = not EasyDestroy.Data.Options.CharacterFavorites 
         EasyDestroy.UI.ReloadCurrentFilter()
     end, 
-    OnCancel = function(self) EasyDestroy.UI.SetCharacterFavoriteFromOptions() end,
+    OnCancel = function(self, data) data:SetChecked(EasyDestroy.Data.Options.CharacterFavorites) end,
     timeout = 30,
     whileDead = false,
     hideOnEscape = true,

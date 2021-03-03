@@ -11,12 +11,11 @@ EasyDestroyFrame:RegisterEvent("ADDON_LOADED")
 EasyDestroyFrame:RegisterEvent("PLAYER_LOGOUT")
 EasyDestroyFrame:RegisterEvent("PLAYER_LOGIN")
 EasyDestroyFrame:RegisterEvent("BAG_UPDATE_DELAYED")
-EasyDestroyFrame:RegisterEvent("UNIT_SPELLCAST_INTERRUPTED")
-EasyDestroyFrame:RegisterEvent("UNIT_SPELLCAST_FAILED")
 EasyDestroyFrame:RegisterEvent("PLAYER_REGEN_DISABLED")
 EasyDestroyFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
 EasyDestroyFrame:RegisterEvent("PLAYER_STARTED_MOVING")
 EasyDestroyFrame:RegisterEvent("PLAYER_STOPPED_MOVING")
+EasyDestroyFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 
 function EasyDestroy_EventHandler(self, event, ...)
 	if event == "BAG_UPDATE_DELAYED" and EasyDestroy.AddonLoaded and EasyDestroyFrame:IsVisible() then 
@@ -34,25 +33,48 @@ function EasyDestroy_EventHandler(self, event, ...)
 
 		end
 
-	elseif event == "UNIT_SPELLCAST_INTERRUPTED" then
+	elseif event == "COMBAT_LOG_EVENT_UNFILTERED" then 
 
-		-- Handle reenabling the Destroy button on interrupted spellcast
+		local subevent = {CombatLogGetCurrentEventInfo()}
+		local playerGUID = UnitGUID("player")
 
-		local who, _, what = ... 
-		if who=="player" and what==13262 and not EasyDestroy.PlayerMoving then
-			EasyDestroy.Debug("Disenchant Interrupted")
-			EasyDestroyButton:Enable()
-		end
+		if subevent[4] == playerGUID and tContains(EasyDestroy.Dict.ActionTable, subevent[12]) and EasyDestroy.ButtonWasClicked then 
 
-	elseif event == "UNIT_SPELLCAST_FAILED" then
+			EasyDestroy.Debug("EventHandler", "Destroy Spell Cast")
 
-		-- Handle reenabling the Destroy button on failed spellcast (normally seen with items that can't be disenchanted)
+			if subevent[2] == "SPELL_CAST_FAILED" and subevent[15] == SPELL_FAILED_CANT_BE_DISENCHANTED or subevent[15] == SPELL_FAILED_CANT_BE_MILLED or subevent[15] == SPELL_FAILED_CANT_BE_PROSPECTED then
+				 --[[ 
+					 if AutoBlacklistItems == true then
+						AddItemToBlacklist(currentitem)
+					 end
+				 ]]
+				if EasyDestroy.Data.Options.AutoBlacklist then
+					EasyDestroy.Debug("EventHandler", "Straight To Jail")
+					if EasyDestroy.UI.GetCurrentItem() then 
+						EasyDestroy.API.Blacklist.AddItem(EasyDestroy.UI.GetCurrentItem())
+						EasyDestroy.UI.ItemWindow.Update()
+					end
+				end
+				EasyDestroy.ButtonWasClicked = false
+				EasyDestroyButton:Enable()
+			
+			elseif subevent[2] == "SPELL_CAST_FAILED" and subevent[15] == INTERRUPTED then
 
-		local who, _, what = ...
-		if who=="player" and what==13262 and not EasyDestroy.PlayerMoving then
-			EasyDestroy.Debug("Failed to Disenchant item...")
-			EasyDestroyButton:Enable()
-		end
+				EasyDestroy.Debug("EventHandler", "Cast Interrupted")
+				EasyDestroy.ButtonWasClicked = false
+
+				if not EasyDestroy.PlayerMoving then 
+					EasyDestroyButton:Enable()
+				end
+
+			elseif subevent[2] == "SPELL_CAST_SUCCESS" then
+
+				EasyDestroy.Debug("EventHandler", "Cast Succeeded")
+				EasyDestroy.ButtonWasClicked = false
+
+			end
+
+		end	
 
 	elseif event=="PLAYER_REGEN_DISABLED" then
 
@@ -131,7 +153,10 @@ function EasyDestroy_EventHandler(self, event, ...)
 				text = "EasyDestroy",
 				icon = 132885,
 				OnClick = function(self, button) 
-					if EasyDestroyFrame:IsVisible() then
+					if button == "RightButton" then
+						InterfaceOptionsFrame_OpenToCategory("EasyDestroy")
+    					InterfaceOptionsFrame_OpenToCategory("EasyDestroy")
+					elseif EasyDestroyFrame:IsVisible() then
 						EasyDestroyFrame:Hide()
 					else
 						EasyDestroyFrame:Show()
@@ -145,9 +170,10 @@ function EasyDestroy_EventHandler(self, event, ...)
 					if x > (width/2) then anchor = "ANCHOR_LEFT" end
 					GameTooltip:SetOwner(self, anchor)
 					GameTooltip:ClearLines()
-					GameTooltip:AddLine("Easy Destroy")
+					GameTooltip:AddLine("EasyDestroy")
 					GameTooltip:AddLine(" ")
-					GameTooltip:AddLine("Click to open.")
+					GameTooltip:AddLine("Left-click to |cFFE9C6F7Open.|r")
+					GameTooltip:AddLine("Right-click for |cFFE9C6F7Options.|r")
 					GameTooltip:Show()
 				end
 
@@ -256,7 +282,8 @@ EasyDestroyFrame:SetScript("OnUpdate", EasyDestroy_OnUpdate)
 
 EasyDestroyButton:SetScript("PreClick", EasyDestroy.Handlers.DestroyPreClick)
 EasyDestroyButton:SetScript("PostClick", function(self)
-	EasyDestroyButton:SetAttribute("macrotext", "")		
+	EasyDestroyButton:SetAttribute("macrotext", "")	
+	EasyDestroy.ButtonWasClicked = true
 end)
 
 -- EasyDestroyButton:HookScript("OnClick", EasyDestroy.Handlers.DestroyPreClick)

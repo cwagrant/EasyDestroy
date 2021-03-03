@@ -231,7 +231,9 @@ end
 function EasyDestroy.Handlers.DestroyPreClick(self)
 
 	EasyDestroy.Debug("EasyDestroy.Handlers.DestroyPreClick")
-	-- The actual process for disenchanting an item.
+
+	-- The actual process for destroying an item.
+
 	if not EasyDestroyFrame:IsVisible() then
 		EasyDestroyFrame:Show()
 		return

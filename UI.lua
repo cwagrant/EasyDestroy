@@ -512,3 +512,13 @@ function EasyDestroy.UI.Initialize()
 
 
 end
+
+function EasyDestroy.UI.GetCurrentItem()
+
+	if EasyDestroy.UI.ItemWindow and EasyDestroy.UI.ItemWindow.Item1 and EasyDestroy.UI.ItemWindow.Item1.item then
+		return EasyDestroy.UI.ItemWindow.Item1.item
+	end
+
+	return nil
+
+end

@@ -1,3 +1,9 @@
+20210303 - 3.0.2b
+- Added support to automatically blacklist items that can't be disenchanted after the first time you try.
+    e.g. Item A cannot be disenchanted but still shows up in the Item Window. You click "Destroy" and the 
+    item fails with an error that it can't be disenchanted. The addon will automatically add the item to 
+    the blacklist.
+
 20210302 - 3.0.1b 
 - Fixed issue with the herb/ore restacking (infinite loops or failing to complete).
 
