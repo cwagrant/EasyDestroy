@@ -3,6 +3,8 @@
     e.g. Item A cannot be disenchanted but still shows up in the Item Window. You click "Destroy" and the 
     item fails with an error that it can't be disenchanted. The addon will automatically add the item to 
     the blacklist.
+- Added option to Options window for turning this on or off.
+- Updated launcher so that right clicking opens the Options window.
 
 20210302 - 3.0.1b 
 - Fixed issue with the herb/ore restacking (infinite loops or failing to complete).
