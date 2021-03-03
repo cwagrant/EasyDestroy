@@ -106,7 +106,7 @@ local function OnOptionsShow()
             },
             {
                 key="AutoBlacklist",
-                text = "Auto-Blacklist None Destroyables",
+                text = "Auto-Blacklist Non-Destroyables",
                 width = 196,
                 OnClick = function() EasyDestroy.Data.Options.AutoBlacklist = not EasyDestroy.Data.Options.AutoBlacklist end,
                 tooltip = "If selected, when you try to destroy items that cannot be destroyed they will automatically be added to the blacklist.",

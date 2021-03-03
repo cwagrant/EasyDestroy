@@ -87,21 +87,49 @@ end
 -- ######################################################################
 EasyDestroyItem = {}
 EasyDestroyItem.__index = EasyDestroyItem
+function EasyDestroyItem:_NewFromLink(link)
 
-function EasyDestroyItem:New(bag, slot, link, itemid)
+    -- private function to handle caching of new items from links
+    
+    local cache = EasyDestroy.EasyDestroyCacheID(0, 0, link)
+
+    if cache and EasyDestroy.Cache.ItemCache[cache] then
+        return EasyDestroy.Cache.ItemCache[cache]
+    else
+        return Item:CreateFromItemLink(link)
+    end
+
+end
+
+function EasyDestroyItem:_NewFromBagAndSlot(bag, slot)
+
+    -- private function to handle caching of new items from bags/slots
+
+    local ilink = select(7, GetContainerItemInfo(bag, slot))
+    local cache = EasyDestroy.EasyDestroyCacheID(bag, slot, ilink)
+
+    if cache and EasyDestroy.Cache.ItemCache[cache] then
+        return EasyDestroy.Cache.ItemCache[cache]
+    else
+        return Item:CreateFromBagAndSlot(bag, slot)
+    end
+
+end
+
+function EasyDestroyItem:New(bag, slot, link)
 
     local self
+    
     if (bag == nil or slot == nil) and link then
-        self = Item:CreateFromItemLink(link)
-    elseif (bag == nil or slot == nil) and itemid then 
-        self = Item:CreateFromItemID(itemid)
+        self = EasyDestroyItem:_NewFromLink(link)
     else
-        self = Item:CreateFromBagAndSlot(bag, slot)
+        self = EasyDestroyItem:_NewFromBagAndSlot(bag, slot)
     end
+
     setmetatable(self, EasyDestroyItem)
 
-    self.bag = bag
-    self.slot = slot
+    self.bag = bag or 0
+    self.slot = slot or 0
 
     --[[ The cake is a lie. Nothing to do here. ]]
     if self:IsItemEmpty() then
@@ -120,6 +148,7 @@ function EasyDestroyItem:New(bag, slot, link, itemid)
     self.maxStackSize  = select(8, GetItemInfo(self:GetItemLink()))
     --self.guid = C_Item.GetItemGUID(self:GetItemLocation())
 
+    EasyDestroy.Cache.ItemCache[EasyDestroy.EasyDestroyCacheID(self.bag, self.slot, self.itemLink)] = self
     return self
 end
 
@@ -132,27 +161,8 @@ function EasyDestroyItem:Update(bag, slot)
 
 end
 
-
 function EasyDestroyItem:SetValueByKey(key, value)
     self[key] = value
-end
-
-function EasyDestroyItem:GetValueByKey(key)
-    if self and self[key] then
-        return self[key]
-    else
-        error(string.format("Unable to locate item information with key (%s)", key))
-    end
-end
-
-function EasyDestroyItem:CompareByKey(k, v)
-
-    if self and self[k] then
-        return self[k] == v
-    elseif not self[k] then
-        error(string.format("Unable to compare Item with value(%s). Key (%s) not found.", v, k))
-    end
-
 end
 
 function EasyDestroyItem:HaveTransmog()

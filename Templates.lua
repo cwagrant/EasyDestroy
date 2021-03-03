@@ -182,7 +182,15 @@ function EasyDestroyScrollMixin:Initialize(listfunc, displayed, height, childfun
             f:Disable()
         end
     end
+
 end
+
+-- function EasyDestroyScrollMixin:StartEnvironment()
+
+--     local t = {}
+
+--     return function()
+--         self.ListFunction(t)
 
 function EasyDestroyScrollMixin:ScrollUpdate(callbackFunction)
     local itemList = nil
@@ -203,28 +211,29 @@ function EasyDestroyScrollMixin:ScrollUpdate(callbackFunction)
 
     if self.UpdateItemList then
         EasyDestroy.Debug((self:GetName() or "EasyDestroyScrollMixin") .. ":ScrollUpdate", "UpdateItemList")
-        itemList = self.ListFunction()
+        self.ItemList = self.ListFunction()
         self.UpdateItemList = false
-        self.ItemList = itemList
+        -- self.ItemList = itemList
     else
         EasyDestroy.Debug((self:GetName() or "EasyDestroyScrollMixin") .. ":ScrollUpdate", "Using Item Cache")
-        itemList = self.ItemList
+        -- itemList = self.ItemList
     end
     if not self and self.ScrollFrame then
         return
     end
-    FauxScrollFrame_Update(self.ScrollFrame, #itemList, self.MaxDisplayed, self.ChildHeight)
-	local offset = FauxScrollFrame_GetOffset(self.ScrollFrame)
+
+    FauxScrollFrame_Update(self.ScrollFrame, #self.ItemList, self.MaxDisplayed, self.ChildHeight)
+	
+    local offset = FauxScrollFrame_GetOffset(self.ScrollFrame)
 
 	for i=1, self.MaxDisplayed, 1 do
 		local index = offset+i
 		local frame = _G[ self:GetName() .. "Item" .. i ]
-        if index <= #itemList then
-            local item = itemList[index]
+        if index <= #self.ItemList then
+            frame.item = self.ItemList[index]
             frame:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-            frame:UpdateItemFrame(item, self.ChildOnClick or nil)
+            frame:UpdateItemFrame(frame.item, self.ChildOnClick or nil)
             frame:Show()
-            frame.item = item
             -- needsUpdate = true
         else
             frame:HideItemFrame()
@@ -235,10 +244,11 @@ function EasyDestroyScrollMixin:ScrollUpdate(callbackFunction)
 		callbackFunction()
 	end
     
-    self.ItemCount = #itemList
+    self.ItemCount = #self.ItemList
 
 end
 
 function EasyDestroyScrollMixin:OnVerticalScroll(offset)
     FauxScrollFrame_OnVerticalScroll(self.ScrollFrame, offset, self.ChildHeight, function() self:ScrollUpdate() end)
 end
+

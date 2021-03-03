@@ -23,13 +23,13 @@ function EasyDestroy_EventHandler(self, event, ...)
 
 		if not EasyDestroy.ProcessingItemCombine then 
 
-		-- Update our item window if user's bags have changed in some way.
-		-- In the event that the EasyDestroyButton was disabled, then the function
-		-- below will re-enable it AFTER the item list has been rebuilt/processed.
-		-- this ensures that processing is complete from the last destroy action 
-		-- before another one is started.
+			-- As long as we're not the ones changing the users bags, lets upate our 
+			-- windows and lists and make sure to reenable the button if it's disabled
+
+			EasyDestroy.BagsUpdated = true 
 
 			EasyDestroy.UI.ItemWindow.Update(function() EasyDestroyButton:Enable() end)
+
 
 		end
 
@@ -43,11 +43,7 @@ function EasyDestroy_EventHandler(self, event, ...)
 			EasyDestroy.Debug("EventHandler", "Destroy Spell Cast")
 
 			if subevent[2] == "SPELL_CAST_FAILED" and subevent[15] == SPELL_FAILED_CANT_BE_DISENCHANTED or subevent[15] == SPELL_FAILED_CANT_BE_MILLED or subevent[15] == SPELL_FAILED_CANT_BE_PROSPECTED then
-				 --[[ 
-					 if AutoBlacklistItems == true then
-						AddItemToBlacklist(currentitem)
-					 end
-				 ]]
+
 				if EasyDestroy.Data.Options.AutoBlacklist then
 					EasyDestroy.Debug("EventHandler", "Straight To Jail")
 					if EasyDestroy.UI.GetCurrentItem() then 
@@ -141,6 +137,8 @@ function EasyDestroy_EventHandler(self, event, ...)
 			UIDropDownMenu_Initialize(EasyDestroyDropDown, EasyDestroy.UI.FilterDropDown.Initialize)
 			
 			EasyDestroy.UI.LoadUserFavorite()
+
+			EasyDestroy.BagsUpdated = true
 
 			local showConfig = EasyDestroy_GetOptionValue("ConfiguratorShown")
 			if showConfig ~= nil then
@@ -267,15 +265,8 @@ function EasyDestroy_Refresh()
 	EasyDestroy.FilterChanged = true
 end
 
-EasyDestroyFrame:SetScript("OnShow", function()
-	EasyDestroyFrame:RegisterEvent("BAG_UPDATE_DELAYED")
-	EasyDestroy_Refresh() -- This will force the search to repopulate on load
-end)
-
-EasyDestroyFrame:SetScript("OnHide", function()
-	EasyDestroyFrame:UnregisterEvent("BAG_UPDATE_DELAYED")
-end)
-
+EasyDestroyFrame:SetScript("OnShow", EasyDestroy.Handlers.RegisterEvents)
+EasyDestroyFrame:SetScript("OnHide", EasyDestroy.Handlers.UnregisterEvents)
 
 EasyDestroyFrame:SetScript("OnEvent", EasyDestroy_EventHandler)
 EasyDestroyFrame:SetScript("OnUpdate", EasyDestroy_OnUpdate)
@@ -294,16 +285,7 @@ EasyDestroyFrameSearchTypes.Blacklist.Checkbutton:SetScript("OnClick", EasyDestr
 EasyDestroyFilters_Save:SetScript("OnClick", function() EasyDestroy.Handlers.SaveFilterOnClick() end)
 EasyDestroyFilters_Delete:SetScript("OnClick", function() StaticPopup_Show("ED_CONFIRM_DELETE_FILTER", EasyDestroy.UI.GetFilterName()) end)
 EasyDestroyFilters_NewFromFilter:SetScript("OnClick", EasyDestroy.Handlers.CopyFilterOnClick)
-EasyDestroyFilters_New:SetScript("OnClick", function() 
-	EasyDestroy.UI.ClearFilter()
-	EasyDestroy.UI.FilterDropDown.Update()
-	EasyDestroy.CurrentFilter = EasyDestroy.EmptyFilter
-	UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, 0) 
-	if EasyDestroy:IncludeBlacklists() and not EasyDestroy:IncludeSearches() then
-		EasyDestroyFrameSearchTypes.Search:SetChecked(true)
-	end
-	EasyDestroy_Refresh() end
-)
+EasyDestroyFilters_New:SetScript("OnClick", EasyDestroy.Handlers.NewOnClick)
 
 EasyDestroy_ToggleConfigurator:SetScript("OnClick", function() 
 	if EasyDestroyConfiguration:IsVisible() then 

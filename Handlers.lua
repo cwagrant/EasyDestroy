@@ -286,7 +286,44 @@ end
 
 function EasyDestroy.Handlers.OnCriteriaUpdate()
 
+	-- If our filter was updated, we'll need to tell the system to update.
 
 	EasyDestroy.FilterChanged = true
 
+end
+
+function EasyDestroy.Handlers.RegisterEvents()
+
+	-- re-register events 
+
+	EasyDestroyFrame:RegisterEvent("BAG_UPDATE_DELAYED")
+	EasyDestroyFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+	-- lets refresh things now that we're opening the window
+	EasyDestroy.FilterChanged = true
+
+end
+
+function EasyDestroy.Handlers.UnregisterEvents()
+
+	-- un-register events.
+
+	EasyDestroyFrame:UnregisterEvent("BAG_UPDATE_DELAYED")
+	EasyDestroyFrame:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+
+end
+
+function EasyDestroy.Handlers.NewOnClick()
+
+	-- Handler for EasyDestroy.UI.Buttons.NewFilter
+
+	EasyDestroy.UI.ClearFilter()
+	EasyDestroy.UI.FilterDropDown.Update()
+	EasyDestroy.CurrentFilter = EasyDestroy.EmptyFilter
+	UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, 0) 
+	if EasyDestroy:IncludeBlacklists() and not EasyDestroy:IncludeSearches() then
+		EasyDestroyFrameSearchTypes.Search:SetChecked(true)
+	end
+	
+	EasyDestroy.FilterChanged = true
+	
 end

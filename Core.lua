@@ -49,6 +49,8 @@ ED_LOG_DEBUG = 0x01
 ED_LOG_INFO = 0x02
 ED_LOG_ERROR = 0x04
 
+EasyDestroy.BagsUpdated = false
+
 
 --[[ Enumerations/Lookup Tables ]]
 EasyDestroy.Enum.FilterTypes = { Search=1, Blacklist=2 }

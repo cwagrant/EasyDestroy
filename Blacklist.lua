@@ -6,25 +6,6 @@ frame.name = "Blacklist"
 frame.parent = EasyDestroy.AddonName
 frame:Hide()
 
--- On Load do Mixin of item frames 
-
--- Item Template Frame should have fields:
--- .link, .ilvl, .name, .quality
--- I think the end goal will be to match on 1) Item ID 2) Item Quality and 3) Item Level.
--- That means we'll need to save all 3 of those values in the blacklist.
-local function ItemInBlacklist(itemid, itemname, quality, ilvl)
-    for k, v in ipairs(EasyDestroy.Data.Blacklist) do
-        if v and v.itemid and v.itemid == itemid then
-            if v.legendary and v.legendary == itemname then
-                return true
-            elseif not v.legendary and v.quality==quality and v.ilvl == ilvl then
-                return true
-            end
-        end
-    end
-    return false
-end
-
 local function GetItemsInBags()
     local itemList = {}
 
@@ -51,7 +32,7 @@ local function GetItemsInBags()
                     break
                 elseif item.classID == LE_ITEM_CLASS_ARMOR and item.subclassID == LE_ITEM_ARMOR_COSMETIC then
                     break
-                elseif ItemInBlacklist(item.itemID, item:GetItemName(), item.quality, item.level) then
+                elseif EasyDestroy.API.Blacklist.HasItem(item) then
                     break
                 elseif tContains(ED_DEFAULT_BLACKLIST, item.id) then
                     break
@@ -62,9 +43,6 @@ local function GetItemsInBags()
         end
     end
 
-    EasyDestroy.API.FindTradegoods(EasyDestroy.Dict.Herbs, itemList)
-	EasyDestroy.API.FindTradegoods(EasyDestroy.Dict.Ores, itemList)
-    
     return itemList
 end
 
@@ -75,37 +53,27 @@ local function GetItemsInBlacklist()
     ]]
     local itemList = {}
     local blacklist = EasyDestroy.Data.Blacklist or {}
+    
     -- sort blacklists by item name (or legendary name if available) and then ilvl
     for k, item in EasyDestroy.spairs(blacklist, function(t,a,b) 
         return ( (t[a].legendary or t[a].name) == (t[b].legendary or t[b].name) and t[a].ilvl < t[b].ilvl) or 
         ((t[a].legendary or t[a].name) < (t[b].legendary or t[b].name ) ) end) do
-    --for k, item in pairs(blacklist) do
+
         local a = EasyDestroyItem:New(nil, nil, item.link)
         a.quality = a.quality or item.quality
         a.level = a.level or item.ilvl
         a.itemID = a.itemID or item.itemid
         a.name = a.name or item.name
-        --a.itemid, a.itemname, a.itemlink, a.itemqual, a.ilvl = item.itemid, item.name, item.link, item.quality, item.ilvl
-        --a.itemid, a.itemname, a.itemlink, a.itemqual = item.itemid, GetItemInfo(item.itemid)
-        -- Overwrite with the quality level of the item we added.
-
-        -- if item and item.legendary then
-        --     a.itemname = item.legendary
-        --     a.itemqual = 5 --legendary``````````````````````````
-        -- end
 
         tinsert(itemList, a)
     end
 
-    --table.sort(itemList, function(a, b) return (a.itemname==b.itemname and a.ilvl<b.ilvl) or (a.ilvl<b.ilvl) end)
     return itemList
 end
 
 local function OnClickBagItem(self, button)
 
     if button ~= "LeftButton" then return end
-
-    -- tinsert(EasyDestroy.Data.Blacklist, self.item:ToTable())
 
     EasyDestroy.API.Blacklist.AddItem(self.item)
 
@@ -206,7 +174,6 @@ end
 
 frame:SetScript("OnShow", OnFrameShow)
 
-EasyDestroy.ItemInBlacklist = ItemInBlacklist
 InterfaceOptions_AddCategory(frame)
 
 EasyDestroy_OpenBlacklist:SetScript("OnClick", function()

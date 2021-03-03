@@ -39,47 +39,40 @@ function EasyDestroy:IncludeSearches()
 
 end
 
-function EasyDestroy.EasyDestroyCacheID(bag, slot, quality, link)
+function EasyDestroy.EasyDestroyCacheID(bag, slot, link)
 	
 	-- Create Cache ID from bag, slot, quality, and item link
 
-	if type(bag) ~= "number" or type(slot) ~= "number" or type(quality) ~= "number" or type(link) ~= "string" then 
+	if type(bag) ~= "number" or type(slot) ~= "number" or type(link) ~= "string" then 
 		error(
-			string.format("Usage: EasyDestroy.EasyDestroyCacheID(bag, slot, itemQuality, itemLink)\n (%s, %s, %s, %s)", bag or "nil", slot or "nil", quality or "nil", link or "nil")
+			string.format("Usage: EasyDestroy.EasyDestroyCacheID(bag, slot, itemLink)\n (%s, %s, %s)", bag or "nil", slot or "nil", link or "nil")
 		)
 	end
-	return string.format("%i:%i:%i:%s", bag, slot, quality, link)
+	return string.format("%i:%i:%s", bag, slot, link)
 
 end
 
-
-function EasyDestroy.GetBagItems()
+function EasyDestroy._GetBagItems(itemList)
 
 	-- Creates a list of items in the users bags and caches the items.
 
-	local itemList = {}
 	local filterRegistry = EasyDestroy.CriteriaRegistry
 	local cachedItem = false
+	-- local itemList = {}
 
 	for bag = 0, NUM_BAG_SLOTS do
 		for slot=1, GetContainerNumSlots(bag) do
 			local item, EasyDestroyID
 			local quality, _, _, itemlink = select(4, GetContainerItemInfo(bag, slot))
 			
-			if itemlink then 
-				EasyDestroyID = EasyDestroy.EasyDestroyCacheID(bag, slot, quality, itemlink)
-			end
-
-			if EasyDestroyID and EasyDestroy.Cache.ItemCache[EasyDestroyID] then 
-				item = EasyDestroy.Cache.ItemCache[EasyDestroyID]
-				tinsert(itemList, item)
-				cachedItem = true
-			else
-				item = EasyDestroyItem:New(bag, slot)
-				cachedItem = false
-			end
-
 			while (true) do 
+
+				if itemlink then 
+					item = EasyDestroyItem:New(bag, slot)
+				else 
+					break
+				end
+			
 				if item == nil then break end
 
 				if cachedItem then break end
@@ -90,17 +83,12 @@ function EasyDestroy.GetBagItems()
 
 				if item:GetItemLink() then
 					item.haveTransmog = item:HaveTransmog()
-					
-					-- if item.classID == LE_ITEM_CLASS_TRADEGOODS then
-					-- 	item.count = GetItemCount(item.itemLink)
-					-- end
 
 					for k, v in pairs(filterRegistry) do
 						if v.GetItemInfo ~= nil and type(v.GetItemInfo) == "function" then
 							item:SetValueByKey(k, v:GetItemInfo(item:GetItemLink(), item.bag, item.slot))
 						end
 					end
-					EasyDestroy.Cache.ItemCache[EasyDestroyID] = item
 					tinsert(itemList, item)
 				end
 				break
@@ -111,10 +99,28 @@ function EasyDestroy.GetBagItems()
 	EasyDestroy.API.FindTradegoods(EasyDestroy.Dict.Herbs, itemList)
 	EasyDestroy.API.FindTradegoods(EasyDestroy.Dict.Ores, itemList)
 
-	-- EasyDestroy.Dict.Ores EasyDestroy.Dict.Herbs
-
-	return itemList
+	-- return itemList
 end
+
+function EasyDestroy.API.GetBagsCached()
+
+	-- Returns a closure for _GetBagItems so that we can easily cache
+	-- the results and only update them when necessary.
+
+	local t = {}
+	
+	return function()
+		if EasyDestroy.BagsUpdated then 
+			wipe(t)
+			EasyDestroy._GetBagItems(t)
+			EasyDestroy.BagsUpdated = false
+		end
+		return t
+	end
+
+end
+
+EasyDestroy.GetBagItems = EasyDestroy.API.GetBagsCached()
 
 function EasyDestroy.API.FindWhitelistItems()
 	
@@ -130,9 +136,8 @@ function EasyDestroy.API.FindWhitelistItems()
 	local typematch = false
 	local items = {}
 	local filterRegistry = EasyDestroy.CriteriaRegistry
-	local input = EasyDestroy.GetBagItems() 
 
-	for i, item in ipairs(input) do
+	for i, item in ipairs(EasyDestroy.GetBagItems()) do
 		matchfound = nil
 		typematch = false
 
@@ -209,7 +214,7 @@ function EasyDestroy.API.FindWhitelistItems()
 				if not typematch then break end
 
 				-- this is a check of the "item" blacklist
-				if filter.properties.type ~= ED_FILTER_TYPE_BLACKLIST and EasyDestroy.ItemInBlacklist(item.itemID, item:GetItemName(), item.quality, item.level) then
+				if filter.properties.type ~= ED_FILTER_TYPE_BLACKLIST and EasyDestroy.API.Blacklist.HasItem(item) then
 					matchfound = false
 					break
 				end
@@ -310,7 +315,7 @@ function EasyDestroy.API.FindTradegoods(dict, addToTable)
 		if v.itemid then 
 			local _, reagent = GetItemInfo(v.itemid)
 			if reagent then 
-				local EasyDestroyID = EasyDestroy.EasyDestroyCacheID(0, 0, 1, reagent)
+				local EasyDestroyID = EasyDestroy.EasyDestroyCacheID(0, 0, reagent)
 
 				if EasyDestroyID and EasyDestroy.Cache.ItemCache[EasyDestroyID] then
 					item = EasyDestroy.Cache.ItemCache[EasyDestroyID]
@@ -658,19 +663,30 @@ function EasyDestroy.API.Blacklist.AddItem(item)
 end
 
 function EasyDestroy.API.Blacklist.HasItem(item)
-	EasyDestroy.Debug("EasyDestroy.API.GetItemInBlacklist", item:GetItemName(), item.itemID)
+
+    -- Update of ItemInBlacklist to handle item objects
 
     for k, v in ipairs(EasyDestroy.Data.Blacklist) do
-        -- if regular item, match on itemid, quality, ilvl
-        -- if legendary item, match on itemid and name
-        if v and ((v.itemid == item.itemID and v.quality == item.quality and v.ilvl == item.level) or (v.legendary and v.itemid==item.itemID and v.legendary==item:GetItemName())) then
-            return true
+
+        if v and v.itemid and v.itemid == item:GetItemID() then
+
+            if v.legendary and v.legendary == item:GetItemName() then 
+                return true
+            elseif v.quality == item.quality and v.ilvl == item.level then
+                if v.name and v.name == item:GetItemName() then
+                    return true
+                elseif not v.name then 
+                    -- found a match on everything else, and no name is saved in the db (legacy)
+                    return true
+                end
+            end
         end
+
     end
 
-	return false
-end
+    return false
 
+end
 function EasyDestroy.API.Blacklist.RemoveItem(item)
 	for k, v in ipairs(EasyDestroy.Data.Blacklist) do
         -- if regular item, match on itemid, quality, ilvl

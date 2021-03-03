@@ -1,3 +1,7 @@
+20210303 - 3.0.0
+- tuning of caching
+- fixing blacklist bug regarding item names
+
 20210303 - 3.0.2b
 - Added support to automatically blacklist items that can't be disenchanted after the first time you try.
     e.g. Item A cannot be disenchanted but still shows up in the Item Window. You click "Destroy" and the 
@@ -25,6 +29,7 @@
 - Code cleanup, removing things from the global scope as much as possible, removing redundant code
 - Added in dictionary for herbs and ores that can be processed.
 - Bug fixes
+- Spelling fix
 
 20210225 - 2.1.0b
 - Code cleanup, Libs added to directory, file structure updated.
