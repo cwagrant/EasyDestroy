@@ -1,4 +1,4 @@
-20210303 - 3.0.0
+20210303 - 3.0.3
 - tuning of caching
 - fixing blacklist bug regarding item names
 
