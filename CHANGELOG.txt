@@ -1,6 +1,8 @@
 20210303 - 3.0.3
 - tuning of caching
 - fixing blacklist bug regarding item names
+- fixed bugs that would require new users to reload before things would work
+- added alert system for being able to provide information/alerts when updates are made
 
 20210303 - 3.0.2b
 - Added support to automatically blacklist items that can't be disenchanted after the first time you try.

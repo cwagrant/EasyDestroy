@@ -185,13 +185,6 @@ function EasyDestroyScrollMixin:Initialize(listfunc, displayed, height, childfun
 
 end
 
--- function EasyDestroyScrollMixin:StartEnvironment()
-
---     local t = {}
-
---     return function()
---         self.ListFunction(t)
-
 function EasyDestroyScrollMixin:ScrollUpdate(callbackFunction)
     local itemList = nil
 

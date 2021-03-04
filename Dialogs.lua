@@ -113,3 +113,26 @@ StaticPopupDialogs["ED_RELOAD_CURRENT_FILTER"] = {
     hideOnEscape = true,
     preferredIndex = 3,
 }
+
+
+StaticPopupDialogs["ED_3_0_FEATURE_ALERT"] = {
+    text = [[EasyDestroy has been updated!
+    
+    In version 3.0 you now have the ability to Mill and Prospect items as well as Disenchanting.
+    
+    Additionally, there is an options window to configure this and other features! Click Okay to be taken to the new Options menu or Cancel to close this message.
+    ]],
+    button1 = "Okay",
+    button2 = "Cancel",
+    OnAccept = function(self) 
+        InterfaceOptionsFrame_OpenToCategory("EasyDestroy")
+        InterfaceOptionsFrame_OpenToCategory("EasyDestroy")
+    end,
+    OnCancel = function(self)
+        EasyDestroy.Data.Alerts = EasyDestroy.Data.Alerts or {}
+    end,
+    timeout = 60,
+    whileDead = false,
+    hideOnEscape = false,
+    preferredIndex = 3,
+}

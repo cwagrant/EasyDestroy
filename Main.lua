@@ -132,6 +132,11 @@ function EasyDestroy_EventHandler(self, event, ...)
 			EasyDestroy.Data.Blacklist = EasyDestroy.Data.Blacklist or {}
 			EasyDestroy.CurrentFilter = EasyDestroy.EmptyFilter
 
+			EasyDestroy.Data.Options.Actions = EasyDestroy.Data.Options.Actions or EasyDestroy.Enum.Actions.Disenchant
+
+			if EasyDestroy.Data.Options.CharacterFavorites == nil then 
+				EasyDestroy.Data.Options.CharacterFavorites = false
+			end
 			-- "Post"-Initialization functions that need to occur once data has been loaded
 
 			UIDropDownMenu_Initialize(EasyDestroyDropDown, EasyDestroy.UI.FilterDropDown.Initialize)
@@ -178,6 +183,46 @@ function EasyDestroy_EventHandler(self, event, ...)
 				})
 
 			ldbicon:Register("EasyDestroy", ldb, EasyDestroy.Data.Options.MinimapIcon)
+
+			-- If we haven't set up Alerts before, add them to database now.
+			if not EasyDestroy.Data.Alerts then 
+
+				EasyDestroy.Data.Alerts = 0x0000
+
+			end
+
+			-- New users don't get update alerts, previous users do.
+			if EasyDestroy.FirstStartup then 
+
+				-- This indicates this is not a new user going forward.
+				EasyDestroy.Data.Alerts = bit.bor(EasyDestroy.Data.Alerts, 0x0001)
+
+			else
+
+				-- A little bit of future proofing, so we don't have an army of table entries
+				-- we'll just use some bit flags. Only 1 field to concern ourselves with then.
+				if bit.band(EasyDestroy.Data.Alerts, 0x0002) < 1 then 
+
+					-- If it's not your first time and you haven't seen the alert, we're setting the indicator
+					-- that you are not a first time user for going forward.
+
+					if not EasyDestroy.FirstStartup and not (bit.band(EasyDestroy.Data.Alerts, 0x0001)>0) then
+						EasyDestroy.Data.Alerts = bit.bor(EasyDestroy.Data.Alerts, 0x0001)
+					end
+
+					EasyDestroyFrame:HookScript("OnShow", function()
+
+						-- If we already sent the alert this session, then do nothing.
+						if bit.band(EasyDestroy.Data.Alerts, 0x0002) > 0 then return end
+
+						StaticPopup_Show("ED_3_0_FEATURE_ALERT")
+						EasyDestroy.Data.Alerts = bit.bor(EasyDestroy.Data.Alerts, 0x0002)
+
+					end)
+
+				end
+
+			end
 
 		end
 	elseif event=="PLAYER_LOGOUT" then
@@ -251,6 +296,9 @@ function SlashCmdList.EASYDESTROY(msg)
 		end
 	elseif msg=="debug" and EasyDestroy.DebugActive then
 		EasyDestroy.DebugFrame:GetParent():Show()
+	elseif msg=="opt" or msg=="option" or msg=="options" then 
+		InterfaceOptionsFrame_OpenToCategory("EasyDestroy")
+    	InterfaceOptionsFrame_OpenToCategory("EasyDestroy")
 	else
 		if EasyDestroyFrame:IsVisible() then
 			EasyDestroyFrame:Hide()
@@ -323,3 +371,5 @@ end
 EasyDestroyFilters_FavoriteIcon:SetScript("OnClick", EasyDestroy.Favorites.FavoriteIconOnClick)
 
 EasyDestroyFilterSettings.Blacklist:SetScript("OnClick", EasyDestroy.Handlers.FilterTypeOnClick)
+
+

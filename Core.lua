@@ -30,6 +30,7 @@ EasyDestroy.EmptyFilter = { filter={}, properties={} }
 EasyDestroy.Cache = { ItemCache = {}, FilterCache = {}}
 EasyDestroy.FrameRegistry = {}
 EasyDestroy.SessionBlacklist = {}
+EasyDestroy.FirstStartup = false
 
 EasyDestroy.FilterChanged = false
 EasyDestroy.UpdateSkin = false
@@ -76,6 +77,8 @@ function EasyDestroy.ItemTypeFilterByFlags(flag)
 
 	local out = {}
 
+	if flag == nil then flag = EasyDestroy.Enum.Actions.Disenchant end 
+	
 	for k, v in pairs(EasyDestroy.Dict.Actions) do 
 		local chk = bit.band(k, flag)
 		if chk > 0 then
@@ -281,6 +284,13 @@ end
 function EasyDestroy:UpdateDBFormat(data)
 	local version, subversion, patch = strsplit(".", EasyDestroy.Version)
 	version, subversion, patch = tonumber(version), tonumber(subversion), tonumber(patch)
+
+	if not EasyDestroy.Data.Options and not EasyDestroy.Data.Filters and not EasyDestroy.Data.Blacklist then
+		
+		-- User has no data saved thus far, presume this is their first time using the addon.
+		EasyDestroy.FirstStartup = true
+
+	end
 
 	if (version == 1 and subversion >=2) or (version>=1) then
 		if data.Filters ~= nil then
