@@ -1,3 +1,6 @@
+20210304 - 3.0.4
+- bug fix, item window not refreshing when opening
+
 20210303 - 3.0.3
 - tuning of caching
 - fixing blacklist bug regarding item names

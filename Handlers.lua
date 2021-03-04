@@ -299,6 +299,8 @@ function EasyDestroy.Handlers.RegisterEvents()
 	EasyDestroyFrame:RegisterEvent("BAG_UPDATE_DELAYED")
 	EasyDestroyFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 	-- lets refresh things now that we're opening the window
+
+	EasyDestroy.BagsUpdated = true 
 	EasyDestroy.FilterChanged = true
 
 end
