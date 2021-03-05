@@ -122,7 +122,7 @@ local function OnOptionsShow()
                 tooltip="If selected Searches will show items that can be disenchanted.",
                 OnClick = function(self) 
                     EasyDestroy.Data.Options.Actions = bit.bxor(EasyDestroy.Data.Options.Actions, EasyDestroy.Enum.Actions.Disenchant)
-                    EasyDestroy.UI.ItemWindow.Update()
+                    EasyDestroy.Events:Call("UpdateItemWindow")
                 end,
                 value = EasyDestroy.Enum.Actions.Disenchant,
             },
@@ -132,7 +132,7 @@ local function OnOptionsShow()
                 tooltip="If selected Searches will show items that can be milled.", 
                 OnClick = function(self) 
                     EasyDestroy.Data.Options.Actions = bit.bxor(EasyDestroy.Data.Options.Actions, EasyDestroy.Enum.Actions.Mill) 
-                    EasyDestroy.UI.ItemWindow.Update()
+                    EasyDestroy.Events:Call("UpdateItemWindow")
                 end,
                 value = EasyDestroy.Enum.Actions.Mill,
             },
@@ -142,7 +142,7 @@ local function OnOptionsShow()
                 tooltip="If selected Searches will show items that can be prospected.",
                 OnClick = function(self) 
                     EasyDestroy.Data.Options.Actions = bit.bxor(EasyDestroy.Data.Options.Actions, EasyDestroy.Enum.Actions.Prospect) 
-                    EasyDestroy.UI.ItemWindow.Update()
+                    EasyDestroy.Events:Call("UpdateItemWindow")
                 end,
                 value = EasyDestroy.Enum.Actions.Prospect,
             },

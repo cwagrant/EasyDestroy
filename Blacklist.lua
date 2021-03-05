@@ -1,5 +1,4 @@
 local frame = CreateFrame("Frame", "ED_Blacklist", InterfaceOptionsFramePanelContainer)
-local needsUpdate = false
 frame.name = "Blacklist"
 frame.parent = EasyDestroy.AddonName
 frame:Hide()
@@ -75,8 +74,6 @@ local function OnClickBagItem(self, button)
 
     EasyDestroy.API.Blacklist.AddItem(self.item)
 
-    needsUpdate = true
-
 end
 
 local function OnClickBlacklistItem(self, button)
@@ -139,20 +136,7 @@ local function OnFrameShow()
     itemsInBags:ScrollUpdate()
     itemsInBlacklist:ScrollUpdate()
 
-    frame:SetScript("OnUpdate", function()
-        if needsUpdate == true then 
-            -- itemsInBags.UpdateItemList = true
-            -- itemsInBags:ScrollUpdate()
-
-            -- itemsInBlacklist.UpdateItemList = true
-            -- itemsInBlacklist:ScrollUpdate()
-            EasyDestroy.UI.UpdateBlacklistWindow()
-            needsUpdate = false
-        end
-    end)
-
-
-    EasyDestroy.RegisterCallback(frame, "BlacklistUpdated", function()
+    EasyDestroy.RegisterCallback(frame, "ED_UpdateBlacklist", function()
         itemsInBags.UpdateItemList = true
         itemsInBags:ScrollUpdate()
         itemsInBlacklist.UpdateItemList = true

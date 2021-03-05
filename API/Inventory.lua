@@ -314,8 +314,8 @@ function _API.Initialize()
 
     if initialized then return end
 
-    EasyDestroy:RegisterCallback("UpdateInventory", UpdateInventory)
-    EasyDestroy:RegisterCallback("RestackItems", RestackItemsInQueue)
+    EasyDestroy.RegisterCallback(_API, "UpdateInventory", UpdateInventory)
+    EasyDestroy.RegisterCallback(_API, "RestackItems", RestackItemsInQueue)
 
     initialized = true
     UpdateInventory()

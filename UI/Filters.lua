@@ -7,8 +7,8 @@ local protected  = {}
 
 -- Filter Selection (saved filters)
 FiltersFrame.FilterDropDown = EasyDestroyDropDown
-FiltersFrame.FilterDropDown.SearchesCheckbutton = EasyDestroyFrameSearch.Types.Search
-FiltersFrame.FilterDropDown.BlacklistsCheckbutton = EasyDestroyFrameSearch.Types.Blacklist
+FiltersFrame.Blacklists = EasyDestroyFrame.FilterSelection.Types.Blacklist
+FiltersFrame.Searches = EasyDestroyFrame.FilterSelection.Types.Search
 
 -- Filter Editing (CRUD)
 FiltersFrame.FilterName = EasyDestroyFilterSettings.FilterName
@@ -27,14 +27,61 @@ function FiltersFrame.__init()
 
     if initialized then return end 
 
-    EasyDestroy:RegisterCallback("FiltersUpdated", FiltersFrame.Initialize_FilterDropDown)
+	StaticPopupDialogs["ED_CONFIRM_DELETE_FILTER"] = {
+		text = "Are you sure you wish to delete filter %s?",
+		button1 = "Yes",
+		button2 = "No",
+		OnAccept = protected.DeleteFilterOnClick,
+		timeout = 30,
+		whileDead = false,
+		hideOnEscape = true,
+		preferredIndex = 3,
+	}
 
-	FiltersFrame.FilterDropDown.SearchesCheckbutton:SetScript("OnClick", protected.FilterTypesOnClick)
-	FiltersFrame.FilterDropDown.BlacklistsCheckbutton:SetScript("OnClick", protected.FilterTypesOnClick)
+	StaticPopupDialogs["ED_FILTER_RENAME"] = {
+		text = "You must give this filter a unique name.",
+		hasEditBox = true,
+		button1 = "Rename",
+		button2 = "Cancel",
+		OnAccept = function(self) FiltersFrame.SetFilterName(self.editBox:GetText()); protected.SaveFilterAsOnClick(); end, 
+		timeout = 30,
+		whileDead = false,
+		hideOnEscape = true,
+		preferredIndex = 3,
+	}
+
+	StaticPopupDialogs["ED_CONFIRM_NEW_FAVORITE"] = {
+		text = "You already have a favorite filter. Do you want to make this your new favorite filter?",
+		button1 = "Yes",
+		button2 = "No",
+		OnAccept = function(self) protected.SaveFilterOnClick(true) end,
+		OnCancel = function(self) FiltersFrame.Favorite:SetChecked(false) end,
+		timeout = 30,
+		whileDead = false,
+		hideOnEscape = true,
+		preferredIndex = 3,
+	}
+
+	UIDropDownMenu_Initialize(EasyDestroyDropDown, EasyDestroy.UI.Filters.Initialize_FilterDropDown)
+	EasyDestroyFrame.LoadUserFavorite()
+
+	UIDropDownMenu_Initialize(FiltersFrame.CriteriaDropdown, FiltersFrame.Initialize_CriteriaDropDown)
+
+    EasyDestroy.RegisterCallback(FiltersFrame.FilterDropDown, "ED_FILTERS_AVAILABLE_CHANGED", FiltersFrame.Initialize_FilterDropDown)
+	EasyDestroy.RegisterCallback(FiltersFrame.CriteriaDropdown, "ED_CRITERIA_AVAILABLE_CHANGED", FiltersFrame.Initialize_CriteriaDropDown)
+
+
+	FiltersFrame.Searches.Checkbutton:SetScript("OnClick", protected.FilterTypesOnClick)
+	FiltersFrame.Blacklists.Checkbutton:SetScript("OnClick", protected.FilterTypesOnClick)
+
+	FiltersFrame.FilterType:SetScript("OnClick", protected.FilterTypeOnClick)
 
 	FiltersFrame.Buttons.NewFilter:SetScript("OnClick", protected.NewOnClick)
 	FiltersFrame.Buttons.SaveFilterAs:SetScript("OnClick", protected.SaveFilterAsOnClick)
-	FiltersFrame.Buttons.DeleteFilter:SetScript("OnClick", function() StaticPopup_Show("ED_CONFIRM_DELETE_FILTER", EasyDestroy.UI.GetFilterName()) end)
+	FiltersFrame.Buttons.DeleteFilter:SetScript("OnClick", function() 
+		local dialog = StaticPopup_Show("ED_CONFIRM_DELETE_FILTER", FiltersFrame.GetFilterName()) 
+		dialog.source = FiltersFrame
+	end)
 	FiltersFrame.Buttons.SaveFilter:SetScript("OnClick", protected.SaveFilterOnClick)
     
     initialized = true
@@ -124,8 +171,8 @@ end
 
 function FiltersFrame.SelectAllFilterTypes()
 
-	FiltersFrame.FilterDropDown.BlacklistsCheckbutton:SetChecked(true)
-	FiltersFrame.FilterDropDown.SearchesCheckbutton:SetChecked(true)
+	FiltersFrame.Blacklists:SetChecked(true)
+	FiltersFrame.Searches:SetChecked(true)
 	
 end
 
@@ -139,13 +186,13 @@ end
 
 function FiltersFrame.IncludeBlacklists()
 
-	return FiltersFrame.FilterDropDown.BlacklistsCheckbutton:GetChecked()
+	return FiltersFrame.Blacklists:GetChecked()
 
 end
 
 function FiltersFrame.IncludeSearches()
 
-	return FiltersFrame.FilterDropDown.SearchesCheckbutton:GetChecked()
+	return FiltersFrame.Searches:GetChecked()
 
 end
 
@@ -394,6 +441,28 @@ end
 --[[ UI Event Handlers ]]
 -- #####################################
 
+function protected.FilterTypeOnClick(self)
+
+
+    --if EasyDestroyFilterSettings.Blacklist:GetChecked() and EasyDestroyFilterSettings.Favorite:GetChecked() then 
+    if FiltersFrame.GetFilterType() == ED_FILTER_TYPE_BLACKLIST and FiltersFrame.GetFavoriteChecked() then
+        StaticPopup_Show("ED_BLACKLIST_NO_FAVORITE") 
+    end  
+
+    if not FiltersFrame:IncludeBlacklists() or not FiltersFrame:IncludeSearches() then
+        StaticPopup_Show("ED_SHOW_ALL_FILTERS")
+    end
+
+    if self:GetChecked() and FiltersFrame.Favorite:IsEnabled() then
+        FiltersFrame.Favorite:Disable()
+    elseif not self:GetChecked() and not FiltersFrame.Favorite:IsEnabled() then
+        FiltersFrame.Favorite:Enable()
+    end
+
+    EasyDestroy.FilterChanged = true
+
+end 
+
 function protected.FilterTypesOnClick()
 
     EasyDestroy.Debug(FiltersFrame.name, "FilterTypesOnClick")
@@ -402,13 +471,13 @@ function protected.FilterTypesOnClick()
 	local favoriteID = EasyDestroy.Favorites.GetFavorite()
 
 	if not(FiltersFrame:IncludeSearches()) and not(FiltersFrame:IncludeBlacklists()) then
-		UIDropDownMenu_SetText(EasyDestroyDropDown, 'You must select at least one type of filter.')
+		UIDropDownMenu_SetText(EasyDestroyFrame.FilterSelection.DropDown, 'You must select at least one type of filter.')
 	elseif FiltersFrame:IncludeSearches() and favoriteID then
-		UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, favoriteID)
-		EasyDestroy.UI.LoadFilter(favoriteID)
+		UIDropDownMenu_SetSelectedValue(EasyDestroyFrame.FilterSelection.DropDown, favoriteID)
+		FiltersFrame.LoadFilter(favoriteID)
 		EasyDestroy_Refresh()
 	else
-		UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, 0)
+		UIDropDownMenu_SetSelectedValue(EasyDestroyFrame.FilterSelection.DropDown, 0)
 	end
 
 end
@@ -421,10 +490,10 @@ function protected.FilterDropDownOnSelect(self, arg1, arg2, checked)
 
 	UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, self.value)
 	if self.value == 0 then
-		EasyDestroy.UI.ClearFilter()
+		FiltersFrame.ClearFilter()
 		EasyDestroy.CurrentFilter = EasyDestroy.EmptyFilter
 	else
-		EasyDestroy.UI.LoadFilter(self.value)
+		FiltersFrame.LoadFilter(self.value)
 		EasyDestroy.CurrentFilter = EasyDestroy.Data.Filters[self.value]
 		EasyDestroy.CurrentFilter.fid = self.value
 	end
@@ -491,7 +560,7 @@ function protected.NewOnClick()
 	UIDropDownMenu_SetSelectedValue(FiltersFrame.FilterDropDown, 0) 
 
 	if FiltersFrame:IncludeBlacklists() and not FiltersFrame:IncludeSearches() then
-		FiltersFrame.FilterDropDown.SearchesCheckbutton:SetChecked(true)
+		FiltersFrame.Searches:SetChecked(true)
 	end
 	
 	EasyDestroy.FilterChanged = true
@@ -524,7 +593,7 @@ function protected.SaveFilterOnClick(skipFavoriteCheck)
 	-- if error and error is type favorite and we have alredy warned them OR it is valid, then we save the filter
 	elseif (not valid and validationErrorType == ED_ERROR_FAVORITE) or valid then
 
-        filter:SetProperties(EasyDestroy.UI.GetFilterProperties())
+        filter:SetProperties(FiltersFrame.GetFilterProperties())
         -- EasyDestroy.UpdateFilterProperties(filter)
 		EasyDestroy.Debug("Saving filter")
 		if EasyDestroy.DebugActive then
@@ -534,9 +603,11 @@ function protected.SaveFilterOnClick(skipFavoriteCheck)
 			EasyDestroy.Favorites.UnsetFavorite()
 			filter:SetFavorite(true)
 		end
-		filter:SaveToData()
 
-        EasyDestroy.UI.ReloadFilter(filter.filterID)
+		filter:SetCriteria(FiltersFrame.GetCriteria())
+		EasyDestroy.API.Filters.SaveFilter(filter)
+
+        FiltersFrame.ReloadFilter(filter.filterID)
 
 
 	else
@@ -566,7 +637,8 @@ function protected.SaveFilterAsOnClick()
 
 	-- if not valid because the current filter is the favorite OR if valid, save
 	elseif (not valid and validationErrorType == ED_ERROR_FAVORITE) or valid then
-		filter:SaveToData()
+		filter:SetCriteria(FiltersFrame:GetCriteria())
+		EasyDestroy.API.Filters.SaveFilter(filter)
 
 	else
 		print("UNKNOWN ERROR when saving Filter " .. filter.properties.name)
@@ -588,10 +660,9 @@ function protected.DeleteFilterOnClick()
 
 	-- when deleting a filter, we need to make sure to clear it from the cache.
 	if EasyDestroy.Cache.FilterCache and EasyDestroy.Cache.FilterCache[FilterID] then
+		EasyDestroy.API.Filters.DeleteFilter(FilterID)
 		EasyDestroy.Cache.FilterCache[FilterID] = nil
 	end
-
-	EasyDestroy.UI.FilterDropDown.Update()
 
 	local favoriteID =  EasyDestroy.Favorites.GetFavorite()
 
@@ -602,13 +673,11 @@ function protected.DeleteFilterOnClick()
 
 	if favoriteID ~= nil then
 		UIDropDownMenu_SetSelectedValue(FiltersFrame.FilterDropDown, favoriteID)
-		EasyDestroy.UI.LoadFilter(favoriteID)
+		FiltersFrame.LoadFilter(favoriteID)
 	else
 		UIDropDownMenu_SetSelectedValue(FiltersFrame.FilterDropDown, 0)
-		EasyDestroy.UI.ClearFilter()
+		FiltersFrame.ClearFilter()
 	end
-
-	EasyDestroy.FilterChanged = true
 
 end
 

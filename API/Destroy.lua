@@ -23,14 +23,14 @@ function _API.DestroyItem(item)
 
 	EasyDestroy.Debug("EasyDestroy.API.DestroyItem", item.itemLink)
 
-	local action = EasyDestroy.API.GetDestroyActionForItem(item)
+	local action =_API.GetDestroyActionForItem(item)
 
 	if action then
 
 		local ActionDict = EasyDestroy.Dict.Actions[action]
 		local spellname = GetSpellInfo(ActionDict.spellID)
 
-		local bag, slot = EasyDestroy.API.FindTradegoodInBags(item)
+		local bag, slot = EasyDestroy.API.Inventory.FindTradegoodInBags(item)
 
 		EasyDestroyButton:SetAttribute("*type1", "macro")
 		EasyDestroyButton:SetAttribute("macrotext", string.format(EasyDestroy.Dict.Strings.DestroyMacro, spellname, bag, slot))

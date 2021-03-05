@@ -112,4 +112,4 @@ function filter:Clear()
     end
 end
 
-EasyDestroy:RegisterCriterion(filter)
+EasyDestroy.API.Filters.RegisterCriteria(filter)

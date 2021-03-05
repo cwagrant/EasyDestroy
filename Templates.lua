@@ -227,7 +227,6 @@ function EasyDestroyScrollMixin:ScrollUpdate(callbackFunction)
             frame:RegisterForClicks("LeftButtonUp", "RightButtonUp")
             frame:UpdateItemFrame(frame.item, self.ChildOnClick or nil)
             frame:Show()
-            -- needsUpdate = true
         else
             frame:HideItemFrame()
 		end

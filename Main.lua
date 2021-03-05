@@ -28,7 +28,6 @@ function EasyDestroy_EventHandler(self, event, ...)
 
 			EasyDestroy.Events:Call("UpdateInventory")
 				:Call("UpdateItemWindow", true, function() EasyDestroyButton:Enable() end)
-			-- EasyDestroy.UI.ItemWindow.Update(function() EasyDestroyButton:Enable() end)
 
 
 		end
@@ -48,7 +47,6 @@ function EasyDestroy_EventHandler(self, event, ...)
 					EasyDestroy.Debug("EventHandler", "Straight To Jail")
 					if EasyDestroy.UI.GetCurrentItem() then 
 						EasyDestroy.API.Blacklist.AddItem(EasyDestroy.UI.GetCurrentItem())
-						EasyDestroy.UI.ItemWindow.Update()
 					end
 				end
 				EasyDestroy.ButtonWasClicked = false
@@ -104,7 +102,7 @@ function EasyDestroy_EventHandler(self, event, ...)
 		local name = ...
 		if name == EasyDestroy.AddonName then
 			EasyDestroy.AddonLoaded = true
-			EasyDestroy.UI.Initialize()
+			EasyDestroyFrame.__init()
 
 			if EasyDestroyData then 
 				EasyDestroy.Data = EasyDestroyData
@@ -138,10 +136,7 @@ function EasyDestroy_EventHandler(self, event, ...)
 				EasyDestroy.Data.Options.CharacterFavorites = false
 			end
 			-- "Post"-Initialization functions that need to occur once data has been loaded
-
-			UIDropDownMenu_Initialize(EasyDestroyDropDown, EasyDestroy.UI.Filters.Initialize_FilterDropDown)
 			
-			EasyDestroy.UI.LoadUserFavorite()
 
 			EasyDestroy.UI.ItemWindow.__init()
 			EasyDestroy.UI.Filters.__init()
@@ -261,7 +256,7 @@ function EasyDestroy_OnUpdate(self, delay)
 		-- this makes sure the item doesn't get touched unless it will show up in the new/changed filter
 		wipe(EasyDestroy.toCombineQueue) 
 
-		EasyDestroy.UI.ItemWindow.Update()
+		EasyDestroy.Events:Call("UpdateItemWindow")
 
 		EasyDestroy.FilterChanged = false
 
@@ -316,9 +311,6 @@ function EasyDestroy_Refresh()
 	EasyDestroy.FilterChanged = true
 end
 
-EasyDestroyFrame:SetScript("OnShow", EasyDestroy.Handlers.RegisterEvents)
-EasyDestroyFrame:SetScript("OnHide", EasyDestroy.Handlers.UnregisterEvents)
-
 EasyDestroyFrame:SetScript("OnEvent", EasyDestroy_EventHandler)
 EasyDestroyFrame:SetScript("OnUpdate", EasyDestroy_OnUpdate)
 
@@ -327,16 +319,6 @@ EasyDestroyButton:SetScript("PostClick", function(self)
 	EasyDestroyButton:SetAttribute("macrotext", "")	
 	EasyDestroy.ButtonWasClicked = true
 end)
-
--- EasyDestroyButton:HookScript("OnClick", EasyDestroy.Handlers.DestroyPreClick)
-
--- EasyDestroyFrameSearchTypes.Search.Checkbutton:SetScript("OnClick", EasyDestroy.Handlers.FilterTypesOnClick)
--- EasyDestroyFrameSearchTypes.Blacklist.Checkbutton:SetScript("OnClick", EasyDestroy.Handlers.FilterTypesOnClick)
-
--- EasyDestroyFilters_Save:SetScript("OnClick", function() EasyDestroy.Handlers.SaveFilterOnClick() end)
--- EasyDestroyFilters_Delete:SetScript("OnClick", function() StaticPopup_Show("ED_CONFIRM_DELETE_FILTER", EasyDestroy.UI.GetFilterName()) end)
--- EasyDestroyFilters_NewFromFilter:SetScript("OnClick", EasyDestroy.Handlers.CopyFilterOnClick)
--- EasyDestroyFilters_New:SetScript("OnClick", EasyDestroy.Handlers.NewOnClick)
 
 EasyDestroy_ToggleConfigurator:SetScript("OnClick", function() 
 	if EasyDestroyConfiguration:IsVisible() then 

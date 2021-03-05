@@ -7,7 +7,7 @@ function _API.AddSessionItem(item)
 	
 	tinsert(EasyDestroy.SessionBlacklist, item:ToTable())
 
-	EasyDestroy.Events:Fire("BlacklistUpdated")
+	EasyDestroy.Events:Fire("ED_UpdateBlacklist")
 
 end
 
@@ -31,7 +31,7 @@ function _API.AddItem(item)
 	
 	tinsert(EasyDestroy.Data.Blacklist, item:ToTable())
 
-	EasyDestroy.Events:Fire("BlacklistUpdated")
+	EasyDestroy.Events:Fire("ED_UpdateBlacklist")
 
 end
 
@@ -76,7 +76,7 @@ function _API.RemoveItem(item)
         end
     end
 
-	EasyDestroy.Events:Fire("BlacklistUpdated")
+	EasyDestroy.Events:Fire("ED_UpdateBlacklist")
 
 end
 

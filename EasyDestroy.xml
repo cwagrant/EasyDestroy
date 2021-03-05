@@ -25,7 +25,7 @@
 				<Anchor point="BOTTOMRIGHT" relativeTo="EasyDestroyFrameTitleBG"/>
 			</Anchors>
 		</Frame>
-		<Frame name="EasyDestroyItems" inherits="BackdropTemplate">
+		<Frame name="EasyDestroyItems" parentKey="ItemsFrame" inherits="BackdropTemplate">
 			<Size>
 				<AbsDimension x="0" y="200"/>
 			</Size>
@@ -36,7 +36,7 @@
 			
 			<!-- Scroll Frame Buttons -->
 			<Frames>
-				<Frame name="EasyDestroyItemsFrame" inherits="EasyDestroyItemScrollTemplate" mixin="EasyDestroyScrollMixin">
+				<Frame name="EasyDestroyItemsFrame" parentkey="ItemWindow" inherits="EasyDestroyItemScrollTemplate" mixin="EasyDestroyScrollMixin">
 					<Anchors>
 						<Anchor point="TOPLEFT" x="4"/>
 						<Anchor point="BOTTOMRIGHT" x="-4"/>
@@ -44,7 +44,7 @@
 				</Frame>
 			</Frames>
 		</Frame>
-		<Frame name="EasyDestroyFrameSearch">
+		<Frame name="EasyDestroyFrameSearch" parentKey="FilterSelection">
 			<Anchors>
 				<Anchor point="TOP" relativeTo="EasyDestroyItems" relativePoint="BOTTOM"/>
 				<Anchor point="LEFT" relativeTo="EasyDestroyFrameDialogBG"/>
@@ -63,7 +63,7 @@
 						<AbsDimension x="0" y="20"/>
 					</Size>
 					<Frames>
-						<CheckButton name="$parentSearch" parentKey="Search" parentArray="Types" inherits="EasyDestroyFramedCheckboxTemplate">
+						<CheckButton name="$parentSearch" parentKey="Search" inherits="EasyDestroyFramedCheckboxTemplate">
 							<Anchors>
 								<Anchor point="TOPLEFT" x="20" y="0"/>
 							</Anchors>
@@ -73,7 +73,7 @@
 								</OnClick>
 							</Scripts>
 						</CheckButton>
-						<CheckButton name="$parentBlacklist" inherits="EasyDestroyFramedCheckboxTemplate" parentKey="Blacklist" parentArray="Types" >
+						<CheckButton name="$parentBlacklist" inherits="EasyDestroyFramedCheckboxTemplate" parentKey="Blacklist">
 							<Anchors>
 								<Anchor point="LEFT" relativeTo="$parentSearch" relativePoint="RIGHT" x="20" y="0"/>
 							</Anchors>
@@ -103,13 +103,13 @@
 			</Backdrop>
 		</Frame>
 
-		<Frame name="EasyDestroyConfiguration">
+		<Frame name="EasyDestroyConfiguration" parentKey="FilterConfiguration">
 			<Anchors>
 				<Anchor point="TOPLEFT" relativeTo="EasyDestroyFrameSearch" relativePoint="BOTTOMLEFT"/>
 				<Anchor point="BOTTOMRIGHT" relativeTo="$parentDialogBG" x="0" y="40"/>
 			</Anchors>
 			<Frames>
-				<Frame name="EasyDestroySelectedFilters" inherits="BackdropTemplate">
+				<Frame name="EasyDestroySelectedFilters" parentKey="CriteriaWindow" inherits="BackdropTemplate">
 					<Anchors>
 						<Anchor point="TOPLEFT" relativeTo="$parent" relativePoint="TOP" x="0" y="-10"/>
 						<Anchor point="BOTTOMRIGHT" relativeTo="$parent" x="-30" y="10"/>
@@ -146,7 +146,7 @@
 					</Frames>
 				</Frame>
 
-				<Frame name="EasyDestroyFilterSettings">
+				<Frame name="EasyDestroyFilterSettings" parentKey="Settings">
 					<Anchors>
 						<Anchor point="TOPLEFT" relativeTo="$parent" relativePoint="TOPLEFT" x="10" y="-10"/>
 						<Anchor point="BOTTOMRIGHT" relativeTo="EasyDestroySelectedFilters" relativePoint="BOTTOMLEFT" x="-10"/>

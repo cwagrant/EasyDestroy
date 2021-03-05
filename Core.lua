@@ -31,6 +31,7 @@ end
 	UpdateBlacklist - fires when modifications are made to Item and Session Blacklists
 	UpdateCriteria - fires when filter criteria are changed
 	UpdateFilters - fires when a filter is saved or deleted
+	ED_NEW_CRITERIA_AVAILABLE - fires when a new criterion is registered
 
 
 
@@ -115,6 +116,19 @@ function EasyDestroy.ItemTypeFilterByFlags(flag)
 	end
 
 	return out
+
+end
+
+function EasyDestroy.EasyDestroyCacheID(bag, slot, link)
+	
+	-- Create Cache ID from bag, slot, quality, and item link
+
+	if type(bag) ~= "number" or type(slot) ~= "number" or type(link) ~= "string" then 
+		error(
+			string.format("Usage: EasyDestroy.EasyDestroyCacheID(bag, slot, itemLink)\n (%s, %s, %s)", bag or "nil", slot or "nil", link or "nil")
+		)
+	end
+	return string.format("%i:%i:%s", bag, slot, link)
 
 end
 
