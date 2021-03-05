@@ -9,11 +9,37 @@ EasyDestroy.Data = {}
 EasyDestroy.UI = {}
 EasyDestroy.Handlers = {}
 EasyDestroy.API = {}
+EasyDestroy.CallbackHandler = {}
+
+
+EasyDestroy.Events = LibStub("CallbackHandler-1.0"):New(EasyDestroy)
+
+function EasyDestroy.Events:Call(...)
+
+	-- Simple wrapper around fire that returns itself so that we can chain event firing
+
+	EasyDestroy.Events:Fire(...)
+
+	return self
+
+end
+--[[
+	Events:
+
+	UpdateInventory - fires after bag updates when EasyDestroy is visible.
+	UpdateInventoryDelayed - fires after Inventory is updated
+	UpdateBlacklist - fires when modifications are made to Item and Session Blacklists
+	UpdateCriteria - fires when filter criteria are changed
+	UpdateFilters - fires when a filter is saved or deleted
+
+
+
+]]
 
 
 --[[ Settings/Info ]]
 EasyDestroy.Version =  GetAddOnMetadata("EasyDestroy", "version")
-EasyDestroy.DebugActive = false
+EasyDestroy.DebugActive = true
 EasyDestroy.AddonName = "EasyDestroy"
 EasyDestroy.AddonLoaded = false
 -- This is the name of the frame that filter types attach to for scrolling
@@ -78,7 +104,7 @@ function EasyDestroy.ItemTypeFilterByFlags(flag)
 	local out = {}
 
 	if flag == nil then flag = EasyDestroy.Enum.Actions.Disenchant end 
-	
+
 	for k, v in pairs(EasyDestroy.Dict.Actions) do 
 		local chk = bit.band(k, flag)
 		if chk > 0 then

@@ -296,6 +296,12 @@ function EasyDestroyFilter:SetName(name)
     end
 end
 
+function EasyDestroyFilter:GetFilterID()
+
+    return self.filterID
+
+end
+
 function EasyDestroyFilter:GetName()
     if self.name and type(self.name) == "string" then
         return self.name

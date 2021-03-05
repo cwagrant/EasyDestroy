@@ -1,49 +1,3 @@
---[[
-
-    This file will cover the functions that are used by the various buttons, boxes, and other
-    interface pieces that a user might interact with.
-
-]]
--- EasyDestroy_DropDownSelect
-function EasyDestroy.Handlers.FilterDropDownOnSelect(self, arg1, arg2, checked)
-
-    -- Handler for EasyDestroy.UI.FilterDropDown selections
-
-    EasyDestroy.Debug("EasyDestroy.Handlers.FilterDropDownOnSelect", self.value)
-
-	UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, self.value)
-	if self.value == 0 then
-		EasyDestroy.UI.ClearFilter()
-		EasyDestroy.CurrentFilter = EasyDestroy.EmptyFilter
-	else
-		EasyDestroy.UI.LoadFilter(self.value)
-		EasyDestroy.CurrentFilter = EasyDestroy.Data.Filters[self.value]
-		EasyDestroy.CurrentFilter.fid = self.value
-	end
-	EasyDestroy_Refresh()
-
-end
-
--- EasyDestroySearchTypes_OnClick
-function EasyDestroy.Handlers.FilterTypesOnClick()
-
-    EasyDestroy.Debug("EasyDestroy.Handlers.FilterTypesOnClick")
-
-	EasyDestroy.UI.FilterDropDown.Initialize()
-	local favoriteID = EasyDestroy.Favorites.GetFavorite()
-
-	if not(EasyDestroy:IncludeSearches()) and not(EasyDestroy:IncludeBlacklists()) then
-		UIDropDownMenu_SetText(EasyDestroyDropDown, 'You must select at least one type of filter.')
-	elseif EasyDestroy:IncludeSearches() and favoriteID then
-		UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, favoriteID)
-		EasyDestroy.UI.LoadFilter(favoriteID)
-		EasyDestroy_Refresh()
-	else
-		UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, 0)
-	end
-
-end
-
 --EasyDestroyFilters_SaveFilter
 function EasyDestroy.Handlers.SaveFilterOnClick(skipFavoriteCheck)
 	
@@ -159,75 +113,6 @@ function EasyDestroy.Handlers.DeleteFilterOnClick()
 
 end
 
--- EasyDestroyFilters.SelectFilterTypes
-function EasyDestroy.Handlers.CriteriaDropDownOnSelect(self, arg1, arg2, checked)
-
-    -- Handler for EasyDestroy.UI.CriteriaDropdown
-
-	local selectedValue = self.value
-	local selectedFilter = EasyDestroy.CriteriaRegistry[selectedValue]
-	UIDropDownMenu_SetText(EasyDestroyFilterTypes, EasyDestroy.Dict.Strings.CriteriaSelectionDropdown)
-
-	if checked then 
-		local frame = selectedFilter:GetFilterFrame()
-		local lastFrame = nil
-		local scrollFrame = _G[EDFILTER_SCROLL_CHILD]
-		if EasyDestroy.CriteriaStack[#EasyDestroy.CriteriaStack] and EasyDestroy.CriteriaStack[#EasyDestroy.CriteriaStack].frame then
-			lastFrame = EasyDestroy.CriteriaStack[#EasyDestroy.CriteriaStack].frame
-		else
-			lastFrame = nil 
-		end
-		frame:ClearAllPoints()
-		frame:SetPoint("LEFT", scrollFrame, 4, 0)
-		frame:SetPoint("RIGHT", scrollFrame, -4, 0)
-
-		if lastFrame == nil then 
-			lastFrame = scrollFrame
-			frame:SetPoint("TOPLEFT", scrollFrame)
-		else
-			frame:SetPoint("TOP", lastFrame, "BOTTOM")
-		end
-
-		frame:SetHeight(selectedFilter.height)
-		frame:Show()
-		tinsert(EasyDestroy.CriteriaStack, selectedFilter)
-		lastFrame = frame
-	else
-		local frame = selectedFilter:GetFilterFrame()
-		for k, v in ipairs(EasyDestroy.CriteriaStack) do
-			if v.key == selectedFilter.key then
-				v.frame:Hide()
-				v:Clear()
-				tremove(EasyDestroy.CriteriaStack, k)
-			end
-		end
-	end
-	EasyDestroy.UI.CriteriaWindow.PlaceCriteria()
-	EasyDestroy_Refresh()
-end
-
-function EasyDestroy.Handlers.FilterTypeOnClick(self)
-
-
-    --if EasyDestroyFilterSettings.Blacklist:GetChecked() and EasyDestroyFilterSettings.Favorite:GetChecked() then 
-    if EasyDestroy.UI.GetFilterType() == ED_FILTER_TYPE_BLACKLIST and EasyDestroy.UI.GetFavoriteChecked() then
-        StaticPopup_Show("ED_BLACKLIST_NO_FAVORITE") 
-    end  
-
-    if not EasyDestroy.IncludeBlacklists() or not EasyDestroy.IncludeSearches() then
-        StaticPopup_Show("ED_SHOW_ALL_FILTERS")
-    end
-
-    if self:GetChecked() and EasyDestroy.UI.Favorite:IsEnabled() then
-        EasyDestroy.UI.Favorite:Disable()
-    elseif not self:GetChecked() and not EasyDestroyFilterSettings.Favorite:IsEnabled() then
-        EasyDestroy.UI.Favorite:Enable()
-    end
-
-    EasyDestroy.FilterChanged = true
-
-end 
-
 function EasyDestroy.Handlers.DestroyPreClick(self)
 
 	EasyDestroy.Debug("EasyDestroy.Handlers.DestroyPreClick")
@@ -281,14 +166,6 @@ function EasyDestroy.Handlers.DestroyPreClick(self)
 
 	EasyDestroy.Debug("EasyDestroy.Handlers.DestroyPreClick", iteminfo.itemLink)
 	EasyDestroy.API.DestroyItem(iteminfo)
-
-end
-
-function EasyDestroy.Handlers.OnCriteriaUpdate()
-
-	-- If our filter was updated, we'll need to tell the system to update.
-
-	EasyDestroy.FilterChanged = true
 
 end
 

@@ -18,12 +18,21 @@ Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
 Libs\LibDBIcon-1.0\lib.xml
 
 Core.lua
+
+API\Inventory.lua
+API\Filters.lua
+API\Blacklist.lua
+
 Options.lua
 Classes.lua
 Data.lua
 Templates.xml
 EasyDestroy.xml
 UI.lua
+
+UI\ItemWindow.lua
+UI\Filters.lua
+
 Handlers.lua
 EasyDestroy.lua
 Favorites.lua
@@ -41,3 +50,4 @@ filters\count.lua
 
 Blacklist.lua
 AddOnSkin.lua
+

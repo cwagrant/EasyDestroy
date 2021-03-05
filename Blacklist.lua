@@ -1,5 +1,3 @@
-EasyDestroy = EasyDestroy
-
 local frame = CreateFrame("Frame", "ED_Blacklist", InterfaceOptionsFramePanelContainer)
 local needsUpdate = false
 frame.name = "Blacklist"
@@ -9,7 +7,7 @@ frame:Hide()
 local function GetItemsInBags()
     local itemList = {}
 
-    for i, item in ipairs(EasyDestroy.GetBagItems()) do
+    for i, item in ipairs(EasyDestroy.API.Inventory.GetInventory()) do
 		local matchfound = nil
 		local typematch = false
 
@@ -152,6 +150,20 @@ local function OnFrameShow()
             needsUpdate = false
         end
     end)
+
+
+    EasyDestroy.RegisterCallback(frame, "BlacklistUpdated", function()
+        itemsInBags.UpdateItemList = true
+        itemsInBags:ScrollUpdate()
+        itemsInBlacklist.UpdateItemList = true
+        itemsInBlacklist:ScrollUpdate()
+    end)
+
+    EasyDestroy.RegisterCallback(frame, "InventoryChanged", function()
+        itemsInBags.UpdateItemList = true
+        itemsInBags:ScrollUpdate()
+    end)
+
 
     -- Only run this code the very first time we show the frame
     frame:SetScript("OnShow", nil)

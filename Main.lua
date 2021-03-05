@@ -26,9 +26,9 @@ function EasyDestroy_EventHandler(self, event, ...)
 			-- As long as we're not the ones changing the users bags, lets upate our 
 			-- windows and lists and make sure to reenable the button if it's disabled
 
-			EasyDestroy.BagsUpdated = true 
-
-			EasyDestroy.UI.ItemWindow.Update(function() EasyDestroyButton:Enable() end)
+			EasyDestroy.Events:Call("UpdateInventory")
+				:Call("UpdateItemWindow", true, function() EasyDestroyButton:Enable() end)
+			-- EasyDestroy.UI.ItemWindow.Update(function() EasyDestroyButton:Enable() end)
 
 
 		end
@@ -139,9 +139,12 @@ function EasyDestroy_EventHandler(self, event, ...)
 			end
 			-- "Post"-Initialization functions that need to occur once data has been loaded
 
-			UIDropDownMenu_Initialize(EasyDestroyDropDown, EasyDestroy.UI.FilterDropDown.Initialize)
+			UIDropDownMenu_Initialize(EasyDestroyDropDown, EasyDestroy.UI.Filters.Initialize_FilterDropDown)
 			
 			EasyDestroy.UI.LoadUserFavorite()
+
+			EasyDestroy.UI.ItemWindow.__init()
+			EasyDestroy.UI.Filters.__init()
 
 			EasyDestroy.BagsUpdated = true
 
@@ -327,13 +330,13 @@ end)
 
 -- EasyDestroyButton:HookScript("OnClick", EasyDestroy.Handlers.DestroyPreClick)
 
-EasyDestroyFrameSearchTypes.Search.Checkbutton:SetScript("OnClick", EasyDestroy.Handlers.FilterTypesOnClick)
-EasyDestroyFrameSearchTypes.Blacklist.Checkbutton:SetScript("OnClick", EasyDestroy.Handlers.FilterTypesOnClick)
+-- EasyDestroyFrameSearchTypes.Search.Checkbutton:SetScript("OnClick", EasyDestroy.Handlers.FilterTypesOnClick)
+-- EasyDestroyFrameSearchTypes.Blacklist.Checkbutton:SetScript("OnClick", EasyDestroy.Handlers.FilterTypesOnClick)
 
-EasyDestroyFilters_Save:SetScript("OnClick", function() EasyDestroy.Handlers.SaveFilterOnClick() end)
-EasyDestroyFilters_Delete:SetScript("OnClick", function() StaticPopup_Show("ED_CONFIRM_DELETE_FILTER", EasyDestroy.UI.GetFilterName()) end)
-EasyDestroyFilters_NewFromFilter:SetScript("OnClick", EasyDestroy.Handlers.CopyFilterOnClick)
-EasyDestroyFilters_New:SetScript("OnClick", EasyDestroy.Handlers.NewOnClick)
+-- EasyDestroyFilters_Save:SetScript("OnClick", function() EasyDestroy.Handlers.SaveFilterOnClick() end)
+-- EasyDestroyFilters_Delete:SetScript("OnClick", function() StaticPopup_Show("ED_CONFIRM_DELETE_FILTER", EasyDestroy.UI.GetFilterName()) end)
+-- EasyDestroyFilters_NewFromFilter:SetScript("OnClick", EasyDestroy.Handlers.CopyFilterOnClick)
+-- EasyDestroyFilters_New:SetScript("OnClick", EasyDestroy.Handlers.NewOnClick)
 
 EasyDestroy_ToggleConfigurator:SetScript("OnClick", function() 
 	if EasyDestroyConfiguration:IsVisible() then 

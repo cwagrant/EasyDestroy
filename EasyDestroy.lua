@@ -137,7 +137,7 @@ function EasyDestroy.API.FindWhitelistItems()
 	local items = {}
 	local filterRegistry = EasyDestroy.CriteriaRegistry
 
-	for i, item in ipairs(EasyDestroy.GetBagItems()) do
+	for i, item in ipairs(EasyDestroy.API.Inventory.GetInventory()) do
 		matchfound = nil
 		typematch = false
 
@@ -596,7 +596,7 @@ function EasyDestroy:GenerateFilter()
 
 	-- Needs to updated cached filters or create a brand new filter
 
-	local FilterID = EasyDestroy.UI.GetSelectedFilter()
+	local FilterID = EasyDestroy.UI.Filters.GetSelectedFilter()
 	local filter, ftype
 	
 	if EasyDestroy.Cache.FilterCache and EasyDestroy.Cache.FilterCache[FilterID] then
@@ -626,77 +626,6 @@ function EasyDestroy.FindFilterWithName(filterName)
 	end
 
 	return nil
-end
-
-EasyDestroy.API.Blacklist = {}
-
-function EasyDestroy.API.Blacklist.AddSessionItem(item)
-	
-	tinsert(EasyDestroy.SessionBlacklist, item:ToTable())
-
-	EasyDestroy.UI.ItemWindow.Update()
-	EasyDestroy.UI.UpdateBlacklistWindow()
-
-end
-
-function EasyDestroy.API.Blacklist.HasSessionItem(item)
-	EasyDestroy.Debug("EasyDestroy.API.Blacklist.HasSessionItem", item:GetItemName(), item.itemID)
-
-    for k, v in ipairs(EasyDestroy.SessionBlacklist) do
-        -- if regular item, match on itemid, quality, ilvl
-        -- if legendary item, match on itemid and name
-        if v and ((v.itemid == item.itemID and v.quality == item.quality and v.ilvl == item.level) or (v.legendary and v.itemid==item.itemID and v.legendary==item:GetItemName())) then
-            return true
-        end
-    end
-
-	return false
-end
-
-function EasyDestroy.API.Blacklist.AddItem(item)
-	
-	tinsert(EasyDestroy.Data.Blacklist, item:ToTable())
-
-	EasyDestroy.UI.ItemWindow.Update()
-	EasyDestroy.UI.UpdateBlacklistWindow()
-
-end
-
-function EasyDestroy.API.Blacklist.HasItem(item)
-
-    -- Update of ItemInBlacklist to handle item objects
-
-    for k, v in ipairs(EasyDestroy.Data.Blacklist) do
-
-        if v and v.itemid and v.itemid == item:GetItemID() then
-
-            if v.legendary and v.legendary == item:GetItemName() then 
-                return true
-            elseif v.quality == item.quality and v.ilvl == item.level then
-                if v.name and v.name == item:GetItemName() then
-                    return true
-                elseif not v.name then 
-                    -- found a match on everything else, and no name is saved in the db (legacy)
-                    return true
-                end
-            end
-        end
-
-    end
-
-    return false
-
-end
-function EasyDestroy.API.Blacklist.RemoveItem(item)
-	for k, v in ipairs(EasyDestroy.Data.Blacklist) do
-        -- if regular item, match on itemid, quality, ilvl
-        -- if legendary item, match on itemid and name
-        if v and ((v.itemid == item.itemID and v.quality == item.quality and v.ilvl == item.level) or (v.legendary and v.itemid==item.itemID and v.legendary==item:GetItemName())) then
-            tremove(EasyDestroy.Data.Blacklist, k)
-			EasyDestroy.UI.ItemWindow.Update()
-			EasyDestroy.UI.UpdateBlacklistWindow()
-        end
-    end
 end
 
 function EasyDestroy.UI.ItemOnClick(self, button)

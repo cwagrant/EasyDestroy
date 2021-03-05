@@ -41,81 +41,12 @@ function EasyDestroy.UI.ItemWindow.Update(cb)
 
 		EasyDestroy.UI.ItemWindow.UpdateItemList = true
 		EasyDestroy.UI.ItemWindow:ScrollUpdate(cb)
-		EasyDestroy.UI.ItemCounter:SetText(EasyDestroy.UI.ItemWindow.ItemCount ..  " Item(s) Found")
+		EasyDestroy.UI.ItemCounter:SetText((EasyDestroy.UI.ItemWindow.ItemCount or 0) ..  " Item(s) Found")
 
 	end
 
 end
 
-
-function EasyDestroy.UI.ItemWindow:RegisterScript(frame, scriptType)
-
-	-- Register a frame's script handler to additionally run the ItemWindow.Update
-	-- Should be used by buttons/fields that will update a filter
-
-	if frame:HasScript(scriptType) then
-		frame:HookScript(scriptType, EasyDestroy.Handlers.OnCriteriaUpdate)
-	else
-		error("RegisterScript requires a valid scriptType", 2)
-	end
-
-end
-
-function EasyDestroy.UI.FilterDropDown.Initialize()
-
-    EasyDestroy.Debug("EasyDestroy.UI.FilterDropDown.Initialize")
-
-    local info = UIDropDownMenu_CreateInfo()
-	local favoriteID = nil
-	info.text, info.value, info.checked, info.func, info.owner = EasyDestroy.Dict.Strings.FilterSelectionDropdownNew, 0, false, EasyDestroy.Handlers.FilterDropDownOnSelect, EasyDestroyDropDown
-	UIDropDownMenu_AddButton(info)
-	local hasSeparator = false
-	local includeSearches, includeBlacklists = EasyDestroy:IncludeSearches(), EasyDestroy:IncludeBlacklists()
-
-	-- This monstrosity sorts by type=type and name<name or type<type
-	-- e.g. if types match, sort by name, otherwise sort by type
-	if EasyDestroy.Data.Filters then
-		for fid, filter in EasyDestroy.spairs(EasyDestroy.Data.Filters, function(t, a, b) return (t[a].properties.type == t[b].properties.type and t[a].properties.name:lower() < t[b].properties.name:lower()) or t[a].properties.type < t[b].properties.type end) do
-			info.text, info.value, info.checked, info.func, info.owner = filter.properties.name, fid, false, EasyDestroy.Handlers.FilterDropDownOnSelect, EasyDestroyDropDown
-
-			if EasyDestroy.Cache.FilterCache and not EasyDestroy.Cache.FilterCache[fid] then
-				EasyDestroy.Cache.FilterCache[fid] = EasyDestroyFilter:Load(fid)
-			end
-			
-			if EasyDestroy.DebugActive then
-				info.text = filter.properties.name .. " | " .. fid
-			end
-			if filter.properties.type == ED_FILTER_TYPE_SEARCH and includeSearches then
-				UIDropDownMenu_AddButton(info)
-				if filter.properties.favorite == true then
-					favoriteID = info.value
-				end
-			elseif filter.properties.type == ED_FILTER_TYPE_BLACKLIST and includeBlacklists then
-				if not hasSeparator and includeSearches then
-					UIDropDownMenu_AddButton(EasyDestroy.separatorInfo)
-					hasSeparator = true
-				end
-				UIDropDownMenu_AddButton(info)
-			end
-		end
-	end
-
-end
-
--- An alias for clarifying when we actually initialize the drop down vs are just updating the data in it.
-EasyDestroy.UI.FilterDropDown.Update = EasyDestroy.UI.FilterDropDown.Initialize
-
-function EasyDestroy.UI.GetSelectedFilter()
-
-    return UIDropDownMenu_GetSelectedValue(EasyDestroy.UI.FilterDropDown)
-
-end
-
-function EasyDestroy.UI.SetSelectedFilter(val)
-
-    UIDropDownMenu_SetSelectedValue(EasyDestroy.UI.FilterDropDown, val)
-
-end
 
 function EasyDestroy.UI.UpdateFilterDropDownWidth()
 
@@ -174,6 +105,8 @@ function EasyDestroy:SelectAllFilterTypes()
 	EasyDestroy.UI.FilterDropDown.SearchesCheckbutton:SetChecked(true)
 	
 end
+
+
 
 function EasyDestroy.UI.LoadUserFavorite()
 
