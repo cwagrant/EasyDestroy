@@ -228,7 +228,7 @@ local function RestackItemsInQueue()
 
     if not initialized then _API.Initialize() end
 
-	EasyDestroy.Thread = coroutine.create(EasyDestroy.API.CombineStacks)
+	EasyDestroy.Thread = coroutine.create(CombineStacks)
 
 end
 
@@ -241,7 +241,7 @@ local function UpdateInventory()
 
 	-- fires once the players inventory has been updated
 
-	EasyDestroy.Events:Fire("UpdateInventoryDelayed")
+	EasyDestroy.Events:Fire("ED_INVENTORY_UPDATED_DELAYED")
 
 end
 
@@ -314,8 +314,8 @@ function _API.Initialize()
 
     if initialized then return end
 
-    EasyDestroy.RegisterCallback(_API, "UpdateInventory", UpdateInventory)
-    EasyDestroy.RegisterCallback(_API, "RestackItems", RestackItemsInQueue)
+    EasyDestroy.RegisterCallback(_API, "ED_INVENTORY_UPDATED", UpdateInventory)
+    EasyDestroy.RegisterCallback(_API, "ED_RESTACK_ITEMS", RestackItemsInQueue)
 
     initialized = true
     UpdateInventory()

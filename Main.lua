@@ -26,8 +26,8 @@ function EasyDestroy_EventHandler(self, event, ...)
 			-- As long as we're not the ones changing the users bags, lets upate our 
 			-- windows and lists and make sure to reenable the button if it's disabled
 
-			EasyDestroy.Events:Call("UpdateInventory")
-				:Call("UpdateItemWindow", true, function() EasyDestroyButton:Enable() end)
+			EasyDestroy.Events:Call("ED_INVENTORY_UPDATED")
+				-- :Call("UpdateItemWindow", true, function() EasyDestroyButton:Enable() end)
 
 
 		end
@@ -143,7 +143,10 @@ function EasyDestroy_EventHandler(self, event, ...)
 
 			EasyDestroy.BagsUpdated = true
 
-			local showConfig = EasyDestroy_GetOptionValue("ConfiguratorShown")
+			-- update users inventory on login
+			EasyDestroy.Events:Call("ED_INVENTORY_UPDATED")
+
+			local showConfig = EasyDestroy.Data.Options.ConfiguratorShown or false
 			if showConfig ~= nil then
 				EasyDestroyConfiguration:SetShown(showConfig)
 			end
@@ -254,13 +257,13 @@ function EasyDestroy_OnUpdate(self, delay)
 
 		-- clear the combine queue since we've changed the filter
 		-- this makes sure the item doesn't get touched unless it will show up in the new/changed filter
-		wipe(EasyDestroy.toCombineQueue) 
+		-- wipe(EasyDestroy.toCombineQueue) 
 
 		EasyDestroy.Events:Call("UpdateItemWindow")
+			:Call("ED_RESTACK_ITEMS")
 
 		EasyDestroy.FilterChanged = false
 
-		EasyDestroy.API.CombineItemsInQueue()
 
 		-- EasyDestroy.Handlers.OnFilterUpdate()
 
@@ -334,7 +337,8 @@ EasyDestroyConfiguration:SetScript("OnHide", function()
 	UIDropDownMenu_SetWidth(EasyDestroyDropDown, EasyDestroyDropDown:GetWidth()-40)
 	EasyDestroy_ToggleConfigurator:ClearAllPoints()
 	EasyDestroy_ToggleConfigurator:SetPoint("BOTTOMRIGHT", EasyDestroy_OpenBlacklist, "TOPRIGHT", 0, 10)
-	EasyDestroy_SaveOptionValue("ConfiguratorShown", false)
+	EasyDestroy.Data.Options.ConfiguratorShown = false
+	
 end)
 
 EasyDestroyConfiguration:SetScript("OnShow", function()
@@ -343,7 +347,8 @@ EasyDestroyConfiguration:SetScript("OnShow", function()
 	UIDropDownMenu_SetWidth(EasyDestroyDropDown, EasyDestroyDropDown:GetWidth()-40)
 	EasyDestroy_ToggleConfigurator:ClearAllPoints()
 	EasyDestroy_ToggleConfigurator:SetPoint("BOTTOMRIGHT", EasyDestroy_OpenBlacklist, "BOTTOMLEFT", -10, 0)
-	EasyDestroy_SaveOptionValue("ConfiguratorShown", true)
+	EasyDestroy.Data.Options.ConfiguratorShown = true
+	
 end)
 
 EasyDestroySelectedFiltersScroll:SetToplevel(true)

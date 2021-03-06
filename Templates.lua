@@ -185,6 +185,18 @@ function EasyDestroyScrollMixin:Initialize(listfunc, displayed, height, childfun
 
 end
 
+function EasyDestroyScrollMixin:ItemListUpdate(listFuncArg)
+
+    if not self.ListFunction then return end 
+
+    if not listFuncArg and not self.lastFuncArg then return end
+
+    self.ItemList = self.ListFunction(listFuncArg or self.lastFuncArg)
+
+    self.lastFuncArg = listFuncArg or self.lastFuncArg
+
+end
+
 function EasyDestroyScrollMixin:ScrollUpdate(callbackFunction)
     local itemList = nil
 
@@ -202,15 +214,6 @@ function EasyDestroyScrollMixin:ScrollUpdate(callbackFunction)
         usage doesn't increase.
     ]]
 
-    if self.UpdateItemList then
-        EasyDestroy.Debug((self:GetName() or "EasyDestroyScrollMixin") .. ":ScrollUpdate", "UpdateItemList")
-        self.ItemList = self.ListFunction()
-        self.UpdateItemList = false
-        -- self.ItemList = itemList
-    else
-        EasyDestroy.Debug((self:GetName() or "EasyDestroyScrollMixin") .. ":ScrollUpdate", "Using Item Cache")
-        -- itemList = self.ItemList
-    end
     if not self and self.ScrollFrame then
         return
     end

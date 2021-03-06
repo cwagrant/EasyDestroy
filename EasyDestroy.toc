@@ -19,22 +19,16 @@ Libs\LibDBIcon-1.0\lib.xml
 
 Core.lua
 
-API\Data.lua
-API\Inventory.lua
-API\Filters.lua
-API\Blacklist.lua
-API\Destroy.lua
+API\API.xml
 
-Options.lua
-Classes.lua
 Templates.xml
 EasyDestroy.xml
 
+UI\Options.lua
 UI\EasyDestroy.lua
 UI\ItemWindow.lua
 UI\Filters.lua
 
-EasyDestroy.lua
 Favorites.lua
 Dialogs.lua
 Main.lua

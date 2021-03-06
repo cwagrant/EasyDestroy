@@ -8,16 +8,18 @@ ItemWindow.name = "EasyDestroy.UI.ItemWindow"
 local initialized = false
 local protected = {}
 
-local function Update(UpdateItemList, cb)
+function protected.Update(event, arg)
 
     -- Update the Item Window (Item List)
 
-	if ItemWindow:IsVisible(ItemWindow.name, Update) then 
+	if ItemWindow:IsVisible(ItemWindow.name) then 
 
-		EasyDestroy.Debug("ItemWindow.Update")
+		if arg ~= nil and type(arg) == "table" then 
+			EasyDestroy.UI.ItemWindow:ItemListUpdate(arg)
+		end
 
-		EasyDestroy.UI.ItemWindow.UpdateItemList = UpdateItemList or false
-		EasyDestroy.UI.ItemWindow:ScrollUpdate(cb)
+		EasyDestroy.UI.ItemWindow:ScrollUpdate()
+
 		EasyDestroy.UI.ItemCounter:SetText(EasyDestroy.UI.ItemWindow.ItemCount ..  " Item(s) Found")
 
 	end
@@ -39,25 +41,35 @@ end
 
 function ItemWindow.__init()
 
+	--[[ 
+		ED_FILTER_CRITERIA_CHANGED should always send the filter 
+		ED_FILTER_LOADED should always send the filter
+
+		ED_INVENTORY_UPDATE_DELAYED will rely on the cached filter
+		ED_BLACKLIST_UPDATED will rely on the cached filter
+	]]
+
     if initialized then return end 
 
-    EasyDestroy.RegisterCallback(ItemWindow, "UpdateItemWindow", Update)
-	EasyDestroy.RegisterCallback(ItemWindow, "UpdateInventoryDelayed", Update)
-	EasyDestroy.RegisterCallback(ItemWindow, "ED_UpdateBlacklist", Update)
-	EasyDestroy.RegisterCallback(ItemWindow, "UpdateCriteria", Update)
-    
+    -- EasyDestroy.RegisterCallback(ItemWindow, "UpdateItemWindow", protected.Update)	
+	EasyDestroy.RegisterCallback(ItemWindow, "ED_BLACKLIST_UPDATED", protected.Update)
+	EasyDestroy.RegisterCallback(ItemWindow, "ED_INVENTORY_UPDATED_DELAYED", protected.Update)
+
+	EasyDestroy.RegisterCallback(ItemWindow, "ED_FILTER_CRITERIA_CHANGED", protected.Update)    
+	EasyDestroy.RegisterCallback(ItemWindow, "ED_FILTER_LOADED", protected.Update)
+
 	ItemWindow:Initialize(protected.FindWhitelistItems, 8, 24, protected.ItemOnClick)
 
     initialized = true
 
 end
 
-function protected.FindWhitelistItems()
+function protected.FindWhitelistItems(activeFilter)
 	
 	-- Applies the current Search(Whitelist) to all items in the users bags.
 	
-	local activeFilter = EasyDestroy:GenerateFilter()
-
+	if activeFilter == nil then return end
+	
 	-- The old way of getting filter information
 	local filter = activeFilter:ToTable()
 	filter.filter = EasyDestroy.UI.Filters.GetCriteria()
@@ -198,9 +210,9 @@ end
 function ItemWindow.OnCriteriaUpdate()
 
 	-- If our filter was updated, we'll need to tell the system to update.
-EasyDestroy.Events:Call("UpdateItemWindow")
-	
 
-	EasyDestroy.FilterChanged = true
+	EasyDestroy.Events:Call("ED_FILTER_CRITERIA_CHANGED", EasyDestroy.UI.Filters.GenerateFilter())
+	-- EasyDestroy.Events:Call("UpdateItemWindow")
+
 
 end

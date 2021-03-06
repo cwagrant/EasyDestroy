@@ -368,6 +368,8 @@ function FiltersFrame.LoadFilter(fid)
 
 	FiltersFrame.PlaceCriteria()
 
+	EasyDestroy.Events:Call("ED_FILTER_LOADED", filter)
+
 end
 
 -- EasyDestroy.Reload
@@ -433,6 +435,26 @@ function FiltersFrame.FilterValidation(filter)
 
     return true, ED_ERROR_NONE, ''
 
+end
+
+function FiltersFrame.GenerateFilter()
+
+	--[[ This generates our filter table from settings in the EasyDestroyFilters window. ]]
+	--[[ 2021-02-26 Removed old table, now uses a proper Filter object for downstream work.]]
+
+	-- Needs to updated cached filters or create a brand new filter
+
+	local FilterID = EasyDestroy.UI.Filters.GetSelectedFilter()
+	local filter, ftype
+	
+	if EasyDestroy.Cache.FilterCache and EasyDestroy.Cache.FilterCache[FilterID] then
+		filter = EasyDestroy.Cache.FilterCache[FilterID]
+	else
+		filter = EasyDestroyFilter:New(EasyDestroy.UI.GetFilterType(), EasyDestroy.UI.GetFilterName())
+	end
+
+	return filter
+	
 end
 
 
@@ -575,7 +597,7 @@ function protected.SaveFilterOnClick(skipFavoriteCheck)
 
 	local FilterID = FiltersFrame.GetSelectedFilter()
 	
-	local filter = EasyDestroy:GenerateFilter()
+	local filter = EasyDestroy.UI.Filters.GenerateFilter()
 
 	local valid, validationErrorType, validationMessage = FiltersFrame.FilterValidation(filter)
 

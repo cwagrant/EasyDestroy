@@ -136,14 +136,14 @@ local function OnFrameShow()
     itemsInBags:ScrollUpdate()
     itemsInBlacklist:ScrollUpdate()
 
-    EasyDestroy.RegisterCallback(frame, "ED_UpdateBlacklist", function()
+    EasyDestroy.RegisterCallback(frame, "ED_BLACKLIST_UPDATED", function()
         itemsInBags.UpdateItemList = true
         itemsInBags:ScrollUpdate()
         itemsInBlacklist.UpdateItemList = true
         itemsInBlacklist:ScrollUpdate()
     end)
 
-    EasyDestroy.RegisterCallback(frame, "InventoryChanged", function()
+    EasyDestroy.RegisterCallback(frame, "ED_INVENTORY_UPDATED_DELAYED", function()
         itemsInBags.UpdateItemList = true
         itemsInBags:ScrollUpdate()
     end)

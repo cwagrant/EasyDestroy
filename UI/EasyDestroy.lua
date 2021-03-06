@@ -140,6 +140,8 @@ function EasyDestroyFrame.__init()
     EasyDestroyButton:SetScript("PostClick", function(self)
 	EasyDestroyButton:SetAttribute("macrotext", "")	
 	EasyDestroy.ButtonWasClicked = true
+
+	EasyDestroy.RegisterCallback(EasyDestroyButton, "ED_INVENTORY_UPDATED_DELAYED", function(self) self:Enable() end )
 end)
 
 end
