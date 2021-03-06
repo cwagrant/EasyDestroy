@@ -324,6 +324,7 @@ function FiltersFrame.Clear()
     FiltersFrame.ClearFilterSettings()
     FiltersFrame.ResetCriteriaWindow()
 
+	EasyDestroy.Events:Fire("ED_FILTER_CRITERIA_CHANGED")
 end
 
 function FiltersFrame.LoadFilter(fid)
@@ -465,8 +466,6 @@ end
 
 function protected.FilterTypeOnClick(self)
 
-
-    --if EasyDestroyFilterSettings.Blacklist:GetChecked() and EasyDestroyFilterSettings.Favorite:GetChecked() then 
     if FiltersFrame.GetFilterType() == ED_FILTER_TYPE_BLACKLIST and FiltersFrame.GetFavoriteChecked() then
         StaticPopup_Show("ED_BLACKLIST_NO_FAVORITE") 
     end  
@@ -481,11 +480,12 @@ function protected.FilterTypeOnClick(self)
         FiltersFrame.Favorite:Enable()
     end
 
-    EasyDestroy.FilterChanged = true
+    EasyDestroy.Events:Fire("ED_FILTER_CRITERIA_CHANGED")
 
 end 
 
 function protected.FilterTypesOnClick()
+	--TODO: Fix this so that it's more event driven
 
     EasyDestroy.Debug(FiltersFrame.name, "FilterTypesOnClick")
 
@@ -494,32 +494,29 @@ function protected.FilterTypesOnClick()
 
 	if not(FiltersFrame:IncludeSearches()) and not(FiltersFrame:IncludeBlacklists()) then
 		UIDropDownMenu_SetText(EasyDestroyFrame.FilterSelection.DropDown, 'You must select at least one type of filter.')
+		FiltersFrame.Clear()
+
 	elseif FiltersFrame:IncludeSearches() and favoriteID then
 		UIDropDownMenu_SetSelectedValue(EasyDestroyFrame.FilterSelection.DropDown, favoriteID)
 		FiltersFrame.LoadFilter(favoriteID)
-		EasyDestroy_Refresh()
+	
 	else
 		UIDropDownMenu_SetSelectedValue(EasyDestroyFrame.FilterSelection.DropDown, 0)
+
 	end
+
+	EasyDestroy.Events:Fire("ED_FILTERS_AVAILABLE_CHANGED")
 
 end
 
 function protected.FilterDropDownOnSelect(self, arg1, arg2, checked)
 
-    -- Handler for EasyDestroy.UI.FilterDropDown selections
-
-    EasyDestroy.Debug("EasyDestroy.Handlers.FilterDropDownOnSelect", self.value)
-
 	UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, self.value)
 	if self.value == 0 then
 		FiltersFrame.ClearFilter()
-		EasyDestroy.CurrentFilter = EasyDestroy.EmptyFilter
 	else
 		FiltersFrame.LoadFilter(self.value)
-		EasyDestroy.CurrentFilter = EasyDestroy.Data.Filters[self.value]
-		EasyDestroy.CurrentFilter.fid = self.value
 	end
-	EasyDestroy_Refresh()
 
 end
 
@@ -576,8 +573,6 @@ function protected.NewOnClick()
 	FiltersFrame.Clear()
 
 	FiltersFrame.Initialize_FilterDropDown()
-
-	EasyDestroy.CurrentFilter = EasyDestroy.EmptyFilter
 
 	UIDropDownMenu_SetSelectedValue(FiltersFrame.FilterDropDown, 0) 
 
@@ -645,7 +640,6 @@ function protected.SaveFilterAsOnClick()
 
     EasyDestroy.Debug("EasyDestroy.Handlers.CopyFilterOnClick")
 
-	local CurrentFilterID = UIDropDownMenu_GetSelectedValue(FiltersFrame.FilterDropDown)
 	local filter, ftype
 
 	local filter = EasyDestroyFilter:New(EasyDestroy.UI.GetFilterType(), EasyDestroy.UI.GetFilterName())

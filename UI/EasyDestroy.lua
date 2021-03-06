@@ -71,23 +71,6 @@ function EasyDestroyFrame.__init()
 
 	--[[ Filter View Area ]]--
 	UIDropDownMenu_SetWidth(EasyDestroyDropDown, EasyDestroyDropDown:GetWidth()-40)
-		
-	--[[ Test Button for debugging various information ]]--
-	EasyDestroy.EasyDestroyTest = CreateFrame("Button", "EDTest", EasyDestroyFrame, "UIPanelButtonTemplate")
-	EasyDestroy.EasyDestroyTest:SetSize(80, 22)
-	EasyDestroy.EasyDestroyTest:SetPoint("BOTTOMLEFT", EasyDestroyFrame, "TOPLEFT", 0, 4)
-	EasyDestroy.EasyDestroyTest:SetText("Test")
-	EasyDestroy.EasyDestroyTest:SetScript("OnClick", function(self)
-		-- print("CountItemsFound", #EasyDestroy.API.FindWhitelistItems() or 0)
-		print("Filter", UIDropDownMenu_GetSelectedValue(EasyDestroyDropDown))
-		pprint(EasyDestroy.CurrentFilter)
-	end)
-	
-	if EasyDestroy.DebugActive then
-		EasyDestroy.EasyDestroyTest:Show()
-	else
-		EasyDestroy.EasyDestroyTest:Hide()
-	end
 
 	EasyDestroy.ContextMenu = CreateFrame("Frame", "EDTestFrame", EasyDestroyFrame, "UIDropDownMenuTemplate")
 	

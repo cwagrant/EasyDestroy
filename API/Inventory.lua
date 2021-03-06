@@ -21,6 +21,7 @@ local _API = EasyDestroy.API.Inventory
 local playerInventory = {}
 local initialized = false
 local updatingInventory = false -- don't want to run multiple times at once
+local protected = {}
 
 local function FindTradegoods(dict, addToTable)
 

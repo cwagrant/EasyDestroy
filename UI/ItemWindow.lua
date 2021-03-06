@@ -14,9 +14,7 @@ function protected.Update(event, arg)
 
 	if ItemWindow:IsVisible(ItemWindow.name) then 
 
-		if arg ~= nil and type(arg) == "table" then 
-			EasyDestroy.UI.ItemWindow:ItemListUpdate(arg)
-		end
+		EasyDestroy.UI.ItemWindow:ItemListUpdate(arg)
 
 		EasyDestroy.UI.ItemWindow:ScrollUpdate()
 
@@ -69,7 +67,7 @@ function protected.FindWhitelistItems(activeFilter)
 	-- Applies the current Search(Whitelist) to all items in the users bags.
 	
 	if activeFilter == nil then return end
-	
+
 	-- The old way of getting filter information
 	local filter = activeFilter:ToTable()
 	filter.filter = EasyDestroy.UI.Filters.GetCriteria()

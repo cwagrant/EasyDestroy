@@ -128,8 +128,7 @@ function EasyDestroy_EventHandler(self, event, ...)
 			EasyDestroy.Data.Options = EasyDestroy.Data.Options or {}
 			EasyDestroy.Data.Options.MinimapIcon = EasyDestroy.Data.Options.MinimapIcon or {}
 			EasyDestroy.Data.Blacklist = EasyDestroy.Data.Blacklist or {}
-			EasyDestroy.CurrentFilter = EasyDestroy.EmptyFilter
-
+			
 			EasyDestroy.Data.Options.Actions = EasyDestroy.Data.Options.Actions or EasyDestroy.Enum.Actions.Disenchant
 
 			if EasyDestroy.Data.Options.CharacterFavorites == nil then 

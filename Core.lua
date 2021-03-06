@@ -1,8 +1,13 @@
 EasyDestroy = {}
 
+EasyDestroy.Version =  GetAddOnMetadata("EasyDestroy", "version")
+EasyDestroy.Events = LibStub("CallbackHandler-1.0"):New(EasyDestroy)
+EasyDestroy.AddonName = "EasyDestroy"
+EasyDestroy.DebugActive = true
+EasyDestroy.AddonLoaded = false
+
 --[[ Modules ]]
 EasyDestroy.Favorites = {}
--- EasyDestroyFilters = {} -- Until 2.0 this was a frame, as of 3.0 this is no longer used.
 EasyDestroy.Enum = {}
 EasyDestroy.Dict = {}
 EasyDestroy.Data = {}
@@ -11,7 +16,24 @@ EasyDestroy.Handlers = {}
 EasyDestroy.API = {}
 EasyDestroy.CallbackHandler = {}
 
+--[[ Events Setup ]]
+--[[
+	Events:
 
+	UpdateInventory - fires after bag updates when EasyDestroy is visible.
+	UpdateInventoryDelayed - fires after Inventory is updated
+	UpdateBlacklist - fires when modifications are made to Item and Session Blacklists
+	UpdateCriteria - fires when filter criteria are changed
+	UpdateFilters - fires when a filter is saved or deleted
+
+	ED_NEW_CRITERIA_AVAILABLE - fires when a new criterion is registered
+	ED_BLACKLIST_UPDATED
+	ED_INVENTORY_UPDATED_DELAYED
+	ED_FILTER_CRITERIA_CHANGED
+	ED_FILTER_LOADED
+	ED_FILTERS_AVAILABLE_CHANGED
+
+]]
 EasyDestroy.Events = LibStub("CallbackHandler-1.0"):New(EasyDestroy)
 
 function EasyDestroy.Events:Call(...)
@@ -23,36 +45,20 @@ function EasyDestroy.Events:Call(...)
 	return self
 
 end
---[[
-	Events:
 
-	UpdateInventory - fires after bag updates when EasyDestroy is visible.
-	UpdateInventoryDelayed - fires after Inventory is updated
-	UpdateBlacklist - fires when modifications are made to Item and Session Blacklists
-	UpdateCriteria - fires when filter criteria are changed
-	UpdateFilters - fires when a filter is saved or deleted
-	ED_NEW_CRITERIA_AVAILABLE - fires when a new criterion is registered
-
-
-
-]]
-
-
---[[ Settings/Info ]]
-EasyDestroy.Version =  GetAddOnMetadata("EasyDestroy", "version")
-EasyDestroy.DebugActive = true
-EasyDestroy.AddonName = "EasyDestroy"
-EasyDestroy.AddonLoaded = false
 -- This is the name of the frame that filter types attach to for scrolling
 EDFILTER_SCROLL_CHILD = "EasyDestroySelectedFiltersScrollChild"
 
+-- Category name for Interface Options menu item
 EASY_DESTROY_CATEGORY = "EasyDestroy"
+
+-- Setting up Key Binding capability for the Destroy Button
 _G["BINDING_NAME_CLICK EasyDestroyButton:LeftButton"] = "Destroy Button"
 
+-- For making sure item combines aren't called endlessly when the inventory is updating
 EasyDestroy.ProcessingItemCombine = false
 
 --[[ Utility Tables/Variables ]]
-EasyDestroy.CurrentFilter = {}
 EasyDestroy.EmptyFilter = { filter={}, properties={} }
 EasyDestroy.Cache = { ItemCache = {}, FilterCache = {}}
 EasyDestroy.FrameRegistry = {}

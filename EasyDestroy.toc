@@ -28,6 +28,7 @@ UI\Options.lua
 UI\EasyDestroy.lua
 UI\ItemWindow.lua
 UI\Filters.lua
+UI\Blacklist.lua
 
 Favorites.lua
 Dialogs.lua
@@ -42,6 +43,5 @@ filters\soulbound.lua
 filters\itemtype.lua
 filters\count.lua
 
-Blacklist.lua
 AddOnSkin.lua
 

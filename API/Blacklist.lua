@@ -7,7 +7,7 @@ function _API.AddSessionItem(item)
 	
 	tinsert(EasyDestroy.SessionBlacklist, item:ToTable())
 
-	EasyDestroy.Events:Fire("ED_BlACKLIST_UPDATED")
+	EasyDestroy.Events:Fire("ED_BLACKLIST_UPDATED")
 
 end
 
