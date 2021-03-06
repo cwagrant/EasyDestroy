@@ -10,7 +10,7 @@ function EasyDestroyItem:_NewFromLink(link)
 
     -- private function to handle caching of new items from links
     
-    local cache = EasyDestroy.EasyDestroyCacheID(0, 0, link)
+    local cache = EasyDestroyItem.EasyDestroyCacheID(0, 0, link)
 
     if cache and EasyDestroy.Cache.ItemCache[cache] then
         return EasyDestroy.Cache.ItemCache[cache]
@@ -25,7 +25,7 @@ function EasyDestroyItem:_NewFromBagAndSlot(bag, slot)
     -- private function to handle caching of new items from bags/slots
 
     local ilink = select(7, GetContainerItemInfo(bag, slot))
-    local cache = EasyDestroy.EasyDestroyCacheID(bag, slot, ilink)
+    local cache = EasyDestroyItem.EasyDestroyCacheID(bag, slot, ilink)
 
     if cache and EasyDestroy.Cache.ItemCache[cache] then
         return EasyDestroy.Cache.ItemCache[cache]
@@ -67,7 +67,7 @@ function EasyDestroyItem:New(bag, slot, link)
     self.maxStackSize  = select(8, GetItemInfo(self:GetItemLink()))
     --self.guid = C_Item.GetItemGUID(self:GetItemLocation())
 
-    EasyDestroy.Cache.ItemCache[EasyDestroy.EasyDestroyCacheID(self.bag, self.slot, self.itemLink)] = self
+    EasyDestroy.Cache.ItemCache[EasyDestroyItem.EasyDestroyCacheID(self.bag, self.slot, self.itemLink)] = self
     return self
 end
 
@@ -126,5 +126,19 @@ function EasyDestroyItem:ToTable()
         link = self.itemLink,
         name = self:GetItemName()
     }
+
+end
+
+-- static method
+function EasyDestroyItem.EasyDestroyCacheID(bag, slot, link)
+	
+	-- Create Cache ID from bag, slot, quality, and item link
+
+	if type(bag) ~= "number" or type(slot) ~= "number" or type(link) ~= "string" then 
+		error(
+			string.format("Usage: EasyDestroy.EasyDestroyCacheID(bag, slot, itemLink)\n (%s, %s, %s)", bag or "nil", slot or "nil", link or "nil")
+		)
+	end
+	return string.format("%i:%i:%s", bag, slot, link)
 
 end

@@ -77,7 +77,7 @@ function protected.FindWhitelistItems(activeFilter)
 	local items = {}
 	local filterRegistry = EasyDestroy.CriteriaRegistry
 
-	for i, item in ipairs(EasyDestroy.API.Inventory.GetInventory()) do
+	for i, item in ipairs(EasyDestroy.Inventory.GetInventory()) do
 		matchfound = nil
 		typematch = false
 
@@ -135,8 +135,8 @@ function protected.FindWhitelistItems(activeFilter)
 
 				-- A list of actions is generated based on bit flags. 0x00, 0x01, 0x02, 0x04 for none, DE, Mill, and Prospect
 				--[[ Filter out types/subtypes that don't matter for the current action ]]--
-				-- for k, v in ipairs(ED_ACTION_FILTERS[ED_ACTION_DISENCHANT]) do
-				for k, v in ipairs(EasyDestroy.ItemTypeFilterByFlags(EasyDestroy.Data.Options.Actions)) do
+
+				for k, v in ipairs(EasyDestroy.Config.ItemTypeFilterByFlags(EasyDestroy.Data.Options.Actions)) do
 					if v.itype == item.classID then
 						if not v.stype then
 							typematch = true
@@ -146,7 +146,7 @@ function protected.FindWhitelistItems(activeFilter)
 					end
 				end
 
-				if EasyDestroy.API.Blacklist.HasSessionItem(item) then
+				if EasyDestroy.Blacklist.HasSessionItem(item) then
 					matchfound = false
 					break
 				end				
@@ -154,13 +154,13 @@ function protected.FindWhitelistItems(activeFilter)
 				if not typematch then break end
 
 				-- this is a check of the "item" blacklist
-				if filter.properties.type ~= ED_FILTER_TYPE_BLACKLIST and EasyDestroy.API.Blacklist.HasItem(item) then
+				if filter.properties.type ~= ED_FILTER_TYPE_BLACKLIST and EasyDestroy.Blacklist.HasItem(item) then
 					matchfound = false
 					break
 				end
 				
 				-- this is a check of blacklist type filters
-				if filter.properties.type ~= ED_FILTER_TYPE_BLACKLIST and EasyDestroy.API.Blacklist.InFilterBlacklist(item) then 
+				if filter.properties.type ~= ED_FILTER_TYPE_BLACKLIST and EasyDestroy.Blacklist.InFilterBlacklist(item) then 
 					matchfound = false
 					break
 				end
@@ -173,7 +173,7 @@ function protected.FindWhitelistItems(activeFilter)
 
 				-- queue up found trade good items in bags for restacking
 
-				if EasyDestroy.API.Inventory.ItemNeedsRestacked(item) then
+				if EasyDestroy.Inventory.ItemNeedsRestacked(item) then
 					EasyDestroy.Debug("AddItemToQueue", item.itemLink)
 					tinsert(API.toCombineQueue, item)
 				end
@@ -195,8 +195,8 @@ function protected.ItemOnClick(self, button)
 
 		self.item.menu = {
 			{ text = self.item:GetItemName(), notCheckable = true, isTitle = true},
-			{ text = "Add Item to Blacklist", notCheckable = true, func = function() EasyDestroy.API.Blacklist.AddItem(self.item) end },
-			{ text = "Ignore Item for Session", notCheckable = true, func = function() EasyDestroy.API.Blacklist.AddSessionItem(self.item) end},
+			{ text = "Add Item to Blacklist", notCheckable = true, func = function() EasyDestroy.Blacklist.AddItem(self.item) end },
+			{ text = "Ignore Item for Session", notCheckable = true, func = function() EasyDestroy.Blacklist.AddSessionItem(self.item) end},
 		}
 
 

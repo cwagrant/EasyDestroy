@@ -1,9 +1,9 @@
-EasyDestroy.API.Blacklist = {}
+EasyDestroy.Blacklist = {}
 
-local _API = EasyDestroy.API.Blacklist
-_API.name = "EasyDestroy.API.Blacklist"
+local _API = EasyDestroy.Blacklist
+EasyDestroy.Blacklist.name = "EasyDestroy.Blacklist"
 
-function _API.AddSessionItem(item)
+function EasyDestroy.Blacklist.AddSessionItem(item)
 	
 	tinsert(EasyDestroy.SessionBlacklist, item:ToTable())
 
@@ -11,8 +11,7 @@ function _API.AddSessionItem(item)
 
 end
 
-function _API.HasSessionItem(item)
-	-- EasyDestroy.Debug(_API.name, "HasSessionItem", item:GetItemName(), item.itemID)
+function EasyDestroy.Blacklist.HasSessionItem(item)
 
     for k, v in ipairs(EasyDestroy.SessionBlacklist) do
         -- if regular item, match on itemid, quality, ilvl
@@ -25,21 +24,15 @@ function _API.HasSessionItem(item)
 	return false
 end
 
-function _API.AddItem(item)
-    
-    EasyDestroy.Debug(_API.name, "AddItem")
-	
+function EasyDestroy.Blacklist.AddItem(item)
+    	
 	tinsert(EasyDestroy.Data.Blacklist, item:ToTable())
 
 	EasyDestroy.Events:Fire("ED_BLACKLIST_UPDATED")
 
 end
 
-function _API.HasItem(item)
-
-    -- Update of ItemInBlacklist to handle item objects
-
-    -- EasyDestroy.Debug(_API.name, "HasItem")
+function EasyDestroy.Blacklist.HasItem(item)
 
     for k, v in ipairs(EasyDestroy.Data.Blacklist) do
 
@@ -63,9 +56,7 @@ function _API.HasItem(item)
 
 end
 
-function _API.RemoveItem(item)
-
-    EasyDestroy.Debug(_API.name, "RemoveItem")
+function EasyDestroy.Blacklist.RemoveItem(item)
 
 	for k, v in ipairs(EasyDestroy.Data.Blacklist) do
         -- if regular item, match on itemid, quality, ilvl
@@ -80,7 +71,8 @@ function _API.RemoveItem(item)
 
 end
 
-function _API.InFilterBlacklist(item)
+function EasyDestroy.Blacklist.InFilterBlacklist(item)
+
 	local filterRegistry = EasyDestroy.CriteriaRegistry
 	local criteriaTable = {}
 	local matchesAny = false
@@ -111,4 +103,5 @@ function _API.InFilterBlacklist(item)
 		end
 	end
 	return matchesAny
+	
 end

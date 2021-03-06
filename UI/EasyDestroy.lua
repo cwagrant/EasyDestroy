@@ -88,34 +88,6 @@ function EasyDestroyFrame.__init()
 	EasyDestroyFilterSettings.Favorite:SetChecked(false);		
 	EasyDestroyFilterSettings.Blacklist:SetLabel("Blacklist")
 
-	-- My own personal hell, err, chat window for debug messages.
-	if EasyDestroy.DebugActive then
-		local f = CreateFrame("Frame", nil, UIParent, "UIPanelDialogTemplate")
-		f:SetPoint("CENTER")
-		f:SetHeight(300)
-		f:SetWidth(600)
-		f:SetMovable(true)
-		f:EnableMouse(true)
-		f:RegisterForDrag("LeftButton")
-		f:SetScript("OnDragStart", f.StartMoving)
-		f:SetScript("OnDragStop", f.StopMovingOrSizing)
-
-		local c = CreateFrame("ScrollingMessageFrame", nil, f )
-		c:SetPoint("TOPLEFT", 10, -28)
-		c:SetPoint("BOTTOMRIGHT", -10, 8)
-		c:SetFontObject("GameFontNormal")
-		c:SetTextColor(1,1,1,1)
-		c:SetFading(false)
-		c:SetJustifyH("LEFT")
-		c:SetMaxLines(1000)
-		c:EnableMouseWheel(true)
-		c:SetScript("OnMouseWheel", FloatingChatFrame_OnMouseScroll)
-		c:Show()
-
-		c:AddMessage("TEST")
-		EasyDestroy.DebugFrame = c
-	end
-
     EasyDestroyFrame:SetScript("OnShow", protected.RegisterEvents)
     EasyDestroyFrame:SetScript("OnHide", protected.UnregisterEvents)
 
@@ -155,7 +127,6 @@ function protected.RegisterEvents()
 	EasyDestroyFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 	-- lets refresh things now that we're opening the window
 
-	EasyDestroy.BagsUpdated = true 
 	EasyDestroy.FilterChanged = true
 
 end
@@ -170,8 +141,6 @@ function protected.UnregisterEvents()
 end
 
 function protected.DestroyPreClick(self)
-
-	EasyDestroy.Debug("EasyDestroy.Handlers.DestroyPreClick")
 
 	-- The actual process for destroying an item.
 
@@ -189,7 +158,7 @@ function protected.DestroyPreClick(self)
 		return 
 	end
 
-	local action = EasyDestroy.API.Destroy.GetDestroyActionForItem(iteminfo)
+	local action = EasyDestroy.Destroy.GetDestroyActionForItem(iteminfo)
 	local actionDict = EasyDestroy.Dict.Actions[action]
 	local spellName = GetSpellInfo(actionDict.spellID)
 	
@@ -220,7 +189,6 @@ function protected.DestroyPreClick(self)
 		return
 	end
 
-	EasyDestroy.Debug("EasyDestroy.Handlers.DestroyPreClick", iteminfo.itemLink)
-	EasyDestroy.API.Destroy.DestroyItem(iteminfo)
+	EasyDestroy.Destroy.DestroyItem(iteminfo)
 
 end

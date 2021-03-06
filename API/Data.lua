@@ -1,3 +1,19 @@
+EasyDestroy.Enum = {}
+EasyDestroy.Dict = {}
+
+-- ==================================
+-- CONSTANTS
+-- ==================================
+
+-- FILTER TYPES
+ED_FILTER_TYPE_SEARCH = 1
+ED_FILTER_TYPE_BLACKLIST = 2
+
+-- ERROR TYPES
+ED_ERROR_NONE = 1
+ED_ERROR_NAME = 2
+ED_ERROR_FAVORITE = 3
+
 ED_DEFAULT_BLACKLIST = {
     167672, 167677, 168756, 168913, 168785, 168909, 168912, 167556, 168800, 168798, --red punchcards
     168751, 168752, 170508, 168747, 168749, 168743, 168742, 168744, 168746, 168741, 170507, 170509, 170510, 168745, 168748, 168750, --yellow punchcards
@@ -5,27 +21,48 @@ ED_DEFAULT_BLACKLIST = {
     167555, -- pocket-sized computation device
 }
 
---[[
-    Probably going to need to create a list of all the herbs/ores that can be mass destroyed and the tradeskill spells that do it.
-        
-    e.g. {itemid=1337, spellid=2345, subclass=7}
+-- ==================================
+-- ENUM
+-- ==================================
+EasyDestroy.Enum.FilterTypes = { Search=1, Blacklist=2 }
+EasyDestroy.Enum.Errors = { None=1, Name=2, Favorite=3 }
+EasyDestroy.Enum.Actions = { 
+	None = 0x0000, 
+	Disenchant=0x0001, Mill=0x0002, Prospect=0x0004, 
+	MassDestroy=0x0010,
+	IncludeBank=0x0100
+}
 
-    itemid being the item's id, spellid being the tradeskill spell for mass destroy, and subclass being whether it is an herb or metal.
+-- ==================================
+-- DICTIONARY
+-- ==================================
+EasyDestroy.Dict.Strings = {}
+EasyDestroy.Dict.Strings.CriteriaSelectionDropdown = "Select filter criteria..."
+EasyDestroy.Dict.Strings.FilterSelectionDropdownNew = "New filter..."
 
-    items of these subclasses that don't have a spell will use the default mill/prospect spells or if there are < items required to
-    do mass destroy.
+EasyDestroy.Dict.Strings.MassDestroyMacro = "/cast %1$s \n/run C_TradeSkillUI.CraftRecipe(%2$d, 1);\n/cast %1$s";
+EasyDestroy.Dict.Strings.DestroyMacro = "/cast %s\n/use %d %d"
 
-    Should indivdiual filters determine which actions are available? Or should we just have an "Options" window that lets the user
-    turn off/on the ability to Disenchant, Mill, and/or Prospect.
+EasyDestroy.Dict.ActionTable = {13262, 51005, 31252}
+EasyDestroy.Dict.Actions = {}
 
-    If Milling/Prospecting are turned on then the user is able to set whether or not the "small" amount spell is available.
+EasyDestroy.Dict.Actions[1] = {
+	spellID = 13262,
+	itemTypes = {{itype=LE_ITEM_CLASS_WEAPON, stype=nil}, {itype=LE_ITEM_CLASS_ARMOR, stype=nil}},
+}
 
-    [ ] Allow Disenchanting
-    [ ] Allow Milling [ ] Mass Milling when available [ ] Milling when available
-    [ ] Allow Prospecting [ ] Mass Milling when available [ ] Prospecting when available
+EasyDestroy.Dict.Actions[2] = {
+	spellID = 51005,
+	itemTypes = {{itype=LE_ITEM_CLASS_TRADEGOODS, stype=9}},
+	tradeskill = 773,
+}
 
-    
-]]
+EasyDestroy.Dict.Actions[4] = {
+	spellID = 31252,
+	itemTypes = {{itype=LE_ITEM_CLASS_TRADEGOODS, stype=7}},
+	tradeskill = 755,
+	
+}
 
 EasyDestroy.Dict.Herbs = {
     {itemid=168487, spellid=298927, }, --zinanthid

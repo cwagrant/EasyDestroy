@@ -1,9 +1,7 @@
-EasyDestroy.API.Filters = {}
+EasyDestroy.Filters = {}
+EasyDestroy.Filters.name = "EasyDestroy.Filters"
 
-local _API = EasyDestroy.API.Filters
-_API.name = "EasyDestroy.API.Filters"
-
-function _API.FindFilterWithName(filterName)
+function EasyDestroy.Filters.FindFilterWithName(filterName)
 
 	-- This could maybe be moved to the filters class? But it's more of a static function
 
@@ -22,7 +20,7 @@ function _API.FindFilterWithName(filterName)
 	return nil
 end
 
-function _API.DeleteFilter(FilterID)
+function EasyDestroy.Filters.DeleteFilter(FilterID)
 
 	EasyDestroy.Data.Filters[FilterID] = nil
 
@@ -30,7 +28,7 @@ function _API.DeleteFilter(FilterID)
 
 end
 
-function _API.SaveFilter(filter)
+function EasyDestroy.Filters.SaveFilter(filter)
 
 	EasyDestroy.Data.Filters[filter:GetFilterID()] = filter:ToTable()
 
@@ -38,7 +36,7 @@ function _API.SaveFilter(filter)
 
 end
 
-function _API.RegisterCriteria(criteria)
+function EasyDestroy.Filters.RegisterCriteria(criteria)
     --[[ 
     Register criteria with the addon.
     This should be called by the criteria themselves.

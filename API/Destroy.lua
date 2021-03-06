@@ -1,9 +1,8 @@
-EasyDestroy.API.Destroy = {}
+EasyDestroy.Destroy = {}
 
-local _API = EasyDestroy.API.Destroy
-_API.name = "EasyDestroy.API.Destroy"
+EasyDestroy.Destroy.name = "EasyDestroy.Destroy"
 
-function _API.GetDestroyActionForItem(item)
+function EasyDestroy.Destroy.GetDestroyActionForItem(item)
 
     if item then 
         if item.classID == LE_ITEM_CLASS_ARMOR or item.classID == LE_ITEM_CLASS_WEAPON then
@@ -19,18 +18,18 @@ function _API.GetDestroyActionForItem(item)
 
 end
 
-function _API.DestroyItem(item)
+function EasyDestroy.DestroyDestroyItem(item)
 
-	EasyDestroy.Debug("EasyDestroy.API.DestroyItem", item.itemLink)
+	EasyDestroy.Debug("EasyDestroy.DestroyItem", item.itemLink)
 
-	local action =_API.GetDestroyActionForItem(item)
+	local action =EasyDestroy.Destroy.GetDestroyActionForItem(item)
 
 	if action then
 
 		local ActionDict = EasyDestroy.Dict.Actions[action]
 		local spellname = GetSpellInfo(ActionDict.spellID)
 
-		local bag, slot = EasyDestroy.API.Inventory.FindTradegoodInBags(item)
+		local bag, slot = EasyDestroy.Inventory.FindTradegoodInBags(item)
 
 		EasyDestroyButton:SetAttribute("*type1", "macro")
 		EasyDestroyButton:SetAttribute("macrotext", string.format(EasyDestroy.Dict.Strings.DestroyMacro, spellname, bag, slot))

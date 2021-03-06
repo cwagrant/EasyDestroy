@@ -15,9 +15,8 @@
 
 ]]
 
-EasyDestroy.API.Inventory = {}
+EasyDestroy.Inventory = {}
 
-local _API = EasyDestroy.API.Inventory
 local playerInventory = {}
 local initialized = false
 local updatingInventory = false -- don't want to run multiple times at once
@@ -36,7 +35,7 @@ local function FindTradegoods(dict, addToTable)
 		if v.itemid then 
 			local _, reagent = GetItemInfo(v.itemid)
 			if reagent then 
-				local EasyDestroyID = EasyDestroy.EasyDestroyCacheID(0, 0, reagent)
+				local EasyDestroyID = EasyDestroyItem.EasyDestroyCacheID(0, 0, reagent)
 
 				if EasyDestroyID and EasyDestroy.Cache.ItemCache[EasyDestroyID] then
 					item = EasyDestroy.Cache.ItemCache[EasyDestroyID]
@@ -140,7 +139,7 @@ local function CombineStacks()
 
 			EasyDestroy.Debug("EasyDestroy.API.CombineStacks", "GetItemFromQueue" )
 			item = tremove(API.toCombineQueue, 1)
-			EasyDestroy.API.GetItemsToCombine(item)
+			GetItemsToCombine(item)
 
 		-- if queue is empty and we're not actively combining then end
 		elseif #API.toCombineQueue == 0 and #API.toCombine == 0 then
@@ -227,7 +226,7 @@ end
 
 local function RestackItemsInQueue()
 
-    if not initialized then _API.Initialize() end
+    if not initialized then EasyDestroy.Inventory.Initialize() end
 
 	EasyDestroy.Thread = coroutine.create(CombineStacks)
 
@@ -235,7 +234,7 @@ end
 
 local function UpdateInventory()
 
-    if not initialized then _API.Initialize() end
+    if not initialized then EasyDestroy.Inventory.Initialize() end
 
     wipe(playerInventory)
     GetBagItems(playerInventory)
@@ -246,16 +245,16 @@ local function UpdateInventory()
 
 end
 
-function _API.GetInventory()
+function EasyDestroy.Inventory.GetInventory()
 
-    if not initialized then _API.Initialize() end
+    if not initialized then EasyDestroy.Inventory.Initialize() end
 
     return playerInventory
 end
 
-function _API.ItemNeedsRestacked(item)
+function EasyDestroy.Inventory.ItemNeedsRestacked(item)
 
-    if not initialized then _API.Initialize() end
+    if not initialized then EasyDestroy.Inventory.Initialize() end
 
 	-- Find if at least 2 partial stacks of an item exists
 
@@ -288,9 +287,9 @@ function _API.ItemNeedsRestacked(item)
 
 end
 
-function _API.FindTradegoodInBags(item)
+function EasyDestroy.Inventory.FindTradegoodInBags(item)
 
-    if not initialized then _API.Initialize() end
+    if not initialized then EasyDestroy.Inventory.Initialize() end
 
     -- finds you the first instance of a tradegood in your bag
     -- TODO: Probably need to make this ignore stacks < 5
@@ -311,12 +310,12 @@ function _API.FindTradegoodInBags(item)
 
 end
 
-function _API.Initialize()
+function EasyDestroy.Inventory.Initialize()
 
     if initialized then return end
 
-    EasyDestroy.RegisterCallback(_API, "ED_INVENTORY_UPDATED", UpdateInventory)
-    EasyDestroy.RegisterCallback(_API, "ED_RESTACK_ITEMS", RestackItemsInQueue)
+    EasyDestroy.RegisterCallback(EasyDestroy.Inventory, "ED_INVENTORY_UPDATED", UpdateInventory)
+    EasyDestroy.RegisterCallback(EasyDestroy.Inventory, "ED_RESTACK_ITEMS", RestackItemsInQueue)
 
     initialized = true
     UpdateInventory()

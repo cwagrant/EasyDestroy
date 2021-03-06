@@ -46,7 +46,7 @@ function EasyDestroy_EventHandler(self, event, ...)
 				if EasyDestroy.Data.Options.AutoBlacklist then
 					EasyDestroy.Debug("EventHandler", "Straight To Jail")
 					if EasyDestroy.UI.GetCurrentItem() then 
-						EasyDestroy.API.Blacklist.AddItem(EasyDestroy.UI.GetCurrentItem())
+						EasyDestroy.Blacklist.AddItem(EasyDestroy.UI.GetCurrentItem())
 					end
 				end
 				EasyDestroy.ButtonWasClicked = false
@@ -139,8 +139,6 @@ function EasyDestroy_EventHandler(self, event, ...)
 
 			EasyDestroy.UI.ItemWindow.__init()
 			EasyDestroy.UI.Filters.__init()
-
-			EasyDestroy.BagsUpdated = true
 
 			-- update users inventory on login
 			EasyDestroy.Events:Call("ED_INVENTORY_UPDATED")
@@ -316,12 +314,6 @@ end
 EasyDestroyFrame:SetScript("OnEvent", EasyDestroy_EventHandler)
 EasyDestroyFrame:SetScript("OnUpdate", EasyDestroy_OnUpdate)
 
-EasyDestroyButton:SetScript("PreClick", EasyDestroy.Handlers.DestroyPreClick)
-EasyDestroyButton:SetScript("PostClick", function(self)
-	EasyDestroyButton:SetAttribute("macrotext", "")	
-	EasyDestroy.ButtonWasClicked = true
-end)
-
 EasyDestroy_ToggleConfigurator:SetScript("OnClick", function() 
 	if EasyDestroyConfiguration:IsVisible() then 
 		EasyDestroyConfiguration:Hide() 
@@ -359,6 +351,5 @@ end
 
 EasyDestroyFilters_FavoriteIcon:SetScript("OnClick", EasyDestroy.Favorites.FavoriteIconOnClick)
 
-EasyDestroyFilterSettings.Blacklist:SetScript("OnClick", EasyDestroy.Handlers.FilterTypeOnClick)
 
 

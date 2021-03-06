@@ -12,12 +12,16 @@
 ## X-Curse-Project-ID: 414637
 ## X-Website: https://github.com/cwagrant/EasyDestroy
 
+# External Libraries
 Libs\LibStub\LibStub.lua
 Libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
 Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
 Libs\LibDBIcon-1.0\lib.xml
 
+#Basic configuration and information
 Core.lua
+
+DevTools.lua
 
 API\API.xml
 
@@ -30,7 +34,6 @@ UI\ItemWindow.lua
 UI\Filters.lua
 UI\Blacklist.lua
 
-Favorites.lua
 Dialogs.lua
 Main.lua
 

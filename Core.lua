@@ -8,11 +8,8 @@ EasyDestroy.AddonLoaded = false
 
 --[[ Modules ]]
 EasyDestroy.Favorites = {}
-EasyDestroy.Enum = {}
-EasyDestroy.Dict = {}
 EasyDestroy.Data = {}
 EasyDestroy.UI = {}
-EasyDestroy.Handlers = {}
 EasyDestroy.API = {}
 EasyDestroy.CallbackHandler = {}
 
@@ -26,12 +23,12 @@ EasyDestroy.CallbackHandler = {}
 	UpdateCriteria - fires when filter criteria are changed
 	UpdateFilters - fires when a filter is saved or deleted
 
-	ED_NEW_CRITERIA_AVAILABLE - fires when a new criterion is registered
-	ED_BLACKLIST_UPDATED
-	ED_INVENTORY_UPDATED_DELAYED
-	ED_FILTER_CRITERIA_CHANGED
-	ED_FILTER_LOADED
-	ED_FILTERS_AVAILABLE_CHANGED
+	ED_NEW_CRITERIA_AVAILABLE - fires when criteria are registered
+	ED_BLACKLIST_UPDATED - fires when an item as added or removed from the Item or Session Blacklists
+	ED_INVENTORY_UPDATED_DELAYED - fires after the users inventory has been updated
+	ED_FILTER_CRITERIA_CHANGED - fires when criteria are changed on a filter
+	ED_FILTER_LOADED - fires when a filter is loaded
+	ED_FILTERS_AVAILABLE_CHANGED - fires when a new filter is saved or an existing filter is deleted
 
 ]]
 EasyDestroy.Events = LibStub("CallbackHandler-1.0"):New(EasyDestroy)
@@ -78,118 +75,6 @@ EasyDestroy.CriteriaRegistry = {}
 EasyDestroy.CriteriaStack = {}
 
 EasyDestroy.DebugFrame = nil
-EasyDestroy.DebugState = nil
-ED_LOG_DEBUG = 0x01
-ED_LOG_INFO = 0x02
-ED_LOG_ERROR = 0x04
-
-EasyDestroy.BagsUpdated = false
-
-
---[[ Enumerations/Lookup Tables ]]
-EasyDestroy.Enum.FilterTypes = { Search=1, Blacklist=2 }
-EasyDestroy.Enum.Errors = { None=1, Name=2, Favorite=3 }
-EasyDestroy.Enum.Actions = { 
-	None = 0x0000, 
-	Disenchant=0x0001, Mill=0x0002, Prospect=0x0004, 
-	MassDestroy=0x0010,
-	IncludeBank=0x0100
-}
-
-EasyDestroy.Dict.Strings = {}
-EasyDestroy.Dict.Strings.CriteriaSelectionDropdown = "Select filter criteria..."
-EasyDestroy.Dict.Strings.FilterSelectionDropdownNew = "New filter..."
-
-
-
-
--- Do I want to allow a filter to be available to multiple actions?
--- If it is - what determines the "destroy" action.
-
-function EasyDestroy.ItemTypeFilterByFlags(flag)
-
-	local out = {}
-
-	if flag == nil then flag = EasyDestroy.Enum.Actions.Disenchant end 
-
-	for k, v in pairs(EasyDestroy.Dict.Actions) do 
-		local chk = bit.band(k, flag)
-		if chk > 0 then
-			for k,v in pairs(v.itemTypes) do
-				tinsert(out, v)
-			end
-		end
-	end
-
-	return out
-
-end
-
-function EasyDestroy.EasyDestroyCacheID(bag, slot, link)
-	
-	-- Create Cache ID from bag, slot, quality, and item link
-
-	if type(bag) ~= "number" or type(slot) ~= "number" or type(link) ~= "string" then 
-		error(
-			string.format("Usage: EasyDestroy.EasyDestroyCacheID(bag, slot, itemLink)\n (%s, %s, %s)", bag or "nil", slot or "nil", link or "nil")
-		)
-	end
-	return string.format("%i:%i:%s", bag, slot, link)
-
-end
-
--- 773 = mill, 755 prospect
-EasyDestroy.Dict.Strings.MassDestroyMacro = "/cast %1$s \n/run C_TradeSkillUI.CraftRecipe(%2$d, 1);\n/cast %1$s";
-EasyDestroy.Dict.Strings.DestroyMacro = "/cast %s\n/use %d %d"
-
-EasyDestroy.Dict.ActionTable = {13262, 51005, 31252}
-EasyDestroy.Dict.Actions = {}
-
-EasyDestroy.Dict.Actions[1] = {
-	spellID = 13262,
-	itemTypes = {{itype=LE_ITEM_CLASS_WEAPON, stype=nil}, {itype=LE_ITEM_CLASS_ARMOR, stype=nil}},
-}
-
-EasyDestroy.Dict.Actions[2] = {
-	spellID = 51005,
-	itemTypes = {{itype=LE_ITEM_CLASS_TRADEGOODS, stype=9}},
-	tradeskill = 773,
-}
-
-EasyDestroy.Dict.Actions[4] = {
-	spellID = 31252,
-	itemTypes = {{itype=LE_ITEM_CLASS_TRADEGOODS, stype=7}},
-	tradeskill = 755,
-	
-}
-
--- ED_ACTION_FILTERS contains the different types of actions.
--- Additionally, each of those points to a table that is the 
--- basic item class/subclass filter for those actions.
-ED_ACTION_FILTERS = {}
-ED_ACTION_DISENCHANT = 1
-ED_ACTION_MILL = 2
-ED_ACTION_PROSPECT = 3
-
-tinsert(ED_ACTION_FILTERS, ED_ACTION_DISENCHANT, {{itype=LE_ITEM_CLASS_WEAPON, stype=nil}, {itype=LE_ITEM_CLASS_ARMOR, stype=nil}})
-tinsert(ED_ACTION_FILTERS, ED_ACTION_MILL, {{itype=LE_ITEM_CLASS_TRADEGOODS, stype=9}})
-tinsert(ED_ACTION_FILTERS, ED_ACTION_PROSPECT, {{itype=LE_ITEM_CLASS_TRADEGOODS, stype=7}})
-
-
-ED_FILTER_TYPES = {}
-ED_FILTER_TYPE_SEARCH = 1
-ED_FILTER_TYPE_BLACKLIST = 2
-tinsert(ED_FILTER_TYPES, ED_FILTER_TYPE_SEARCH, 'Search')
-tinsert(ED_FILTER_TYPES, ED_FILTER_TYPE_BLACKLIST, 'Blacklist')
-
-ED_ERROR_TYPES = {}
-ED_ERROR_NONE = 1
-ED_ERROR_NAME = 2
-ED_ERROR_FAVORITE = 3
-tinsert(ED_ERROR_TYPES, ED_ERROR_NONE, 'None')
-tinsert(ED_ERROR_TYPES, ED_ERROR_NAME, 'Name')
-tinsert(ED_ERROR_TYPES, ED_ERROR_FAVORITE, 'Favorite')
-
 
 EasyDestroy.separatorInfo = {
 	owner = EasyDestroyDropDown;
@@ -217,59 +102,6 @@ EasyDestroy.separatorInfo = {
 		tFitDropDownSizeX = true
 	},
 };
-
-function EasyDestroy.RegisterFrame(frame, ftype)
-    if EasyDestroy.FrameRegistry then
-		EasyDestroy.Debug("EasyDestroy.RegisterFrame", ftype, frame:GetName())
-        EasyDestroy.FrameRegistry[ftype] = EasyDestroy.FrameRegistry[ftype] or {}
-        tinsert(EasyDestroy.FrameRegistry[ftype], frame)
-    end
-end
-
-function pprint(tbl, level)
-	local newlevel = level or 0
-	newlevel = newlevel + 1
-	if type(tbl) ~= "table" then
-		print(tbl)
-	else
-		for k, v in pairs(tbl) do
-			if type(v) == "table" then
-				print(k)
-				pprint(v, newlevel)
-			else
-				print(string.rep('    ', newlevel), k, v)
-			end
-		end
-	end
-end
-
-local function handler(...)
-	local ret = ""
-	for k, v in ipairs({...}) do
-		if tostring(v) then v = tostring(v) end
-		ret = ret .. v .. " "
-	end
-
-	return ret
-end
-
-function EasyDestroy.Debug(...)
-
-	if EasyDestroy.DebugActive then
-		if EasyDestroy.DebugFrame then
-			EasyDestroy.DebugFrame:AddMessage(date("[%H:%M:%S]") .. " " .. handler(...) .. "\n")
-		else
-			print(date(), ...)
-		end
-
-	end
-end
-
-function EasyDestroy:CreateBG(frame, r, g, b)
-	local bg = frame:CreateTexture(nil, "BACKGROUND");
-	bg:SetAllPoints(true);
-	bg:SetColorTexture(r, g, b, 0.5);
-end
 
 -- borrowed from https://stackoverflow.com/questions/15706270/sort-a-table-in-lua
 function EasyDestroy.spairs(t, order)
@@ -312,15 +144,6 @@ function EasyDestroy.Keys(tbl)
 		tinsert(rtn, k)
 	end
 	return rtn
-end
-
-function EasyDestroy.InKeys(checkTable, checkValue)
-	for k, v in pairs(checkTable) do
-		if k == checkValue then
-			return true
-		end
-	end
-	return false
 end
 
 function EasyDestroy.Error(txt)

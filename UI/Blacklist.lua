@@ -6,7 +6,7 @@ frame:Hide()
 local function GetItemsInBags()
     local itemList = {}
 
-    for i, item in ipairs(EasyDestroy.API.Inventory.GetInventory()) do
+    for i, item in ipairs(EasyDestroy.Inventory.GetInventory()) do
 		local matchfound = nil
 		local typematch = false
 
@@ -15,7 +15,7 @@ local function GetItemsInBags()
 
             while (true) do
 
-                for k, v in ipairs(ED_ACTION_FILTERS[ED_ACTION_DISENCHANT]) do
+                for k, v in ipairs(EasyDestroy.Config.ItemTypeFilterByFlags(EasyDestroy.Data.Options.Actions)) do
 					if v.itype == item.classID then
 						if not v.stype then
 							typematch = true
@@ -29,7 +29,7 @@ local function GetItemsInBags()
                     break
                 elseif item.classID == LE_ITEM_CLASS_ARMOR and item.subclassID == LE_ITEM_ARMOR_COSMETIC then
                     break
-                elseif EasyDestroy.API.Blacklist.HasItem(item) then
+                elseif EasyDestroy.Blacklist.HasItem(item) then
                     break
                 elseif tContains(ED_DEFAULT_BLACKLIST, item.id) then
                     break
@@ -72,7 +72,7 @@ local function OnClickBagItem(self, button)
 
     if button ~= "LeftButton" then return end
 
-    EasyDestroy.API.Blacklist.AddItem(self.item)
+    EasyDestroy.Blacklist.AddItem(self.item)
 
 end
 
@@ -82,7 +82,7 @@ local function OnClickBlacklistItem(self, button)
 
     EasyDestroy.Debug("Remove Item From Blacklist", self.item:GetItemName(), self.item.itemID)
 
-    EasyDestroy.API.Blacklist.RemoveItem(self.item)
+    EasyDestroy.Blacklist.RemoveItem(self.item)
 
 end
 
