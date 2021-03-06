@@ -1,14 +1,27 @@
+EasyDestroy.UI.Options = {}
+
 local optionsFrame = CreateFrame("Frame", nil, InterfaceOptionsFramePanelContainer)
 optionsFrame.name = EasyDestroy.AddonName
 
-local function ShowTooltip(frame, tt)
+local protected  = {}
+
+function EasyDestroy.UI.Options.__init()
+
+    optionsFrame:SetScript("OnShow", protected.OnOptionsShow)
+    InterfaceOptions_AddCategory(optionsFrame)
+
+end
+
+function protected.ShowTooltip(frame, tt)
+
     GameTooltip:SetOwner(frame, "ANCHOR_TOP")
     GameTooltip:ClearLines()
     GameTooltip:AddLine(tt, 1, 1, 1, 1)
     GameTooltip:Show()
+
 end
 
-local function CreateOptionsForFrame(frame, optionTable)
+function protected.CreateOptionsForFrame(frame, optionTable)
 
     local column, rowFirstFrame, rowLastFrame = 0, nil, nil
 
@@ -86,7 +99,7 @@ local function CreateOptionsForFrame(frame, optionTable)
     end
 end
 
-local function OnOptionsShow()
+function protected.OnOptionsShow()
 
     local baseFrame = CreateFrame("Frame", nil, optionsFrame)
 
@@ -171,7 +184,7 @@ local function OnOptionsShow()
     addonOptions.label:SetPoint("BOTTOMLEFT", addonOptions, "TOPLEFT", 4 , 2)
     addonOptions.label:SetText("EasyDestroy Options")
 
-    CreateOptionsForFrame(addonOptions, easyDestroyOptionsTable)
+    protected.CreateOptionsForFrame(addonOptions, easyDestroyOptionsTable)
 
     local destroyOptions = CreateFrame("Frame", nil, baseFrame, BackdropTemplateMixin and "BackdropTemplate")
     destroyOptions:SetPoint("TOPLEFT", addonOptions, "BOTTOMLEFT", 0, -30)
@@ -193,19 +206,13 @@ local function OnOptionsShow()
     destroyOptions.label:SetPoint("BOTTOMLEFT", destroyOptions, "TOPLEFT", 4, 2)
     destroyOptions.label:SetText("Search & Destroy Options")
 
-    CreateOptionsForFrame(destroyOptions, destroyOptionsTable)
+    protected.CreateOptionsForFrame(destroyOptions, destroyOptionsTable)
 
     optionsFrame:SetScript("OnShow", nil)
     baseFrame:Show()
 
 end
 
-function EasyDestroy.GetActions()
-    return EasyDestroy.Data.Options.Actions
-end
-
-optionsFrame:SetScript("OnShow", OnOptionsShow)
-InterfaceOptions_AddCategory(optionsFrame)
 
 
 

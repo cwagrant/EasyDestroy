@@ -1,6 +1,6 @@
 --[[
 
-    StaticPopupDialogs used by various areas of the AddOn.
+    StaticPopupDialogs used in various areas
     
 ]]
 

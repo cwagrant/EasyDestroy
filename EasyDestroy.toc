@@ -18,11 +18,12 @@ Libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
 Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
 Libs\LibDBIcon-1.0\lib.xml
 
-#Basic configuration and information
+# Basic configuration and information
 Core.lua
 
 DevTools.lua
 
+# Loading internal libraries, objects, etc.
 API\API.xml
 
 Templates.xml
@@ -46,5 +47,5 @@ filters\soulbound.lua
 filters\itemtype.lua
 filters\count.lua
 
-AddOnSkin.lua
+UI\AddOnSkin.lua
 

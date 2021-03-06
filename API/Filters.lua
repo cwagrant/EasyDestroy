@@ -24,6 +24,10 @@ function EasyDestroy.Filters.DeleteFilter(FilterID)
 
 	EasyDestroy.Data.Filters[FilterID] = nil
 
+	if EasyDestroy.Cache.FilterCache and EasyDestroy.Cache.FilterCache[FilterID] then
+		EasyDestroy.Cache.FilterCache[FilterID] = nil
+	end
+
 	EasyDestroy.Events:Fire("ED_FILTERS_AVAILABLE_CHANGED")
 
 end

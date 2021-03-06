@@ -139,6 +139,8 @@ function EasyDestroy_EventHandler(self, event, ...)
 
 			EasyDestroy.UI.ItemWindow.__init()
 			EasyDestroy.UI.Filters.__init()
+			EasyDestroy.UI.Options.__init()
+			EasyDestroy.UI.Blacklist.__init()
 
 			-- update users inventory on login
 			EasyDestroy.Events:Call("ED_INVENTORY_UPDATED")

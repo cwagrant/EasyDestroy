@@ -662,12 +662,7 @@ function protected.SaveFilterAsOnClick()
 
 end
 
--- EasyDestroyFilters_DeleteFilter
 function protected.DeleteFilterOnClick()
-
-    -- Handler for EasyDestroy.UI.Buttons.DeleteFilter
-
-    EasyDestroy.Debug("EasyDestroy.Handlers.DeleteFilterOnClick")
 
 	--[[ Delete current filter. Load user's favorite filter if one is available. ]]
 	local FilterID = UIDropDownMenu_GetSelectedValue(FiltersFrame.FilterDropDown)
@@ -675,14 +670,7 @@ function protected.DeleteFilterOnClick()
 	-- can't delete a non-existent filter TODO: Should this just clear the filter frame? Or maybe add a Clear button?
 	if FilterID == 0 then return end 
 
-	EasyDestroy.Debug("Deleting Filter", FilterID)
-	EasyDestroy.Data.Filters[FilterID] = nil
-
-	-- when deleting a filter, we need to make sure to clear it from the cache.
-	if EasyDestroy.Cache.FilterCache and EasyDestroy.Cache.FilterCache[FilterID] then
-		EasyDestroy.Filters.DeleteFilter(FilterID)
-		EasyDestroy.Cache.FilterCache[FilterID] = nil
-	end
+	EasyDestroy.Filters.DeleteFilter(FilterID)
 
 	local favoriteID =  EasyDestroy.Favorites.GetFavorite()
 

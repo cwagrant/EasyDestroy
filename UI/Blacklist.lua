@@ -1,9 +1,26 @@
+EasyDestroy.UI.Blacklist = {}
+
 local frame = CreateFrame("Frame", "ED_Blacklist", InterfaceOptionsFramePanelContainer)
 frame.name = "Blacklist"
 frame.parent = EasyDestroy.AddonName
 frame:Hide()
 
-local function GetItemsInBags()
+local protected = {}
+
+function EasyDestroy.UI.Blacklist.__init()
+
+    frame:SetScript("OnShow", protected.OnFrameShow)
+
+    InterfaceOptions_AddCategory(frame)
+    
+    EasyDestroy_OpenBlacklist:SetScript("OnClick", function()
+        InterfaceOptionsFrame_OpenToCategory(frame)
+        InterfaceOptionsFrame_OpenToCategory(frame)
+    end)
+
+end
+
+function protected.GetItemsInBags()
     local itemList = {}
 
     for i, item in ipairs(EasyDestroy.Inventory.GetInventory()) do
@@ -43,7 +60,7 @@ local function GetItemsInBags()
     return itemList
 end
 
-local function GetItemsInBlacklist()
+function protected.GetItemsInBlacklist()
     --[[
         blacklists will be saved as a list of item id's.
         To show the item in the frame, we'll need to get the items link from GetItemInfo to get the ID.
@@ -68,7 +85,7 @@ local function GetItemsInBlacklist()
     return itemList
 end
 
-local function OnClickBagItem(self, button)
+function protected.OnClickBagItem(self, button)
 
     if button ~= "LeftButton" then return end
 
@@ -76,7 +93,7 @@ local function OnClickBagItem(self, button)
 
 end
 
-local function OnClickBlacklistItem(self, button)
+function protected.OnClickBlacklistItem(self, button)
 
     if button ~= "LeftButton" then return end
 
@@ -86,7 +103,7 @@ local function OnClickBlacklistItem(self, button)
 
 end
 
-local function OnFrameShow()
+function protected.OnFrameShow()
     local leftframe = CreateFrame("Frame", nil, frame)
     leftframe:SetHeight(248)
     leftframe:SetPoint("LEFT", frame, 16, 0)
@@ -113,16 +130,15 @@ local function OnFrameShow()
     local blwarn = rightframe:CreateFontString(rightframe, "OVERLAY", "GameFontHighlight")
     blwarn:SetPoint("BOTTOMRIGHT", rightframe, "TOPRIGHT", 4, 0)
     blwarn:SetText("NOTE: This blacklist does not list items filtered by 'blacklist' type filters.")
-    -- EasyDestroy:CreateBG(rightframe, 0, 0, 1)
 
     local itemsInBags = CreateFrame("Frame", "EDBLBagItems", leftframe, "EasyDestroyItemScrollTemplate")
     itemsInBags:Show()
-    itemsInBags:Initialize(GetItemsInBags, 10, 24, OnClickBagItem)
+    itemsInBags:Initialize(protected.GetItemsInBags, 10, 24, protected.OnClickBagItem)
     frame.itemsInBags = itemsInBags
 
     local itemsInBlacklist = CreateFrame("Frame", "EDBLBlacklistItems", rightframe, "EasyDestroyItemScrollTemplate")
     itemsInBlacklist:Show()
-    itemsInBlacklist:Initialize(GetItemsInBlacklist, 10, 24, OnClickBlacklistItem)
+    itemsInBlacklist:Initialize(protected.GetItemsInBlacklist, 10, 24, protected.OnClickBlacklistItem)
     frame.itemsInBlacklist = itemsInBlacklist
 
     itemsInBags.ScrollFrame:SetScript("OnVerticalScroll", function(self, offset)
@@ -133,9 +149,11 @@ local function OnFrameShow()
         itemsInBlacklist:OnVerticalScroll(offset)
     end)
 
+    -- First time we show we need to get the item lists
     itemsInBags:ItemListUpdate()
     itemsInBlacklist:ItemListUpdate()
 
+    -- Update the frames
     itemsInBags:ScrollUpdate()
     itemsInBlacklist:ScrollUpdate()
 
@@ -151,31 +169,6 @@ local function OnFrameShow()
         itemsInBags:ScrollUpdate()
     end)
 
-
     -- Only run this code the very first time we show the frame
     frame:SetScript("OnShow", nil)
 end
-
-function EasyDestroy.UI.UpdateBlacklistWindow()
-    local itemsInBags = _G['EDBLBagItems']
-    if itemsInBags then
-        itemsInBags.UpdateItemList = true
-        itemsInBags:ScrollUpdate()
-    end
-
-    local itemsInBlacklist = _G['EDBLBlacklistItems']
-    if itemsInBlacklist then
-        itemsInBlacklist.UpdateItemList = true
-        itemsInBlacklist:ScrollUpdate()
-    end
-
-end
-
-frame:SetScript("OnShow", OnFrameShow)
-
-InterfaceOptions_AddCategory(frame)
-
-EasyDestroy_OpenBlacklist:SetScript("OnClick", function()
-    InterfaceOptionsFrame_OpenToCategory(frame)
-    InterfaceOptionsFrame_OpenToCategory(frame)
-end)
