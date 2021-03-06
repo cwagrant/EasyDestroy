@@ -25,18 +25,21 @@ EasyDestroyFrame:RegisterEvent("PLAYER_STARTED_MOVING")
 EasyDestroyFrame:RegisterEvent("PLAYER_STOPPED_MOVING")
 EasyDestroyFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 
+local protected = {}
+
+protected.PlayerMoving = false
+protected.DataLoaded = false
+
 function EasyDestroy_EventHandler(self, event, ...)
 	if event == "BAG_UPDATE_DELAYED" and EasyDestroy.AddonLoaded and EasyDestroyFrame:IsVisible() then 
 
 
-		if not EasyDestroy.ProcessingItemCombine then 
+		if not EasyDestroy.Inventory.RestackInProgress then 
 
 			-- As long as we're not the ones changing the users bags, lets upate our 
 			-- windows and lists and make sure to reenable the button if it's disabled
 
 			EasyDestroy.Events:Call("ED_INVENTORY_UPDATED")
-				-- :Call("UpdateItemWindow", true, function() EasyDestroyButton:Enable() end)
-
 
 		end
 
@@ -65,7 +68,7 @@ function EasyDestroy_EventHandler(self, event, ...)
 				EasyDestroy.Debug("EventHandler", "Cast Interrupted")
 				EasyDestroy.ButtonWasClicked = false
 
-				if not EasyDestroy.PlayerMoving then 
+				if not protected.PlayerMoving then 
 					EasyDestroyButton:Enable()
 				end
 
@@ -84,7 +87,7 @@ function EasyDestroy_EventHandler(self, event, ...)
 
 		EasyDestroyButton:Disable()
 
-	elseif event=="PLAYER_REGEN_ENABLED" and not EasyDestroy.PlayerMoving then
+	elseif event=="PLAYER_REGEN_ENABLED" and not protected.PlayerMoving then
 
 		-- Enable the button out of combat
 
@@ -93,14 +96,14 @@ function EasyDestroy_EventHandler(self, event, ...)
 	elseif event=="PLAYER_STARTED_MOVING" then
 
 		-- Disable button while player is moving
-		EasyDestroy.PlayerMoving = true
+		protected.PlayerMoving = true
 		EasyDestroyButton:Disable()
 
 	elseif event=="PLAYER_STOPPED_MOVING" then
 
 		-- Reenable button when player stops moving
 
-		EasyDestroy.PlayerMoving = false
+		protected.PlayerMoving = false
 		EasyDestroyButton:Enable()
 
 	elseif event=="ADDON_LOADED" then
@@ -114,10 +117,10 @@ function EasyDestroy_EventHandler(self, event, ...)
 
 			if EasyDestroyData then 
 				EasyDestroy.Data = EasyDestroyData
-				EasyDestroy.DataLoaded = true
+				protected.DataLoaded = true
 			else
 				EasyDestroy.Data = {}
-				EasyDestroy.DataLoaded = true
+				protected.DataLoaded = true
 			end
 
 			if EasyDestroyCharacter then
@@ -238,7 +241,7 @@ function EasyDestroy_EventHandler(self, event, ...)
 
 		-- Save our data on logout
 
-		if EasyDestroy.DataLoaded then
+		if protected.DataLoaded then
 			EasyDestroyData = EasyDestroy.Data
 			EasyDestroyCharacter = EasyDestroy.CharacterData
 		end
@@ -282,7 +285,7 @@ function SlashCmdList.EASYDESTROY(msg)
 			print("Unrecognized setting: " .. b)
 		end
 	elseif msg=="debug" and EasyDestroy.DebugActive then
-		EasyDestroy.DebugFrame:GetParent():Show()
+		EasyDestroy:ShowDebugFrame()
 	elseif msg=="opt" or msg=="option" or msg=="options" then 
 		InterfaceOptionsFrame_OpenToCategory("EasyDestroy")
     	InterfaceOptionsFrame_OpenToCategory("EasyDestroy")
@@ -295,15 +298,21 @@ function SlashCmdList.EASYDESTROY(msg)
 	end
 end
 
+
+-- 'turn on' the event handlers
 EasyDestroyFrame:SetScript("OnEvent", EasyDestroy_EventHandler)
 EasyDestroyFrame:SetScript("OnUpdate", EasyDestroy_OnUpdate)
 
-EasyDestroySelectedFiltersScroll:SetToplevel(true)
+-- EasyDestroySelectedFiltersScroll:SetToplevel(true)
 
-if EasyDestroy.DebugActive then
-	EasyDestroy:CreateBG(EasyDestroyFrameSearch, 1, 0, 0)
-	EasyDestroy:CreateBG(EasyDestroyConfiguration, 0, 1, 0)
-end
+-- 
+-- if EasyDestroy.DebugActive then
+-- 	EasyDestroy:CreateBG(EasyDestroyFrameSearch, 1, 0, 0)
+-- 	EasyDestroy:CreateBG(EasyDestroyConfiguration, 0, 1, 0)
+-- end
+
+
+EasyDestroy.Events:Fire("ED_ADDON_LOADED")
 
 
 

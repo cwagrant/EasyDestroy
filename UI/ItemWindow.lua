@@ -12,7 +12,6 @@ function ItemWindow.__init()
 
     if initialized then return end 
 
-    -- EasyDestroy.RegisterCallback(ItemWindow, "UpdateItemWindow", protected.Update)	
 	EasyDestroy.RegisterCallback(ItemWindow, "ED_BLACKLIST_UPDATED", protected.Update)
 	EasyDestroy.RegisterCallback(ItemWindow, "ED_INVENTORY_UPDATED_DELAYED", protected.Update)
 
@@ -52,6 +51,7 @@ function protected.FindWhitelistItems(activeFilter)
 	local filter = activeFilter:ToTable()
 	filter.filter = EasyDestroy.UI.Filters.GetCriteria()
 
+	local restackItems = false
 	local matchfound = nil
 	local typematch = false
 	local items = {}
@@ -155,12 +155,18 @@ function protected.FindWhitelistItems(activeFilter)
 
 				if EasyDestroy.Inventory.ItemNeedsRestacked(item) then
 					EasyDestroy.Debug("AddItemToQueue", item.itemLink)
-					tinsert(API.toCombineQueue, item)
+					EasyDestroy.Inventory.QueueForRestack(item)
+					restackItems = true
 				end
 
 			end
 		end
 	end
+	-- items need restacked!
+	-- if restackItems then 
+	-- 	EasyDestroy.Events:Fire("ED_RESTACK_ITEMS")
+	-- end
+
 	return items
 end
 
@@ -183,14 +189,4 @@ function protected.ItemOnClick(self, button)
 		EasyMenu(self.item.menu, EasyDestroy.ContextMenu, "cursor", 0, 0, "MENU")
 	end
 	
-end
-
-function ItemWindow.OnCriteriaUpdate()
-
-	-- If our filter was updated, we'll need to tell the system to update.
-
-	EasyDestroy.Events:Call("ED_FILTER_CRITERIA_CHANGED", EasyDestroy.UI.Filters.GenerateFilter())
-	-- EasyDestroy.Events:Call("UpdateItemWindow")
-
-
 end

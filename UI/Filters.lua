@@ -89,7 +89,6 @@ function FiltersFrame.__init()
 	-- I would think this belongs more with EasyDestroyFrame, but for whatever reason I'm too tired to
 	-- figure at at the moment, it doesn't set the script when placed in that file...
 	EasyDestroy_ToggleConfigurator:SetScript("OnClick", function() 
-		print("CLICK")
 		if EasyDestroyConfiguration:IsVisible() then 
 			EasyDestroyConfiguration:Hide() 
 		else
@@ -116,6 +115,8 @@ function FiltersFrame.__init()
 		EasyDestroy.Data.Options.ConfiguratorShown = true
 		
 	end)
+
+	EasyDestroySelectedFiltersScroll:SetToplevel(true)
     
     initialized = true
 
@@ -361,6 +362,8 @@ function FiltersFrame.Clear()
 end
 
 function FiltersFrame.LoadFilter(fid)
+	-- We're changing filters, so we'll clear the restack queue
+	EasyDestroy.Inventory.ClearRestackQueue()
 	FiltersFrame.Clear()
 
 	EasyDestroy.Debug("EasyDestroy.UI.LoadFilter", "Loading Filter", fid)
@@ -490,10 +493,8 @@ function FiltersFrame.GenerateFilter()
 	
 end
 
-
-
 -- #####################################
---[[ UI Event Handlers ]]
+-- [[ UI Event Handlers ]]
 -- #####################################
 
 --[[ If using Character Favorites, then clicking the icon will immediately set the favorite. ]]
@@ -617,7 +618,7 @@ function protected.CriteriaDropDownOnSelect(self, arg1, arg2, checked)
 	end
 	FiltersFrame.PlaceCriteria()
 	
-	asyDestroy.Events:Fire("ED_FILTER_CRITERIA_CHANGED")
+	EasyDestroy.Events:Fire("ED_FILTER_CRITERIA_CHANGED")
 end
 
 function protected.NewOnClick()

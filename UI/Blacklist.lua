@@ -20,6 +20,18 @@ function EasyDestroy.UI.Blacklist.__init()
 
 end
 
+function protected.OnBlacklistUpdate()
+    frame.itemsInBags:ItemListUpdate()
+    frame.itemsInBags:ScrollUpdate()
+    frame.itemsInBlacklist:ItemListUpdate()
+    frame.itemsInBlacklist:ScrollUpdate()
+end
+
+function protected.OnInventoryUpdate()
+    frame.itemsInBags:ItemListUpdate()
+    frame.itemsInBags:ScrollUpdate()
+end
+
 function protected.GetItemsInBags()
     local itemList = {}
 
@@ -149,26 +161,29 @@ function protected.OnFrameShow()
         itemsInBlacklist:OnVerticalScroll(offset)
     end)
 
-    -- First time we show we need to get the item lists
-    itemsInBags:ItemListUpdate()
-    itemsInBlacklist:ItemListUpdate()
+    -- Update everything the first time we open the window
+    protected.OnBlacklistUpdate()
 
-    -- Update the frames
-    itemsInBags:ScrollUpdate()
-    itemsInBlacklist:ScrollUpdate()
 
-    EasyDestroy.RegisterCallback(frame, "ED_BLACKLIST_UPDATED", function()
-        itemsInBags:ItemListUpdate()
-        itemsInBags:ScrollUpdate()
-        itemsInBlacklist:ItemListUpdate()
-        itemsInBlacklist:ScrollUpdate()
-    end)
-
-    EasyDestroy.RegisterCallback(frame, "ED_INVENTORY_UPDATED_DELAYED", function()
-        itemsInBags:ItemListUpdate()
-        itemsInBags:ScrollUpdate()
-    end)
+    EasyDestroy.RegisterCallback(frame, "ED_BLACKLIST_UPDATED", protected.OnBlacklistUpdate)
+    EasyDestroy.RegisterCallback(frame, "ED_INVENTORY_UPDATED_DELAYED", protected.OnInventoryUpdate)
 
     -- Only run this code the very first time we show the frame
-    frame:SetScript("OnShow", nil)
+    frame:SetScript("OnShow", function()
+        EasyDestroy.Debug("Register Callbacks for Blacklist Options Window")
+        EasyDestroy.RegisterCallback(frame, "ED_BLACKLIST_UPDATED", protected.OnBlacklistUpdate)
+        EasyDestroy.RegisterCallback(frame, "ED_INVENTORY_UPDATED_DELAYED", protected.OnInventoryUpdate)
+        
+        -- Update everything on subsequence openings of the window. This makes sure we catch up to any updates made 
+        -- when the window is closed
+        protected.OnBlacklistUpdate()
+    end)
+
+    frame:SetScript("OnHide", function()
+        EasyDestroy.Debug("Unregister Callbacks for Blacklist Options Window")
+        EasyDestroy.UnregisterCallback(frame, "ED_BLACKLIST_UPDATED")
+        EasyDestroy.UnregisterCallback(frame, "ED_INVENTORY_UPDATED_DELAYED")
+
+    end)
+
 end

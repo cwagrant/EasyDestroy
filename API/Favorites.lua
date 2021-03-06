@@ -1,5 +1,5 @@
 --[[ Logic for the Favoriting System ]]
-
+EasyDestroy.Favorites = {}
 function EasyDestroy.Favorites.GetFavorite()
     --[[
 	If the user has character specific favorites set AND the character has a favorite
@@ -26,7 +26,7 @@ function EasyDestroy.Favorites.GetFavorite()
 		return nil
 	end
 
-	if GetTableSize(EasyDestroy.Data.Filters)>0 then
+	if EasyDestroy.GetTableSize(EasyDestroy.Data.Filters)>0 then
 		for k, filterObj in pairs(EasyDestroy.Data.Filters) do
 			if filterObj.properties.favorite then
 				return k
@@ -55,7 +55,7 @@ function EasyDestroy.Favorites.UnsetFavorite()
 		return
 	end
 
-	if GetTableSize(EasyDestroy.Data.Filters)>0 then
+	if EasyDestroy.GetTableSize(EasyDestroy.Data.Filters)>0 then
 		for k, filterObj in pairs(EasyDestroy.Data.Filters) do
 			if filterObj.properties.favorite then
 				EasyDestroy.Data.Filters[k].properties.favorite = false

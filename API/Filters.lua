@@ -49,18 +49,15 @@ function EasyDestroy.Filters.RegisterCriteria(criteria)
     ]]
 	local filterKeys = EasyDestroy.Keys(criteria)
 	if not tContains(filterKeys, 'name') then
-		EasyDestroy.Error('Error: Filter criterion found with no name. Unable to register.')
+		print('|cFFFF0000[Easy Destroy Error]:|r Filter criterion found with no name. Unable to register.')
 		return
 	elseif not tContains(filterKeys, 'key') then 
-		EasyDestroy.Error('Error: Filter criterion ' .. criteria.name .. ' nunable to load. No key provided.')
+		print('|cFFFF0000[Easy Destroy Error]:|r Filter criterion ' .. criteria.name .. ' nunable to load. No key provided.')
 		return
 	end
 
 	criteria:Initialize()
 
-	--[[
-		I generally don't like this being here.
-	]]
 	if criteria and criteria.scripts then 
 		for scriptType, frames in pairs(criteria.scripts) do
 

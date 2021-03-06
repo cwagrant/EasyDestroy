@@ -1,13 +1,12 @@
-EasyDestroy.UI.Options = {}
-
-local optionsFrame = CreateFrame("Frame", nil, InterfaceOptionsFramePanelContainer)
+local optionsFrame = CreateFrame("Frame", 'EasyDesteroy_OptionsFrame', InterfaceOptionsFramePanelContainer)
 optionsFrame.name = EasyDestroy.AddonName
 
+EasyDestroy.UI.Options = optionsFrame
 local protected  = {}
 
 function EasyDestroy.UI.Options.__init()
 
-    optionsFrame:SetScript("OnShow", protected.OnOptionsShow)
+    optionsFrame:SetScript("OnShow", EasyDestroy_OnOptionsShow)
     InterfaceOptions_AddCategory(optionsFrame)
 
 end
@@ -122,7 +121,7 @@ end
 
 
 
-function protected.OnOptionsShow()
+function EasyDestroy_OnOptionsShow()
 
     local baseFrame = CreateFrame("Frame", nil, optionsFrame)
     local ldbicon = LibStub("LibDBIcon-1.0")
@@ -178,7 +177,7 @@ function protected.OnOptionsShow()
                 tooltip="If selected Searches will show items that can be disenchanted.",
                 OnClick = function(self) 
                     EasyDestroy.Data.Options.Actions = bit.bxor(EasyDestroy.Data.Options.Actions, EasyDestroy.Enum.Actions.Disenchant)
-                    EasyDestroy.Events:Call("UpdateItemWindow")
+                    EasyDestroy.Events:Call("ED_FILTER_CRITERIA_CHANGED")
                 end,
                 value = EasyDestroy.Enum.Actions.Disenchant,
             },
@@ -188,7 +187,7 @@ function protected.OnOptionsShow()
                 tooltip="If selected Searches will show items that can be milled.", 
                 OnClick = function(self) 
                     EasyDestroy.Data.Options.Actions = bit.bxor(EasyDestroy.Data.Options.Actions, EasyDestroy.Enum.Actions.Mill) 
-                    EasyDestroy.Events:Call("UpdateItemWindow")
+                    EasyDestroy.Events:Call("ED_FILTER_CRITERIA_CHANGED")
                 end,
                 value = EasyDestroy.Enum.Actions.Mill,
             },
@@ -198,7 +197,7 @@ function protected.OnOptionsShow()
                 tooltip="If selected Searches will show items that can be prospected.",
                 OnClick = function(self) 
                     EasyDestroy.Data.Options.Actions = bit.bxor(EasyDestroy.Data.Options.Actions, EasyDestroy.Enum.Actions.Prospect) 
-                    EasyDestroy.Events:Call("UpdateItemWindow")
+                    EasyDestroy.Events:Call("ED_FILTER_CRITERIA_CHANGED")
                 end,
                 value = EasyDestroy.Enum.Actions.Prospect,
             },
@@ -226,6 +225,7 @@ function protected.OnOptionsShow()
     addonOptions.label = addonOptions:CreateFontString(addonOptions, "OVERLAY", "GameTooltipText")
     addonOptions.label:SetPoint("BOTTOMLEFT", addonOptions, "TOPLEFT", 4 , 2)
     addonOptions.label:SetText("EasyDestroy Options")
+    optionsFrame.addonOptions = addonOptions
 
     protected.CreateOptionsForFrame(addonOptions, easyDestroyOptionsTable)
 
@@ -248,16 +248,23 @@ function protected.OnOptionsShow()
     destroyOptions.label = destroyOptions:CreateFontString(destroyOptions, "OVERLAY", "GameTooltipText")
     destroyOptions.label:SetPoint("BOTTOMLEFT", destroyOptions, "TOPLEFT", 4, 2)
     destroyOptions.label:SetText("Search & Destroy Options")
+    optionsFrame.destroyOptions = destroyOptions
 
     protected.CreateOptionsForFrame(destroyOptions, destroyOptionsTable)
 
+    local clearSessionButton = CreateFrame("Button", nil,  baseFrame, "UIPanelButtonTemplate")
+    clearSessionButton:SetPoint("TOPLEFT", destroyOptions, "BOTTOMLEFT", 0, -30)
+    clearSessionButton:SetSize(160, 30)
+    clearSessionButton:SetText("Clear Session Ignored Items")
+    clearSessionButton:SetScript("OnClick", function()
+        EasyDestroy.Blacklist.ClearSession()
+    end)
+
+    optionsFrame.clearSessionButton = clearSessionButton
+    
     optionsFrame:SetScript("OnShow", nil)
     baseFrame:Show()
+    
+    EasyDestroy.Events:Fire("ED_OPTIONS_LOADED")
 
 end
-
-
-
-
-
-

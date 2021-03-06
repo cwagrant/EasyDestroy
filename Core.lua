@@ -1,5 +1,5 @@
 --[[
-	Setup the "Environment"
+	Setup the Environment 
 
 	Additinally provides a few helper functions
 ]]
@@ -12,23 +12,19 @@ EasyDestroy.AddonName = "EasyDestroy"
 EasyDestroy.DebugActive = true
 EasyDestroy.AddonLoaded = false
 
---[[ Modules ]]
-EasyDestroy.Favorites = {}
+--[[ Declarations ]]
 EasyDestroy.Data = {}
 EasyDestroy.UI = {}
-EasyDestroy.API = {}
-EasyDestroy.CallbackHandler = {}
 
+EDFILTER_SCROLL_CHILD = "EasyDestroySelectedFiltersScrollChild" -- parent frame for criteria
+EASY_DESTROY_CATEGORY = "EasyDestroy" -- Category name for Interface Options menu item
+_G["BINDING_NAME_CLICK EasyDestroyButton:LeftButton"] = "Destroy Button" -- Keybinding capability setup
 
 --[[ Events Setup ]]
---[[
-	Events:
 
-	UpdateInventory - fires after bag updates when EasyDestroy is visible.
-	UpdateInventoryDelayed - fires after Inventory is updated
-	UpdateBlacklist - fires when modifications are made to Item and Session Blacklists
-	UpdateCriteria - fires when filter criteria are changed
-	UpdateFilters - fires when a filter is saved or deleted
+--[[
+
+	Events:
 
 	ED_NEW_CRITERIA_AVAILABLE - fires when criteria are registered
 	ED_BLACKLIST_UPDATED - fires when an item as added or removed from the Item or Session Blacklists
@@ -38,6 +34,8 @@ EasyDestroy.CallbackHandler = {}
 	ED_FILTERS_AVAILABLE_CHANGED - fires when a new filter is saved or an existing filter is deleted
 
 ]]
+
+EasyDestroy.CallbackHandler = {}
 EasyDestroy.Events = LibStub("CallbackHandler-1.0"):New(EasyDestroy)
 
 function EasyDestroy.Events:Call(...)
@@ -50,34 +48,16 @@ function EasyDestroy.Events:Call(...)
 
 end
 
--- This is the name of the frame that filter types attach to for scrolling
-EDFILTER_SCROLL_CHILD = "EasyDestroySelectedFiltersScrollChild"
-
--- Category name for Interface Options menu item
-EASY_DESTROY_CATEGORY = "EasyDestroy"
-
--- Setting up Key Binding capability for the Destroy Button
-_G["BINDING_NAME_CLICK EasyDestroyButton:LeftButton"] = "Destroy Button"
-
--- For making sure item combines aren't called endlessly when the inventory is updating
-EasyDestroy.ProcessingItemCombine = false
-
---[[ Utility Tables/Variables ]]
-EasyDestroy.EmptyFilter = { filter={}, properties={} }
+--[[ Utility Tables/Variables ]] 
+-- TODO: Move as much of this to the related API's as possible and formalize their access via the APIs
 EasyDestroy.Cache = { ItemCache = {}, FilterCache = {}}
-EasyDestroy.FrameRegistry = {}
-EasyDestroy.SessionBlacklist = {}
 EasyDestroy.FirstStartup = false
-EasyDestroy.PlayerMoving = false
 
 EasyDestroy.Warnings = {}
 EasyDestroy.Warnings.LootOpen = false
-EasyDestroy.DataLoaded = false
 
 EasyDestroy.CriteriaRegistry = {}
 EasyDestroy.CriteriaStack = {}
-
-EasyDestroy.DebugFrame = nil
 
 EasyDestroy.separatorInfo = {
 	owner = EasyDestroyDropDown;
@@ -131,7 +111,7 @@ function EasyDestroy.spairs(t, order)
 end
 
 -- table.getn doesn't work if the table has non-integer keys
-function GetTableSize(t)
+function EasyDestroy.GetTableSize(t)
 	local count = 0
 	for k, v in pairs(t) do
 		if k ~= nil then
@@ -147,10 +127,6 @@ function EasyDestroy.Keys(tbl)
 		tinsert(rtn, k)
 	end
 	return rtn
-end
-
-function EasyDestroy.Error(txt)
-	print(string.format("|cFFFF0000%s|r", txt))
 end
 
 function EasyDestroy:UpdateDBFormat(data)

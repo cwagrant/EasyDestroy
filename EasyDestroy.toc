@@ -29,13 +29,8 @@ API\API.xml
 Templates.xml
 EasyDestroy.xml
 
-UI\Options.lua
-UI\EasyDestroy.lua
-UI\ItemWindow.lua
-UI\Filters.lua
-UI\Blacklist.lua
+UI\UI.xml
 
-Dialogs.lua
 Main.lua
 
 # After everything is set up and running, register the filter criteria.

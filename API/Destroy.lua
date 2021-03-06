@@ -18,7 +18,7 @@ function EasyDestroy.Destroy.GetDestroyActionForItem(item)
 
 end
 
-function EasyDestroy.DestroyDestroyItem(item)
+function EasyDestroy.Destroy.DestroyItem(item)
 
 	EasyDestroy.Debug("EasyDestroy.DestroyItem", item.itemLink)
 

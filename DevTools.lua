@@ -74,24 +74,31 @@ if EasyDestroy.DebugActive then
 	c:AddMessage("TEST")
 	EasyDestroy.DebugFrame = c
 
-	-- function EasyDestroy.Events:OnUsed(target, eventname)
-
-	-- 	EasyDestroy.Debug(tostring(eventname))
-
-	-- end
+	function EasyDestroy.ShowDebugFrame()
+		f:Show()
+	end
 
 	local function DBG(e)
 		EasyDestroy.Debug(e)
 	end
 
-	-- Would probably be better if this went to a separate events frame
+	-- Would probably be better if this went to a separate frame, but I 
+	-- just want to see what events fire and when...
 
 	EasyDestroy.RegisterCallback(f, "ED_NEW_CRITERIA_AVAILABLE", DBG)
 	EasyDestroy.RegisterCallback(f, "ED_BLACKLIST_UPDATED", DBG)
+	EasyDestroy.RegisterCallback(f, "ED_INVENTORY_UPDATED", DBG)
 	EasyDestroy.RegisterCallback(f, "ED_INVENTORY_UPDATED_DELAYED", DBG)
 	EasyDestroy.RegisterCallback(f, "ED_FILTER_CRITERIA_CHANGED", DBG)
 	EasyDestroy.RegisterCallback(f, "ED_FILTER_LOADED", DBG)
 	EasyDestroy.RegisterCallback(f, "ED_FILTERS_AVAILABLE_CHANGED", DBG)
+
+	EasyDestroy.RegisterCallback(f, "ED_ADDON_LOADED", function ()
+		EasyDestroy:CreateBG(EasyDestroyFrameSearch, 1, 0, 0)
+		EasyDestroy:CreateBG(EasyDestroyConfiguration, 0, 1, 0)
+
+	end)
+		
 
 end
 

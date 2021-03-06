@@ -91,13 +91,16 @@ function EasyDestroyFrame.__init()
     EasyDestroyFrame:SetScript("OnHide", protected.UnregisterEvents)
 
     EasyDestroyButton:SetScript("PreClick", protected.DestroyPreClick)
-    EasyDestroyButton:SetScript("PostClick", function(self)
-	EasyDestroyButton:SetAttribute("macrotext", "")	
-	EasyDestroy.ButtonWasClicked = true
+    EasyDestroyButton:SetScript("PostClick", 
+	function(self)
+		EasyDestroyButton:SetAttribute("macrotext", "")	
+		EasyDestroy.ButtonWasClicked = true
+	end)
 
-	EasyDestroy.RegisterCallback(EasyDestroyButton, "ED_INVENTORY_UPDATED_DELAYED", function(self) self:Enable() end )
-
-end)
+	EasyDestroy.RegisterCallback(EasyDestroyButton, "ED_INVENTORY_UPDATED_DELAYED", 
+	function() 
+		EasyDestroyButton:Enable() 
+	end)
 
 end
 
@@ -128,7 +131,6 @@ function protected.RegisterEvents()
 	
 	-- lets refresh things now that we're opening the window
 	EasyDestroy.Events:Call("ED_INVENTORY_UPDATED")
-		:Call("ED_RESTACK_ITEMS")
 		:Call("ED_FILTER_LOADED")
 
 end

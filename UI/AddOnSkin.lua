@@ -37,14 +37,18 @@ function AS:EasyDestroy(event, addon)
     AS:SkinDropDownBox(EasyDestroyDropDown)
     AS:SkinDropDownBox(EasyDestroyFilterTypes)
 
-    local function ApplySkins()
+    local ApplySkins = function()
 
-        for i, frame in ipairs(EasyDestroy.FrameRegistry.EditBox) do
+        for i, frame in ipairs(EasyDestroy.GetRegisteredFramesByKey('EditBox')) do
             AS:SkinEditBox(frame)
         end
 
-        for i, frame in ipairs(EasyDestroy.FrameRegistry.CheckButton) do
+        for i, frame in ipairs(EasyDestroy.GetRegisteredFramesByKey('CheckButton')) do
             AS:SkinCheckBox(frame)
+        end
+
+        for i, frame in ipairs(EasyDestroy.GetRegisteredFramesByKey('Button')) do
+            AS:SkinButton(frame)
         end
 
     end
@@ -52,9 +56,15 @@ function AS:EasyDestroy(event, addon)
     ApplySkins()
 
 
+    EasyDestroy.UI.Options:HookScript("OnShow", function()
+
+        AS:SkinButton(EasyDestroy.UI.Options.clearSessionButton)
+
+    end)
+
     --[[ Cleanup ]]
     AS:SkinCloseButton(EasyDestroyFrameClose)
     AS:StripTextures(EasyDestroyFrame.Title)
 end
 
-AS:RegisterSkin('EasyDestroy', AS.EasyDestroy)
+AS:RegisterSkin('EasyDestroy', AS.EasyDestroy, 'ADDON_LOADED')

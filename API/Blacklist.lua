@@ -1,11 +1,13 @@
 EasyDestroy.Blacklist = {}
+local protected ={}
 
-local _API = EasyDestroy.Blacklist
-EasyDestroy.Blacklist.name = "EasyDestroy.Blacklist"
+protected.SessionBlacklist = {}
 
 function EasyDestroy.Blacklist.AddSessionItem(item)
 	
-	tinsert(EasyDestroy.SessionBlacklist, item:ToTable())
+	if EasyDestroy.Blacklist.HasSessionItem(item) then return end
+
+	tinsert(protected.SessionBlacklist, item:ToTable())
 
 	EasyDestroy.Events:Fire("ED_BLACKLIST_UPDATED")
 
@@ -13,19 +15,30 @@ end
 
 function EasyDestroy.Blacklist.HasSessionItem(item)
 
-    for k, v in ipairs(EasyDestroy.SessionBlacklist) do
-        -- if regular item, match on itemid, quality, ilvl
-        -- if legendary item, match on itemid and name
-        if v and ((v.itemid == item.itemID and v.quality == item.quality and v.ilvl == item.level) or (v.legendary and v.itemid==item.itemID and v.legendary==item:GetItemName())) then
-            return true
-        end
+    for k, v in ipairs(protected.SessionBlacklist) do
+
+        if protected.IsItemMatch(item, v) then 
+			return true
+		end
+
     end
 
 	return false
 end
 
+function EasyDestroy.Blacklist.ClearSession()
+
+	wipe(protected.SessionBlacklist)
+
+	EasyDestroy.Events:Fire("ED_BLACKLIST_UPDATED")
+
+end
+
 function EasyDestroy.Blacklist.AddItem(item)
-    	
+    
+	-- don't want to add multiple versions of someone gets click-happy on the UI side of things.
+	if EasyDestroy.Blacklist.HasItem(item) then return end
+
 	tinsert(EasyDestroy.Data.Blacklist, item:ToTable())
 
 	EasyDestroy.Events:Fire("ED_BLACKLIST_UPDATED")
@@ -36,19 +49,9 @@ function EasyDestroy.Blacklist.HasItem(item)
 
     for k, v in ipairs(EasyDestroy.Data.Blacklist) do
 
-        if v and v.itemid and v.itemid == item:GetItemID() then
-
-            if v.legendary and v.legendary == item:GetItemName() then 
-                return true
-            elseif v.quality == item.quality and v.ilvl == item.level then
-                if v.name and v.name == item:GetItemName() then
-                    return true
-                elseif not v.name then 
-                    -- found a match on everything else, and no name is saved in the db (legacy)
-                    return true
-                end
-            end
-        end
+		if protected.IsItemMatch(item, v) then 
+			return true
+		end
 
     end
 
@@ -59,12 +62,11 @@ end
 function EasyDestroy.Blacklist.RemoveItem(item)
 
 	for k, v in ipairs(EasyDestroy.Data.Blacklist) do
-        -- if regular item, match on itemid, quality, ilvl
-        -- if legendary item, match on itemid and name
-		--- TODO: Update this & Add to use the same logic as HasItem in regards to item names
-        if v and ((v.itemid == item.itemID and v.quality == item.quality and v.ilvl == item.level) or (v.legendary and v.itemid==item.itemID and v.legendary==item:GetItemName())) then
-            tremove(EasyDestroy.Data.Blacklist, k)
-        end
+
+		if protected.IsItemMatch(item, v) then 
+			tremove(EasyDestroy.Data.Blacklist, k)
+		end
+
     end
 
 	EasyDestroy.Events:Fire("ED_BLACKLIST_UPDATED")
@@ -104,4 +106,24 @@ function EasyDestroy.Blacklist.InFilterBlacklist(item)
 	end
 	return matchesAny
 	
+end
+
+function protected.IsItemMatch(item, listEntry)
+
+	if listEntry and listEntry.itemid and listEntry.itemid == item:GetItemID() then
+
+		if listEntry.legendary and listEntry.legendary == item:GetItemName() then 
+			return true
+		elseif listEntry.quality == item.quality and listEntry.ilvl == item.level then
+			if listEntry.name and listEntry.name == item:GetItemName() then
+				return true
+			elseif not listEntry.name then 
+				-- found a match on everything else, and no name is saved in the db (legacy)
+				return true
+			end
+		end
+	end
+
+	return false
+
 end

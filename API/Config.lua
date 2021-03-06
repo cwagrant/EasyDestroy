@@ -1,5 +1,8 @@
 EasyDestroy.Config = {}
 
+local protected = {}
+protected.FrameRegistry = {}
+
 function EasyDestroy.Config.ItemTypeFilterByFlags(flag)
 
 	local out = {}
@@ -20,9 +23,21 @@ function EasyDestroy.Config.ItemTypeFilterByFlags(flag)
 end
 
 function EasyDestroy.RegisterFrame(frame, ftype)
-    if EasyDestroy.FrameRegistry then
+    if protected.FrameRegistry then
 		EasyDestroy.Debug("EasyDestroy.RegisterFrame", ftype, frame:GetName())
-        EasyDestroy.FrameRegistry[ftype] = EasyDestroy.FrameRegistry[ftype] or {}
-        tinsert(EasyDestroy.FrameRegistry[ftype], frame)
+        protected.FrameRegistry[ftype] = protected.FrameRegistry[ftype] or {}
+        tinsert(protected.FrameRegistry[ftype], frame)
     end
+end
+
+function EasyDestroy.GetRegisteredFrames()
+
+	return protected.FrameRegistry
+
+end
+
+function EasyDestroy.GetRegisteredFramesByKey(key)
+
+	return protected.FrameRegistry[key] or {}
+
 end

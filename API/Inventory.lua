@@ -2,25 +2,17 @@
 
     Inventory API
 
-    Events
-        - UpdateInventory update the inventory cache
-        - RestackItems starts the process for restacking items
-
-    Exposed Functions
-        - Initialize - should be called before you can do anything, but 
-            we use a sort of "lazy initialization" to set this up if anything else is called first.
-        - GetInventory
-        - ItemNeedsRestacked
-        - FindTradegoodInBags
-
 ]]
 
 EasyDestroy.Inventory = {}
 
-local playerInventory = {}
 local initialized = false
 local updatingInventory = false -- don't want to run multiple times at once
 local protected = {}
+protected.playerInventory = {}
+protected.toCombine = {}
+protected.toCombineQueue = {}
+protected.ProcessingItemCombine = false
 
 local function FindTradegoods(dict, addToTable)
 
@@ -115,7 +107,7 @@ local function GetItemsToCombine(item)
 			if itemID == item.itemID then 
 
 				if count < item.maxStackSize then 
-					tinsert(API.toCombine, {bag=bag, slot=slot})
+					tinsert(protected.toCombine, {bag=bag, slot=slot})
 				end
 			end
 		end
@@ -127,7 +119,7 @@ local function CombineStacks()
 
 	-- Combine stacks of items onto one another. 
 
-	EasyDestroy.ProcessingItemCombine = true
+	protected.ProcessingItemCombine = true
 
 	EasyDestroy.Debug("EasyDestroy.API.CombineStacks")
 	local item 
@@ -135,14 +127,14 @@ local function CombineStacks()
 	while true do 
 
 		-- If the queue has an item and we're not actively combining then grab off queue
-		if #API.toCombineQueue > 0 and #API.toCombine == 0 then
+		if #protected.toCombineQueue > 0 and #protected.toCombine == 0 then
 
 			EasyDestroy.Debug("EasyDestroy.API.CombineStacks", "GetItemFromQueue" )
-			item = tremove(API.toCombineQueue, 1)
+			item = tremove(protected.toCombineQueue, 1)
 			GetItemsToCombine(item)
 
 		-- if queue is empty and we're not actively combining then end
-		elseif #API.toCombineQueue == 0 and #API.toCombine == 0 then
+		elseif #protected.toCombineQueue == 0 and #protected.toCombine == 0 then
 			-- work's done!
 			break
 		end
@@ -152,8 +144,8 @@ local function CombineStacks()
 
 		local sourceItem, destItem, sourceCount, destCount
 
-		sourceItem = API.toCombine[#API.toCombine]
-		destItem = API.toCombine[1]
+		sourceItem = protected.toCombine[#protected.toCombine]
+		destItem = protected.toCombine[1]
 
 		EasyDestroy.Debug("EasyDestroy.API.CombineStacks", "Check Locks", sourceItem.bag, sourceItem.slot, destItem.bag, destItem.slot)
 		
@@ -199,34 +191,39 @@ local function CombineStacks()
 		-- remove completely moved items from table (e.g. whole stack has moved)
 		if finalCount1 == nil or finalCount1 < 1 then
 			EasyDestroy.Debug("EasyDestroy.API.CombineStacks", "Remove empty slot")
-			table.remove(API.toCombine)
+			table.remove(protected.toCombine)
 		end
 
 		-- remove full stack from table (e.g. our destination stack is full)
 		if finalCount2 >= item.maxStackSize then
 			EasyDestroy.Debug("EasyDestroy.API.CombineStacks", "Remove full stack", destItem.bag, destItem.slot)
-			table.remove(API.toCombine, 1)
+			table.remove(protected.toCombine, 1)
 		end
 
 		EasyDestroy.Debug(string.format("Count of items Source: %d, Dest: %d, Final: %d", sourceCount, destCount, finalCount2))
 
-		if #API.toCombine <= 1 then
-			EasyDestroy.Debug("EasyDestroy.API.CombineStacks", "Clear list", #API.toCombine)
-			wipe(API.toCombine)
+		if #protected.toCombine <= 1 then
+			EasyDestroy.Debug("EasyDestroy.API.CombineStacks", "Clear list", #protected.toCombine)
+			wipe(protected.toCombine)
 		end
 
 	end
 
+	-- TODO: Add an event for when this completes
 
 	EasyDestroy.Debug("EasyDestroy.API.CombineStacks", "Item Combine Completed")
 	EasyDestroy.Thread = nil
-	EasyDestroy.ProcessingItemCombine = false
+	protected.ProcessingItemCombine = false
+
+	EasyDestroy.Events:Fire("ED_INVENTORY_UPDATED")
 
 end
 
 local function RestackItemsInQueue()
 
     if not initialized then EasyDestroy.Inventory.Initialize() end
+
+	if #protected.toCombineQueue < 1 then return end
 
 	EasyDestroy.Thread = coroutine.create(CombineStacks)
 
@@ -236,8 +233,8 @@ local function UpdateInventory()
 
     if not initialized then EasyDestroy.Inventory.Initialize() end
 
-    wipe(playerInventory)
-    GetBagItems(playerInventory)
+    wipe(protected.playerInventory)
+    GetBagItems(protected.playerInventory)
 
 	-- fires once the players inventory has been updated
 
@@ -249,7 +246,28 @@ function EasyDestroy.Inventory.GetInventory()
 
     if not initialized then EasyDestroy.Inventory.Initialize() end
 
-    return playerInventory
+    return protected.playerInventory
+end
+
+function EasyDestroy.Inventory.QueueForRestack(item)
+
+	-- we're currently processing a combine, lets not add to our workload yet.
+	if protected.ProcessingItemCombine then return end 
+
+	tinsert(protected.toCombineQueue, item)
+end
+
+function EasyDestroy.Inventory.ClearRestackQueue()
+
+	if protected.ProcessingItemCombine then return end 
+	wipe(protected.toCombineQueue)
+
+end
+
+function EasyDestroy.Inventory.RestackInProgress()
+
+	return protected.ProcessingItemCombine
+
 end
 
 function EasyDestroy.Inventory.ItemNeedsRestacked(item)
@@ -315,7 +333,8 @@ function EasyDestroy.Inventory.Initialize()
     if initialized then return end
 
     EasyDestroy.RegisterCallback(EasyDestroy.Inventory, "ED_INVENTORY_UPDATED", UpdateInventory)
-    EasyDestroy.RegisterCallback(EasyDestroy.Inventory, "ED_RESTACK_ITEMS", RestackItemsInQueue)
+    EasyDestroy.RegisterCallback(EasyDestroy.Inventory, "ED_FILTER_CRITERIA_CHANGED", RestackItemsInQueue)
+	EasyDestroy.RegisterCallback(EasyDestroy.Inventory, "ED_FILTER_LOADED", RestackItemsInQueue)
 
     initialized = true
     UpdateInventory()
