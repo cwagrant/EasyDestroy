@@ -1,3 +1,8 @@
+--[[
+    Adds support for AddOnSkins by Azilroka
+    AddOnSkins can be found at https://www.tukui.org/addons.php?id=3
+]]
+
 local AS = nil
 
 if not IsAddOnLoaded("AddOnSkins") then return end
@@ -29,22 +34,20 @@ function AS:EasyDestroy(event, addon)
     AS:SkinDropDownBox(EasyDestroyDropDown)
     AS:SkinDropDownBox(EasyDestroyFilterTypes)
 
-    EasyDestroyFrame:HookScript("OnUpdate", function()
-        --[[ Easy way to reskin these in filters and whatnot]]
-        if EasyDestroy.UpdateSkin then 
+    local function ApplySkins()
 
-            --[[ Editboxes ]]
-            for i, frame in ipairs(EasyDestroy.FrameRegistry.EditBox) do
-                AS:SkinEditBox(frame)
-            end
-
-            --[[ CheckButtons ]]
-            for i, frame in ipairs(EasyDestroy.FrameRegistry.CheckButton) do
-                AS:SkinCheckBox(frame)
-            end
-            EasyDestroy.UpdateSkin = false
+        for i, frame in ipairs(EasyDestroy.FrameRegistry.EditBox) do
+            AS:SkinEditBox(frame)
         end
-    end)
+
+        for i, frame in ipairs(EasyDestroy.FrameRegistry.CheckButton) do
+            AS:SkinCheckBox(frame)
+        end
+
+    end
+    
+    ApplySkins()
+
 
     --[[ Cleanup ]]
     AS:SkinCloseButton(EasyDestroyFrameClose)

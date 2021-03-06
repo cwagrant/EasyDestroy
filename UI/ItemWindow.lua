@@ -8,44 +8,7 @@ ItemWindow.name = "EasyDestroy.UI.ItemWindow"
 local initialized = false
 local protected = {}
 
-function protected.Update(event, arg)
-
-    -- Update the Item Window (Item List)
-
-	if ItemWindow:IsVisible(ItemWindow.name) then 
-
-		EasyDestroy.UI.ItemWindow:ItemListUpdate(arg)
-
-		EasyDestroy.UI.ItemWindow:ScrollUpdate()
-
-		EasyDestroy.UI.ItemCounter:SetText(EasyDestroy.UI.ItemWindow.ItemCount ..  " Item(s) Found")
-
-	end
-
-end
-
-function ItemWindow:RegisterScript(frame, scriptType)
-
-	-- Register a frame's script handler to additionally run the ItemWindow.Update
-	-- Should be used by buttons/fields that will update a filter
-
-	if frame:HasScript(scriptType) then
-		frame:HookScript(scriptType, ItemWindow.OnCriteriaUpdate)
-	else
-		error("RegisterScript requires a valid scriptType", 2)
-	end
-
-end
-
 function ItemWindow.__init()
-
-	--[[ 
-		ED_FILTER_CRITERIA_CHANGED should always send the filter 
-		ED_FILTER_LOADED should always send the filter
-
-		ED_INVENTORY_UPDATE_DELAYED will rely on the cached filter
-		ED_BLACKLIST_UPDATED will rely on the cached filter
-	]]
 
     if initialized then return end 
 
@@ -59,6 +22,23 @@ function ItemWindow.__init()
 	ItemWindow:Initialize(protected.FindWhitelistItems, 8, 24, protected.ItemOnClick)
 
     initialized = true
+
+end
+
+function protected.Update(event, arg)
+
+    -- Update the Item Window (Item List)
+
+	if ItemWindow:IsVisible(ItemWindow.name) then 
+
+		-- send the filter from the current UI
+		EasyDestroy.UI.ItemWindow:ItemListUpdate(EasyDestroy.UI.Filters.GenerateFilter())
+
+		EasyDestroy.UI.ItemWindow:ScrollUpdate()
+
+		EasyDestroy.UI.ItemCounter:SetText(EasyDestroy.UI.ItemWindow.ItemCount ..  " Item(s) Found")
+
+	end
 
 end
 

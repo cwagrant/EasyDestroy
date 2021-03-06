@@ -1,23 +1,4 @@
 --[[ Logic for the Favoriting System ]]
---[[ If using Character Favorites, then clicking the icon will immediately set the favorite. ]]
-function EasyDestroy.Favorites.FavoriteIconOnClick()
-	local existingFavorite = EasyDestroy.Favorites.GetFavorite()
-	local currentFID = UIDropDownMenu_GetSelectedValue(EasyDestroyDropDown)
-	if existingFavorite and existingFavorite ~= nil and existingFavorite ~= currentFID then
-		if EasyDestroy.Favorites.UsingCharacterFavorites() then
-			StaticPopup_Show("ED_CONFIRM_NEW_CHARACTER_FAVORITE")
-		end
-	elseif existingFavorite == currentFID then
-		--print(EasyDestroyFilters_FavoriteIcon:GetChecked())
-		if not EasyDestroyFilters_FavoriteIcon:GetChecked() and EasyDestroy.Favorites.UsingCharacterFavorites() then
-			EasyDestroy.CharacterData.FavoriteID = nil
-		end
-	else
-		if EasyDestroy.Favorites.UsingCharacterFavorites() then
-			EasyDestroy.CharacterData.FavoriteID = currentFID
-		end
-	end
-end
 
 function EasyDestroy.Favorites.GetFavorite()
     --[[
@@ -56,7 +37,7 @@ function EasyDestroy.Favorites.GetFavorite()
 end
 
 function EasyDestroy.Favorites.UsingCharacterFavorites()
-    --[[ Returns whether or not Character Favorites is being used. ]]
+    --[[ Returns whether or not Character Favorites are being used. ]]
 	if EasyDestroy.Data.Options.CharacterFavorites then
 		return true
 	end

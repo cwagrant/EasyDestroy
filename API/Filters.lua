@@ -1,6 +1,8 @@
 EasyDestroy.Filters = {}
 EasyDestroy.Filters.name = "EasyDestroy.Filters"
 
+local protected = {} 
+
 function EasyDestroy.Filters.FindFilterWithName(filterName)
 
 	-- This could maybe be moved to the filters class? But it's more of a static function
@@ -56,11 +58,15 @@ function EasyDestroy.Filters.RegisterCriteria(criteria)
 
 	criteria:Initialize()
 
+	--[[
+		I generally don't like this being here.
+	]]
 	if criteria and criteria.scripts then 
 		for scriptType, frames in pairs(criteria.scripts) do
 
 			for _, frame in ipairs(frames) do
-				EasyDestroy.UI.ItemWindow:RegisterScript(frame, scriptType)
+
+				protected.RegisterScript(frame, scriptType)
 
 			end
 			
@@ -71,4 +77,19 @@ function EasyDestroy.Filters.RegisterCriteria(criteria)
 	EasyDestroy.CriteriaRegistry[criteria.key] = criteria
 	
 	EasyDestroy.Events:Fire("ED_CRITERIA_AVAILABLE_CHANGED")
+end
+
+function protected.RegisterScript(frame, scriptType)
+
+	-- Register a frame's script handler to additionally run the ItemWindow.Update
+	-- Should be used by buttons/fields that will update a filter
+
+	if frame:HasScript(scriptType) then
+		frame:HookScript(scriptType, function()
+			EasyDestroy.Events:Call("ED_FILTER_CRITERIA_CHANGED")
+		end)
+	else
+		error("RegisterScript requires a valid scriptType", 2)
+	end
+
 end

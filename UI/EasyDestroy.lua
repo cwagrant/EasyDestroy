@@ -76,7 +76,6 @@ function EasyDestroyFrame.__init()
 	
 	EasyDestroyItemsFrame.ScrollFrame:SetScript("OnVerticalScroll", function(self, offset)
         EasyDestroyItemsFrame:OnVerticalScroll(offset)
-        --EasyDestroy.FilterChanged = true
     end)
 
 	EasyDestroy.UI.Filters.FilterName:SetLabel("Filter Name:")
@@ -109,7 +108,7 @@ function EasyDestroyFrame.LoadUserFavorite()
 	if fav ~= nil then
 		UIDropDownMenu_SetSelectedValue(EasyDestroy.UI.Filters.FilterDropDown, fav)
 		EasyDestroy.UI.Filters.LoadFilter(fav)
-		EasyDestroy_Refresh()
+	
 	else
 		UIDropDownMenu_SetSelectedValue(EasyDestroy.UI.Filters.FilterDropDown, 0)
 	end
@@ -125,9 +124,11 @@ function protected.RegisterEvents()
 
 	EasyDestroyFrame:RegisterEvent("BAG_UPDATE_DELAYED")
 	EasyDestroyFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+	
 	-- lets refresh things now that we're opening the window
-
-	EasyDestroy.FilterChanged = true
+	EasyDestroy.Events:Call("ED_INVENTORY_UPDATED")
+		:Call("ED_RESTACK_ITEMS")
+		:Call("ED_FILTER_LOADED")
 
 end
 

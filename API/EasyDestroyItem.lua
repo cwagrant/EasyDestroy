@@ -65,7 +65,6 @@ function EasyDestroyItem:New(bag, slot, link)
     self.count = 1
 
     self.maxStackSize  = select(8, GetItemInfo(self:GetItemLink()))
-    --self.guid = C_Item.GetItemGUID(self:GetItemLocation())
 
     EasyDestroy.Cache.ItemCache[EasyDestroyItem.EasyDestroyCacheID(self.bag, self.slot, self.itemLink)] = self
     return self

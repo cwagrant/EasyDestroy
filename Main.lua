@@ -351,7 +351,7 @@ if EasyDestroy.DebugActive then
 	EasyDestroy:CreateBG(EasyDestroyConfiguration, 0, 1, 0)
 end
 
-EasyDestroyFilters_FavoriteIcon:SetScript("OnClick", EasyDestroy.Favorites.FavoriteIconOnClick)
+
 
 
 

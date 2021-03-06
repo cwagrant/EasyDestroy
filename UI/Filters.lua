@@ -83,6 +83,8 @@ function FiltersFrame.__init()
 		dialog.source = FiltersFrame
 	end)
 	FiltersFrame.Buttons.SaveFilter:SetScript("OnClick", protected.SaveFilterOnClick)
+
+	FiltersFrame.Favorite:SetScript("OnClick", protected.FavoriteIconOnClick)
     
     initialized = true
 
@@ -383,7 +385,6 @@ function FiltersFrame.ReloadFilter(filterID)
 	FiltersFrame.LoadFilter(filterID)
 	FiltersFrame.Update_FilterDropDown()
 
-	EasyDestroy.FilterChanged = true
 	--UIDropDownMenu_SetSelectedValue(EasyDestroyDropDown, 0)
     FiltersFrame.SetSelectedFilter(filterID)
 
@@ -451,7 +452,7 @@ function FiltersFrame.GenerateFilter()
 	if EasyDestroy.Cache.FilterCache and EasyDestroy.Cache.FilterCache[FilterID] then
 		filter = EasyDestroy.Cache.FilterCache[FilterID]
 	else
-		filter = EasyDestroyFilter:New(EasyDestroy.UI.GetFilterType(), EasyDestroy.UI.GetFilterName())
+		filter = EasyDestroyFilter:New(EasyDestroy.UI.Filters.GetFilterType(), EasyDestroy.UI.Filters.GetFilterName())
 	end
 
 	return filter
@@ -463,6 +464,27 @@ end
 -- #####################################
 --[[ UI Event Handlers ]]
 -- #####################################
+
+--[[ If using Character Favorites, then clicking the icon will immediately set the favorite. ]]
+	function protected.FavoriteIconOnClick()
+		local existingFavorite = EasyDestroy.Favorites.GetFavorite()
+		local currentFID = UIDropDownMenu_GetSelectedValue(EasyDestroyDropDown)
+		if existingFavorite and existingFavorite ~= nil and existingFavorite ~= currentFID then
+			if EasyDestroy.Favorites.UsingCharacterFavorites() then
+				StaticPopup_Show("ED_CONFIRM_NEW_CHARACTER_FAVORITE")
+			end
+		elseif existingFavorite == currentFID then
+			--print(EasyDestroyFilters_FavoriteIcon:GetChecked())
+			if not EasyDestroyFilters_FavoriteIcon:GetChecked() and EasyDestroy.Favorites.UsingCharacterFavorites() then
+				EasyDestroy.CharacterData.FavoriteID = nil
+			end
+		else
+			if EasyDestroy.Favorites.UsingCharacterFavorites() then
+				EasyDestroy.CharacterData.FavoriteID = currentFID
+			end
+		end
+	end
+	
 
 function protected.FilterTypeOnClick(self)
 
@@ -562,7 +584,7 @@ function protected.CriteriaDropDownOnSelect(self, arg1, arg2, checked)
 			end
 		end
 	end
-	EasyDestroy.UI.CriteriaWindow.PlaceCriteria()
+	FiltersFrame.PlaceCriteria()
 	EasyDestroy_Refresh()
 end
 
@@ -580,7 +602,7 @@ function protected.NewOnClick()
 		FiltersFrame.Searches:SetChecked(true)
 	end
 	
-	EasyDestroy.FilterChanged = true
+	EasyDestroy.Events:Fire("ED_FILTER_CRITERIA_CHANGED")
 	
 end
 

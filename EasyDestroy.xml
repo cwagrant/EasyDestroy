@@ -67,21 +67,11 @@
 							<Anchors>
 								<Anchor point="TOPLEFT" x="20" y="0"/>
 							</Anchors>
-							<Scripts>
-								<OnClick>
-									EasyDestroy.FilterChanged = true
-								</OnClick>
-							</Scripts>
 						</CheckButton>
 						<CheckButton name="$parentBlacklist" inherits="EasyDestroyFramedCheckboxTemplate" parentKey="Blacklist">
 							<Anchors>
 								<Anchor point="LEFT" relativeTo="$parentSearch" relativePoint="RIGHT" x="20" y="0"/>
 							</Anchors>
-							<Scripts>
-								<OnClick>
-									EasyDestroy.FilterChanged = true
-								</OnClick>
-							</Scripts>
 						</CheckButton>
 					</Frames>
 				</Frame>
