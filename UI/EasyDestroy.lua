@@ -97,8 +97,6 @@ function EasyDestroyFrame.__init()
 
 	EasyDestroy.RegisterCallback(EasyDestroyButton, "ED_INVENTORY_UPDATED_DELAYED", function(self) self:Enable() end )
 
-
-
 end)
 
 end

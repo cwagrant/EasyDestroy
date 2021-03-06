@@ -1,5 +1,13 @@
+--[[
+	This will kick everything off
+	Register and handle Blizz events
+	Initialize/Load/Save data structure
+	Send up Dialog/Alert for  updates
+	Setup slash commands
+
+]]
+
 EasyDestroy = EasyDestroy
-local testfilter = {filter={quality={3}, id=161984}, properties={name="TEST"}}
 
 --[[ This file is the file to initialize the addon, will call relevant functions from other files,
 register events, set scripts on buttons and handle the loading and saving/unloading of data. Will

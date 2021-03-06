@@ -38,6 +38,7 @@ UI\Blacklist.lua
 Dialogs.lua
 Main.lua
 
+# After everything is set up and running, register the filter criteria.
 filters\ilvl.lua
 filters\itemname.lua
 filters\itemid.lua
@@ -47,5 +48,6 @@ filters\soulbound.lua
 filters\itemtype.lua
 filters\count.lua
 
+# AddOnSkin supports
 UI\AddOnSkin.lua
 

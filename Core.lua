@@ -1,6 +1,12 @@
+--[[
+	Setup the "Environment"
+
+	Additinally provides a few helper functions
+]]
+
 EasyDestroy = {}
 
-EasyDestroy.Version =  GetAddOnMetadata("EasyDestroy", "version")
+EasyDestroy.Version = GetAddOnMetadata("EasyDestroy", "version")
 EasyDestroy.Events = LibStub("CallbackHandler-1.0"):New(EasyDestroy)
 EasyDestroy.AddonName = "EasyDestroy"
 EasyDestroy.DebugActive = true
