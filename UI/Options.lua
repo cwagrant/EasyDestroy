@@ -42,7 +42,7 @@ function protected.CreateOptionsForFrame(frame, optionTable)
 
             f:Show()
             if v.tooltip then 
-                f.OnHover.SetTooltip = function(self) ShowTooltip(self, v.tooltip) end 
+                f.OnHover.SetTooltip = function(self) protected.ShowTooltip(self, v.tooltip) end 
             --f:HookScript("OnEnter", function(self) ShowTooltip(self, v.tooltip) end )
             end
 
@@ -76,14 +76,26 @@ function protected.CreateOptionsForFrame(frame, optionTable)
                     end
                     f:Show()
                     if j.tooltip then 
-                        f.OnHover.SetTooltip = function(self) ShowTooltip(self, j.tooltip) end 
+                        f.OnHover.SetTooltip = function(self) protected.ShowTooltip(self, j.tooltip) end 
                     end
                     f:SetScript("OnLeave", function(self) GameTooltip:Hide() end)
 
                     if j.OnClick then f.Checkbutton:HookScript("OnClick", j.OnClick) end
 
                     if j.optionType == "boolean" then 
-                        f:SetChecked(EasyDestroy.Data.Options[j.key])
+
+                        local optval
+
+                        if string.find(j.key, '.') then
+                            local func, err = loadstring('return EasyDestroy.Data.Options.' .. j.key)
+
+                            if func then optval = func() end 
+                        else
+                            optval = EasyDestroy.Data.Options[j.key]
+                        end
+
+
+                        f:SetChecked(optval)
                     elseif j.value then
                         if bit.band(EasyDestroy.Data.Options.Actions, j.value) > 0 then
                             f:SetChecked(true)
@@ -99,9 +111,21 @@ function protected.CreateOptionsForFrame(frame, optionTable)
     end
 end
 
+function protected.SplitKey(key)
+    -- local keys = { strsplit('.', key) }
+
+    -- for k in ipairs(key) do
+    
+    return 
+
+end
+
+
+
 function protected.OnOptionsShow()
 
     local baseFrame = CreateFrame("Frame", nil, optionsFrame)
+    local ldbicon = LibStub("LibDBIcon-1.0")
 
     baseFrame:SetAllPoints()
 
@@ -118,11 +142,30 @@ function protected.OnOptionsShow()
                 optionType = "boolean",
             },
             {
-                key="AutoBlacklist",
+                key = "AutoBlacklist",
                 text = "Auto-Blacklist Non-Destroyables",
                 width = 196,
                 OnClick = function() EasyDestroy.Data.Options.AutoBlacklist = not EasyDestroy.Data.Options.AutoBlacklist end,
                 tooltip = "If selected, when you try to destroy items that cannot be destroyed they will automatically be added to the blacklist.",
+                optionType = "boolean",
+            },
+            {
+                key="MinimapIcon.hide",
+                text = "Hide Minimap Icon",
+                OnClick = function() 
+
+                    if EasyDestroy.Data.Options.MinimapIcon then 
+                        EasyDestroy.Data.Options.MinimapIcon.hide = not EasyDestroy.Data.Options.MinimapIcon.hide
+                    end
+
+                    if EasyDestroy.Data.Options.MinimapIcon.hide then 
+                        EasyDestroy.MinimapIcon:Hide("EasyDestroy")
+                    else
+                        EasyDestroy.MinimapIcon:Show("EasyDestroy")
+                    end
+
+                end,
+                tooltip = "If selected, the minimap icon will be hidden.",
                 optionType = "boolean",
             }
         }

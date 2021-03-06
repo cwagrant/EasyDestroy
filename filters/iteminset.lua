@@ -5,7 +5,6 @@ function filter:Initialize()
     self.checkbox = filter.checkbox or CreateFrame("CheckButton", "EDFilterItemInSetCheck", self.frame, "EasyDestroyCheckboxTemplate")
     self.checkbox:SetPoint("LEFT")
     self.checkbox:SetLabel(filter.name)
-    -- self.checkbox:SetScript("OnClick", EasyDestroy_Refresh)
     
     self.frame:Hide()
 

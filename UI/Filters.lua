@@ -85,6 +85,37 @@ function FiltersFrame.__init()
 	FiltersFrame.Buttons.SaveFilter:SetScript("OnClick", protected.SaveFilterOnClick)
 
 	FiltersFrame.Favorite:SetScript("OnClick", protected.FavoriteIconOnClick)
+
+	-- I would think this belongs more with EasyDestroyFrame, but for whatever reason I'm too tired to
+	-- figure at at the moment, it doesn't set the script when placed in that file...
+	EasyDestroy_ToggleConfigurator:SetScript("OnClick", function() 
+		print("CLICK")
+		if EasyDestroyConfiguration:IsVisible() then 
+			EasyDestroyConfiguration:Hide() 
+		else
+			EasyDestroyConfiguration:Show()
+		end
+	end)
+
+	EasyDestroyConfiguration:SetScript("OnHide", function()
+		EasyDestroyFrame:SetSize(340, 380)
+		EasyDestroy_ToggleConfigurator:SetText("Show Configurator")
+		UIDropDownMenu_SetWidth(EasyDestroyDropDown, EasyDestroyDropDown:GetWidth()-40)
+		EasyDestroy_ToggleConfigurator:ClearAllPoints()
+		EasyDestroy_ToggleConfigurator:SetPoint("BOTTOMRIGHT", EasyDestroy_OpenBlacklist, "TOPRIGHT", 0, 10)
+		EasyDestroy.Data.Options.ConfiguratorShown = false
+		
+	end)
+	
+	EasyDestroyConfiguration:SetScript("OnShow", function()
+		EasyDestroyFrame:SetSize(580, 580)
+		EasyDestroy_ToggleConfigurator:SetText("Hide Configurator")
+		UIDropDownMenu_SetWidth(EasyDestroyDropDown, EasyDestroyDropDown:GetWidth()-40)
+		EasyDestroy_ToggleConfigurator:ClearAllPoints()
+		EasyDestroy_ToggleConfigurator:SetPoint("BOTTOMRIGHT", EasyDestroy_OpenBlacklist, "BOTTOMLEFT", -10, 0)
+		EasyDestroy.Data.Options.ConfiguratorShown = true
+		
+	end)
     
     initialized = true
 
@@ -585,7 +616,8 @@ function protected.CriteriaDropDownOnSelect(self, arg1, arg2, checked)
 		end
 	end
 	FiltersFrame.PlaceCriteria()
-	EasyDestroy_Refresh()
+	
+	asyDestroy.Events:Fire("ED_FILTER_CRITERIA_CHANGED")
 end
 
 function protected.NewOnClick()

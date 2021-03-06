@@ -102,7 +102,7 @@ function EasyDestroy_EventHandler(self, event, ...)
 		local name = ...
 		if name == EasyDestroy.AddonName then
 			EasyDestroy.AddonLoaded = true
-			EasyDestroyFrame.__init()
+			-- EasyDestroyFrame.__init()
 
 			if EasyDestroyData then 
 				EasyDestroy.Data = EasyDestroyData
@@ -135,8 +135,7 @@ function EasyDestroy_EventHandler(self, event, ...)
 				EasyDestroy.Data.Options.CharacterFavorites = false
 			end
 			-- "Post"-Initialization functions that need to occur once data has been loaded
-			
-
+			EasyDestroyFrame.__init()
 			EasyDestroy.UI.ItemWindow.__init()
 			EasyDestroy.UI.Filters.__init()
 			EasyDestroy.UI.Options.__init()
@@ -183,6 +182,8 @@ function EasyDestroy_EventHandler(self, event, ...)
 				})
 
 			ldbicon:Register("EasyDestroy", ldb, EasyDestroy.Data.Options.MinimapIcon)
+			EasyDestroy.MinimapIcon = ldbicon
+
 
 			-- If we haven't set up Alerts before, add them to database now.
 			if not EasyDestroy.Data.Alerts then 
@@ -240,32 +241,10 @@ end
 
 function EasyDestroy_OnUpdate(self, delay)
 
-	-- If an action has been taken that modifies the current filter then we update the item window
+	-- At this point this serves just as a way to run the item stacking coroutine
 
 	if EasyDestroy.Thread and coroutine.status(EasyDestroy.Thread) ~= "dead" then
 		coroutine.resume(EasyDestroy.Thread)
-	-- elseif #EasyDestroy.toCombineQueue > 0 then
-	-- 	EasyDestroy.API.CombineItemsInQueue()
-	end
-
-	if EasyDestroy.FilterChanged then 
-
-		-- This is only used when a user has AddOnSkins active.
-
-		EasyDestroy.UpdateSkin = true
-
-		-- clear the combine queue since we've changed the filter
-		-- this makes sure the item doesn't get touched unless it will show up in the new/changed filter
-		-- wipe(EasyDestroy.toCombineQueue) 
-
-		EasyDestroy.Events:Call("UpdateItemWindow")
-			:Call("ED_RESTACK_ITEMS")
-
-		EasyDestroy.FilterChanged = false
-
-
-		-- EasyDestroy.Handlers.OnFilterUpdate()
-
 	end
 
 end
@@ -308,41 +287,8 @@ function SlashCmdList.EASYDESTROY(msg)
 	end
 end
 
--- Generally should just set EasyDestroy.FilterChanged = true to refresh the window with the most recent settings for the filter
-function EasyDestroy_Refresh()
-	EasyDestroy.FilterChanged = true
-end
-
 EasyDestroyFrame:SetScript("OnEvent", EasyDestroy_EventHandler)
 EasyDestroyFrame:SetScript("OnUpdate", EasyDestroy_OnUpdate)
-
-EasyDestroy_ToggleConfigurator:SetScript("OnClick", function() 
-	if EasyDestroyConfiguration:IsVisible() then 
-		EasyDestroyConfiguration:Hide() 
-	else
-		EasyDestroyConfiguration:Show()
-	end
-end)
-
-EasyDestroyConfiguration:SetScript("OnHide", function()
-	EasyDestroyFrame:SetSize(340, 380)
-	EasyDestroy_ToggleConfigurator:SetText("Show Configurator")
-	UIDropDownMenu_SetWidth(EasyDestroyDropDown, EasyDestroyDropDown:GetWidth()-40)
-	EasyDestroy_ToggleConfigurator:ClearAllPoints()
-	EasyDestroy_ToggleConfigurator:SetPoint("BOTTOMRIGHT", EasyDestroy_OpenBlacklist, "TOPRIGHT", 0, 10)
-	EasyDestroy.Data.Options.ConfiguratorShown = false
-	
-end)
-
-EasyDestroyConfiguration:SetScript("OnShow", function()
-	EasyDestroyFrame:SetSize(580, 580)
-	EasyDestroy_ToggleConfigurator:SetText("Hide Configurator")
-	UIDropDownMenu_SetWidth(EasyDestroyDropDown, EasyDestroyDropDown:GetWidth()-40)
-	EasyDestroy_ToggleConfigurator:ClearAllPoints()
-	EasyDestroy_ToggleConfigurator:SetPoint("BOTTOMRIGHT", EasyDestroy_OpenBlacklist, "BOTTOMLEFT", -10, 0)
-	EasyDestroy.Data.Options.ConfiguratorShown = true
-	
-end)
 
 EasyDestroySelectedFiltersScroll:SetToplevel(true)
 

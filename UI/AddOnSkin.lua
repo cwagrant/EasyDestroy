@@ -1,6 +1,9 @@
 --[[
     Adds support for AddOnSkins by Azilroka
     AddOnSkins can be found at https://www.tukui.org/addons.php?id=3
+
+    NOTE: This is my own implementation - issues that arise with it should
+    be reported to the author of EasyDestroy, NOT to Azilroka.
 ]]
 
 local AS = nil

@@ -62,14 +62,10 @@ EasyDestroy.Cache = { ItemCache = {}, FilterCache = {}}
 EasyDestroy.FrameRegistry = {}
 EasyDestroy.SessionBlacklist = {}
 EasyDestroy.FirstStartup = false
-
-EasyDestroy.FilterChanged = false
-EasyDestroy.UpdateSkin = false
 EasyDestroy.PlayerMoving = false
 
 EasyDestroy.Warnings = {}
 EasyDestroy.Warnings.LootOpen = false
-EasyDestroy.WarnedLootOpen = false
 EasyDestroy.DataLoaded = false
 
 EasyDestroy.CriteriaRegistry = {}
