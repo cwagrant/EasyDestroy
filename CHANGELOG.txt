@@ -3,7 +3,7 @@
 - separated out UI and API type functionality
 - Added option to turn off minimap icon
 - Added button for clearing the session item ignore cache (temporary blacklist)
-- Removed a TON of crud from 
+- Removed a number of tables and objects from the global namespace
 
 TODO - fix counts for stackable items as they are destroyed 
 What is ButtonWasClicked and is it still necessary?
