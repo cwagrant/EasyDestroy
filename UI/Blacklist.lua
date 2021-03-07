@@ -36,7 +36,6 @@ function protected.GetItemsInBags()
     local itemList = {}
 
     for i, item in ipairs(EasyDestroy.Inventory.GetInventory()) do
-		local matchfound = nil
 		local typematch = false
 
         if item:GetStaticBackingItem() then
@@ -109,8 +108,6 @@ function protected.OnClickBlacklistItem(self, button)
 
     if button ~= "LeftButton" then return end
 
-    EasyDestroy.Debug("Remove Item From Blacklist", self.item:GetItemName(), self.item.itemID)
-
     EasyDestroy.Blacklist.RemoveItem(self.item)
 
 end
@@ -170,7 +167,7 @@ function protected.OnFrameShow()
 
     -- Only run this code the very first time we show the frame
     frame:SetScript("OnShow", function()
-        EasyDestroy.Debug("Register Callbacks for Blacklist Options Window")
+        
         EasyDestroy.RegisterCallback(frame, "ED_BLACKLIST_UPDATED", protected.OnBlacklistUpdate)
         EasyDestroy.RegisterCallback(frame, "ED_INVENTORY_UPDATED_DELAYED", protected.OnInventoryUpdate)
         
@@ -180,7 +177,7 @@ function protected.OnFrameShow()
     end)
 
     frame:SetScript("OnHide", function()
-        EasyDestroy.Debug("Unregister Callbacks for Blacklist Options Window")
+
         EasyDestroy.UnregisterCallback(frame, "ED_BLACKLIST_UPDATED")
         EasyDestroy.UnregisterCallback(frame, "ED_INVENTORY_UPDATED_DELAYED")
 

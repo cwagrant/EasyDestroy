@@ -124,7 +124,6 @@ end
 function EasyDestroy_OnOptionsShow()
 
     local baseFrame = CreateFrame("Frame", nil, optionsFrame)
-    local ldbicon = LibStub("LibDBIcon-1.0")
 
     baseFrame:SetAllPoints()
 

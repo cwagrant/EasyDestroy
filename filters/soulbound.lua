@@ -33,7 +33,7 @@ function filter:Check(inputquality, item)
         local bindtype = item.bindtype
         
         if bindtype == LE_ITEM_BIND_ON_EQUIP then
-            if tContains(inputquality, itemquality) and not(item.boequality) then
+            if tContains(inputquality, itemquality) and not(itembound) then
                 return false
             end
         end
@@ -49,7 +49,7 @@ function filter:Blacklist(inputquality, item)
         local bindtype = item.bindtype
 
         if bindtype == LE_ITEM_BIND_ON_EQUIP then
-            if tContains(inputquality, itemquality) and not(item.boequality) then
+            if tContains(inputquality, itemquality) and not(itembound) then
                 return true
             end
         end

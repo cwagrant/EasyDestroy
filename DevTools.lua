@@ -97,8 +97,7 @@ if EasyDestroy.DebugActive then
 		EasyDestroy:CreateBG(EasyDestroyFrameSearch, 1, 0, 0)
 		EasyDestroy:CreateBG(EasyDestroyConfiguration, 0, 1, 0)
 
-	end)
-		
+	end)	
 
 end
 

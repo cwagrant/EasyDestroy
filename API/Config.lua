@@ -24,7 +24,6 @@ end
 
 function EasyDestroy.RegisterFrame(frame, ftype)
     if protected.FrameRegistry then
-		EasyDestroy.Debug("EasyDestroy.RegisterFrame", ftype, frame:GetName())
         protected.FrameRegistry[ftype] = protected.FrameRegistry[ftype] or {}
         tinsert(protected.FrameRegistry[ftype], frame)
     end

@@ -20,9 +20,7 @@ end
 
 function EasyDestroy.Destroy.DestroyItem(item)
 
-	EasyDestroy.Debug("EasyDestroy.DestroyItem", item.itemLink)
-
-	local action =EasyDestroy.Destroy.GetDestroyActionForItem(item)
+	local action = EasyDestroy.Destroy.GetDestroyActionForItem(item)
 
 	if action then
 

@@ -34,14 +34,11 @@ function EasyDestroy_EventHandler(self, event, ...)
 	if event == "BAG_UPDATE_DELAYED" and EasyDestroy.AddonLoaded and EasyDestroyFrame:IsVisible() then 
 
 
-		if not EasyDestroy.Inventory.RestackInProgress then 
+		-- if we're restacking items, then we don't want this to trigger multiple updates
+		if EasyDestroy.Inventory.RestackInProgress() then return end 
 
-			-- As long as we're not the ones changing the users bags, lets upate our 
-			-- windows and lists and make sure to reenable the button if it's disabled
+		EasyDestroy.Events:Call("ED_INVENTORY_UPDATED")
 
-			EasyDestroy.Events:Call("ED_INVENTORY_UPDATED")
-
-		end
 
 	elseif event == "COMBAT_LOG_EVENT_UNFILTERED" then 
 
@@ -50,22 +47,21 @@ function EasyDestroy_EventHandler(self, event, ...)
 
 		if subevent[4] == playerGUID and tContains(EasyDestroy.Dict.ActionTable, subevent[12]) and EasyDestroy.ButtonWasClicked then 
 
-			EasyDestroy.Debug("EventHandler", "Destroy Spell Cast")
 
 			if subevent[2] == "SPELL_CAST_FAILED" and subevent[15] == SPELL_FAILED_CANT_BE_DISENCHANTED or subevent[15] == SPELL_FAILED_CANT_BE_MILLED or subevent[15] == SPELL_FAILED_CANT_BE_PROSPECTED then
 
 				if EasyDestroy.Data.Options.AutoBlacklist then
-					EasyDestroy.Debug("EventHandler", "Straight To Jail")
+
 					if EasyDestroy.UI.GetCurrentItem() then 
 						EasyDestroy.Blacklist.AddItem(EasyDestroy.UI.GetCurrentItem())
 					end
+
 				end
 				EasyDestroy.ButtonWasClicked = false
 				EasyDestroyButton:Enable()
 			
 			elseif subevent[2] == "SPELL_CAST_FAILED" and subevent[15] == INTERRUPTED then
 
-				EasyDestroy.Debug("EventHandler", "Cast Interrupted")
 				EasyDestroy.ButtonWasClicked = false
 
 				if not protected.PlayerMoving then 
@@ -74,7 +70,6 @@ function EasyDestroy_EventHandler(self, event, ...)
 
 			elseif subevent[2] == "SPELL_CAST_SUCCESS" then
 
-				EasyDestroy.Debug("EventHandler", "Cast Succeeded")
 				EasyDestroy.ButtonWasClicked = false
 
 			end
@@ -274,11 +269,11 @@ function SlashCmdList.EASYDESTROY(msg)
 	elseif msg=="reset" then
 		EasyDestroyButton:Enable()
 	elseif msg:find("characterfavorites ") or msg:find("cf ") then
-		local a, b = strsplit(" ", msg)
-		if b == "true" then
+		local _, b = strsplit(" ", msg)
+		if b == "true" or b == "on" then
 			EasyDestroy.Data.Options.CharacterFavorites = true
 			print("Character Favorites turned on.")
-		elseif b == "false" then 
+		elseif b == "false" or b == "false" then 
 			EasyDestroy.Data.Options.CharacterFavorites = false
 			print("Character Favorites turned off.")
 		else
@@ -302,14 +297,6 @@ end
 -- 'turn on' the event handlers
 EasyDestroyFrame:SetScript("OnEvent", EasyDestroy_EventHandler)
 EasyDestroyFrame:SetScript("OnUpdate", EasyDestroy_OnUpdate)
-
--- EasyDestroySelectedFiltersScroll:SetToplevel(true)
-
--- 
--- if EasyDestroy.DebugActive then
--- 	EasyDestroy:CreateBG(EasyDestroyFrameSearch, 1, 0, 0)
--- 	EasyDestroy:CreateBG(EasyDestroyConfiguration, 0, 1, 0)
--- end
 
 
 EasyDestroy.Events:Fire("ED_ADDON_LOADED")

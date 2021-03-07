@@ -8,9 +8,6 @@ EasyDestroyFrame.ShowItemBlacklist = EasyDestroy_OpenBlacklist
 --[[ Font Strings ]]
 EasyDestroy.UI.ItemCounter = EasyDestroyFrame_FoundItemsCount
 
---[[ TODO: init and core frame setup should go below as well as functions that touch on everything (loadfilter, deletefilter, toggle configurator ) 
-basically anything that doesn't have a "clean" spot will probably end up here. ]]
-
 local protected = {}
 local initialized = false
 
@@ -154,17 +151,13 @@ function protected.DestroyPreClick(self)
 	end
 
 	local iteminfo = EasyDestroyItemsFrameItem1.item or nil
-	local bag, slot
-	
-	if iteminfo ~= nil then
-		bag, slot = iteminfo.bag, iteminfo.slot	
-	else
+
+	if iteminfo == nil then 
 		return 
 	end
 
 	local action = EasyDestroy.Destroy.GetDestroyActionForItem(iteminfo)
 	local actionDict = EasyDestroy.Dict.Actions[action]
-	local spellName = GetSpellInfo(actionDict.spellID)
 	
 	if not IsSpellKnown(actionDict.spellID) then
 		print ("EasyDestroy: You must have " .. GetSpellLink(actionDict.spellID) .. " to destroy this item.")

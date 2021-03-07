@@ -51,7 +51,6 @@ function protected.FindWhitelistItems(activeFilter)
 	local filter = activeFilter:ToTable()
 	filter.filter = EasyDestroy.UI.Filters.GetCriteria()
 
-	local restackItems = false
 	local matchfound = nil
 	local typematch = false
 	local items = {}
@@ -154,9 +153,7 @@ function protected.FindWhitelistItems(activeFilter)
 				-- queue up found trade good items in bags for restacking
 
 				if EasyDestroy.Inventory.ItemNeedsRestacked(item) then
-					EasyDestroy.Debug("AddItemToQueue", item.itemLink)
 					EasyDestroy.Inventory.QueueForRestack(item)
-					restackItems = true
 				end
 
 			end

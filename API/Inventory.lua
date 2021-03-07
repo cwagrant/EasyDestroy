@@ -55,7 +55,7 @@ local function GetBagItems(itemList)
 
 	for bag = 0, NUM_BAG_SLOTS do
 		for slot=1, GetContainerNumSlots(bag) do
-			local item, EasyDestroyID
+			local item
 			local itemlink = select(7, GetContainerItemInfo(bag, slot))
 			
 			while (true) do 
@@ -121,7 +121,6 @@ local function CombineStacks()
 
 	protected.ProcessingItemCombine = true
 
-	EasyDestroy.Debug("EasyDestroy.API.CombineStacks")
 	local item 
 
 	while true do 
@@ -208,8 +207,6 @@ local function CombineStacks()
 		end
 
 	end
-
-	-- TODO: Add an event for when this completes
 
 	EasyDestroy.Debug("EasyDestroy.API.CombineStacks", "Item Combine Completed")
 	EasyDestroy.Thread = nil
