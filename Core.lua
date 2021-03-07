@@ -9,7 +9,7 @@ EasyDestroy = {}
 EasyDestroy.Version = GetAddOnMetadata("EasyDestroy", "version")
 EasyDestroy.Events = LibStub("CallbackHandler-1.0"):New(EasyDestroy)
 EasyDestroy.AddonName = "EasyDestroy"
-EasyDestroy.DebugActive = true
+EasyDestroy.DebugActive = false
 EasyDestroy.AddonLoaded = false
 
 --[[ Declarations ]]
