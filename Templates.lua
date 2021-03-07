@@ -185,35 +185,24 @@ function EasyDestroyScrollMixin:Initialize(listfunc, displayed, height, childfun
 
 end
 
+function EasyDestroyScrollMixin:ItemListUpdate(listFuncArg)
+
+    if not self.ListFunction then return end 
+
+    self.ItemList = self.ListFunction(listFuncArg or self.lastFuncArg)
+
+    self.lastFuncArg = listFuncArg or self.lastFuncArg
+
+end
+
 function EasyDestroyScrollMixin:ScrollUpdate(callbackFunction)
     local itemList = nil
 
     if not self.ListFunction then return end
 
-    --[[ 
-        !!This significantly reduces memory usage!!
-        
-        Whenever an action that would modify the results of the
-        ListFunction is made, then self.UpdateItemList should be
-        set to true. Otherwise, cache the current list in 
-        self.ItemList. 
+    if not self and self.ScrollFrame then return end
 
-        Basically, this makes it so that as a user scrolls, memory
-        usage doesn't increase.
-    ]]
-
-    if self.UpdateItemList then
-        EasyDestroy.Debug((self:GetName() or "EasyDestroyScrollMixin") .. ":ScrollUpdate", "UpdateItemList")
-        self.ItemList = self.ListFunction()
-        self.UpdateItemList = false
-        -- self.ItemList = itemList
-    else
-        EasyDestroy.Debug((self:GetName() or "EasyDestroyScrollMixin") .. ":ScrollUpdate", "Using Item Cache")
-        -- itemList = self.ItemList
-    end
-    if not self and self.ScrollFrame then
-        return
-    end
+    if not self.ItemList then return end
 
     FauxScrollFrame_Update(self.ScrollFrame, #self.ItemList, self.MaxDisplayed, self.ChildHeight)
 	
@@ -227,7 +216,6 @@ function EasyDestroyScrollMixin:ScrollUpdate(callbackFunction)
             frame:RegisterForClicks("LeftButtonUp", "RightButtonUp")
             frame:UpdateItemFrame(frame.item, self.ChildOnClick or nil)
             frame:Show()
-            -- needsUpdate = true
         else
             frame:HideItemFrame()
 		end
@@ -237,7 +225,11 @@ function EasyDestroyScrollMixin:ScrollUpdate(callbackFunction)
 		callbackFunction()
 	end
     
-    self.ItemCount = #self.ItemList
+    if self.ItemList ~= nil then 
+        self.ItemCount = #self.ItemList
+    else
+        self.ItemCount = 0
+    end
 
 end
 

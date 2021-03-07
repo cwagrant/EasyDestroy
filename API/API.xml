@@ -1,0 +1,35 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
+
+ <!-- Class definition -->
+<Script file="EasyDestroyFilterCriteria.lua"/>
+
+<!-- Class definition -->
+<Script file="EasyDestroyItem.lua"/>
+
+<!-- Class definition -->
+<Script file="EasyDestroyFilter.lua"/>
+
+<!-- Enum/Dict file -->
+<Script file="Data.lua"/>
+
+<!-- Options API -->
+<Script file="Config.lua"/>
+
+<!-- Inventory API -->
+<Script file="Inventory.lua"/>
+
+<!-- Filters API -->
+<Script file="Filters.lua"/>
+
+<!-- Blacklist API -->
+<Script file="Blacklist.lua"/>
+
+<!-- Destroy API -->
+<Script file="Destroy.lua"/>
+
+<!-- Favorites API -->
+<Script file="Favorites.lua"/>
+
+ </Ui>

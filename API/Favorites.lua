@@ -1,24 +1,5 @@
 --[[ Logic for the Favoriting System ]]
---[[ If using Character Favorites, then clicking the icon will immediately set the favorite. ]]
-function EasyDestroy.Favorites.FavoriteIconOnClick()
-	local existingFavorite = EasyDestroy.Favorites.GetFavorite()
-	local currentFID = UIDropDownMenu_GetSelectedValue(EasyDestroyDropDown)
-	if existingFavorite and existingFavorite ~= nil and existingFavorite ~= currentFID then
-		if EasyDestroy.Favorites.UsingCharacterFavorites() then
-			StaticPopup_Show("ED_CONFIRM_NEW_CHARACTER_FAVORITE")
-		end
-	elseif existingFavorite == currentFID then
-		--print(EasyDestroyFilters_FavoriteIcon:GetChecked())
-		if not EasyDestroyFilters_FavoriteIcon:GetChecked() and EasyDestroy.Favorites.UsingCharacterFavorites() then
-			EasyDestroy.CharacterData.FavoriteID = nil
-		end
-	else
-		if EasyDestroy.Favorites.UsingCharacterFavorites() then
-			EasyDestroy.CharacterData.FavoriteID = currentFID
-		end
-	end
-end
-
+EasyDestroy.Favorites = {}
 function EasyDestroy.Favorites.GetFavorite()
     --[[
 	If the user has character specific favorites set AND the character has a favorite
@@ -45,7 +26,7 @@ function EasyDestroy.Favorites.GetFavorite()
 		return nil
 	end
 
-	if GetTableSize(EasyDestroy.Data.Filters)>0 then
+	if EasyDestroy.GetTableSize(EasyDestroy.Data.Filters)>0 then
 		for k, filterObj in pairs(EasyDestroy.Data.Filters) do
 			if filterObj.properties.favorite then
 				return k
@@ -56,7 +37,7 @@ function EasyDestroy.Favorites.GetFavorite()
 end
 
 function EasyDestroy.Favorites.UsingCharacterFavorites()
-    --[[ Returns whether or not Character Favorites is being used. ]]
+    --[[ Returns whether or not Character Favorites are being used. ]]
 	if EasyDestroy.Data.Options.CharacterFavorites then
 		return true
 	end
@@ -74,7 +55,7 @@ function EasyDestroy.Favorites.UnsetFavorite()
 		return
 	end
 
-	if GetTableSize(EasyDestroy.Data.Filters)>0 then
+	if EasyDestroy.GetTableSize(EasyDestroy.Data.Filters)>0 then
 		for k, filterObj in pairs(EasyDestroy.Data.Filters) do
 			if filterObj.properties.favorite then
 				EasyDestroy.Data.Filters[k].properties.favorite = false

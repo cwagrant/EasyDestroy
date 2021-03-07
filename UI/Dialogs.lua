@@ -1,6 +1,6 @@
 --[[
 
-    StaticPopupDialogs used by various areas of the AddOn.
+    StaticPopupDialogs used in various areas
     
 ]]
 
@@ -11,29 +11,6 @@ StaticPopupDialogs["ED_CANT_DISENCHANT_BLACKLIST"] = {
 	whileDead = false,
 	hideOnEscape = true,
 	preferredIndex = 3,
-}
-
-StaticPopupDialogs["ED_CONFIRM_DELETE_FILTER"] = {
-    text = "Are you sure you wish to delete filter %s?",
-    button1 = "Yes",
-    button2 = "No",
-    OnAccept = EasyDestroy.Handlers.DeleteFilterOnClick,
-    timeout = 30,
-    whileDead = false,
-    hideOnEscape = true,
-    preferredIndex = 3,
-}
-
-StaticPopupDialogs["ED_CONFIRM_NEW_FAVORITE"] = {
-    text = "You already have a favorite filter. Do you want to make this your new favorite filter?",
-    button1 = "Yes",
-    button2 = "No",
-    OnAccept = function(self) EasyDestroy.Handlers.SaveFilterOnClick(true) end,
-    OnCancel = function(self) EasyDestroyFilterSettings.Favorite:SetChecked(false) end,
-    timeout = 30,
-    whileDead = false,
-    hideOnEscape = true,
-    preferredIndex = 3,
 }
 
 StaticPopupDialogs["ED_CONFIRM_NEW_CHARACTER_FAVORITE"] = {
@@ -70,7 +47,7 @@ StaticPopupDialogs["ED_SHOW_ALL_FILTERS"] = {
     text = "You do not currently have both Searches and Blacklists checked. |nChecking this box will cause both Searches and Blacklists to show under the Filter selection. Do you wish to continue?",
     button1 = "Yes",
     button2 = "No",
-    OnAccept = function(self) EasyDestroy:SelectAllFilterTypes() end,
+    OnAccept = function(self) EasyDestroy.UI.Filters.SelectAllFilterTypes() end,
     timeout = 30,
     whileDead = false,
     hideOnEscape = true,
@@ -81,18 +58,6 @@ StaticPopupDialogs["ED_FILTER_UNIQUE_NAME"] = {
     text = "Filters require a unique name. %s is already used.|n|n|cFFFF0000Your filter has NOT been saved.|r",
     button1 = "Okay",
     -- OnAccept = function(self) return end,
-    timeout = 30,
-    whileDead = false,
-    hideOnEscape = true,
-    preferredIndex = 3,
-}
-
-StaticPopupDialogs["ED_FILTER_RENAME"] = {
-    text = "You must give this filter a unique name.",
-    hasEditBox = true,
-    button1 = "Rename",
-    button2 = "Cancel",
-    OnAccept = function(self) EasyDestroy.UI.SetFilterName(self.editBox:GetText()); EasyDestroy.Handlers.CopyFilterOnClick(); end, 
     timeout = 30,
     whileDead = false,
     hideOnEscape = true,

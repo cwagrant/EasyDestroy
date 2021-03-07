@@ -1,16 +1,41 @@
-EasyDestroy = EasyDestroy
+EasyDestroy.UI.Blacklist = {}
 
 local frame = CreateFrame("Frame", "ED_Blacklist", InterfaceOptionsFramePanelContainer)
-local needsUpdate = false
 frame.name = "Blacklist"
 frame.parent = EasyDestroy.AddonName
 frame:Hide()
 
-local function GetItemsInBags()
+local protected = {}
+
+function EasyDestroy.UI.Blacklist.__init()
+
+    frame:SetScript("OnShow", protected.OnFrameShow)
+
+    InterfaceOptions_AddCategory(frame)
+    
+    EasyDestroy_OpenBlacklist:SetScript("OnClick", function()
+        InterfaceOptionsFrame_OpenToCategory(frame)
+        InterfaceOptionsFrame_OpenToCategory(frame)
+    end)
+
+end
+
+function protected.OnBlacklistUpdate()
+    frame.itemsInBags:ItemListUpdate()
+    frame.itemsInBags:ScrollUpdate()
+    frame.itemsInBlacklist:ItemListUpdate()
+    frame.itemsInBlacklist:ScrollUpdate()
+end
+
+function protected.OnInventoryUpdate()
+    frame.itemsInBags:ItemListUpdate()
+    frame.itemsInBags:ScrollUpdate()
+end
+
+function protected.GetItemsInBags()
     local itemList = {}
 
-    for i, item in ipairs(EasyDestroy.GetBagItems()) do
-		local matchfound = nil
+    for i, item in ipairs(EasyDestroy.Inventory.GetInventory()) do
 		local typematch = false
 
         if item:GetStaticBackingItem() then
@@ -18,7 +43,7 @@ local function GetItemsInBags()
 
             while (true) do
 
-                for k, v in ipairs(ED_ACTION_FILTERS[ED_ACTION_DISENCHANT]) do
+                for k, v in ipairs(EasyDestroy.Config.ItemTypeFilterByFlags(EasyDestroy.Data.Options.Actions)) do
 					if v.itype == item.classID then
 						if not v.stype then
 							typematch = true
@@ -32,7 +57,7 @@ local function GetItemsInBags()
                     break
                 elseif item.classID == LE_ITEM_CLASS_ARMOR and item.subclassID == LE_ITEM_ARMOR_COSMETIC then
                     break
-                elseif EasyDestroy.API.Blacklist.HasItem(item) then
+                elseif EasyDestroy.Blacklist.HasItem(item) then
                     break
                 elseif tContains(ED_DEFAULT_BLACKLIST, item.id) then
                     break
@@ -46,7 +71,7 @@ local function GetItemsInBags()
     return itemList
 end
 
-local function GetItemsInBlacklist()
+function protected.GetItemsInBlacklist()
     --[[
         blacklists will be saved as a list of item id's.
         To show the item in the frame, we'll need to get the items link from GetItemInfo to get the ID.
@@ -71,27 +96,23 @@ local function GetItemsInBlacklist()
     return itemList
 end
 
-local function OnClickBagItem(self, button)
+function protected.OnClickBagItem(self, button)
 
     if button ~= "LeftButton" then return end
 
-    EasyDestroy.API.Blacklist.AddItem(self.item)
-
-    needsUpdate = true
+    EasyDestroy.Blacklist.AddItem(self.item)
 
 end
 
-local function OnClickBlacklistItem(self, button)
+function protected.OnClickBlacklistItem(self, button)
 
     if button ~= "LeftButton" then return end
 
-    EasyDestroy.Debug("Remove Item From Blacklist", self.item:GetItemName(), self.item.itemID)
-
-    EasyDestroy.API.Blacklist.RemoveItem(self.item)
+    EasyDestroy.Blacklist.RemoveItem(self.item)
 
 end
 
-local function OnFrameShow()
+function protected.OnFrameShow()
     local leftframe = CreateFrame("Frame", nil, frame)
     leftframe:SetHeight(248)
     leftframe:SetPoint("LEFT", frame, 16, 0)
@@ -118,16 +139,15 @@ local function OnFrameShow()
     local blwarn = rightframe:CreateFontString(rightframe, "OVERLAY", "GameFontHighlight")
     blwarn:SetPoint("BOTTOMRIGHT", rightframe, "TOPRIGHT", 4, 0)
     blwarn:SetText("NOTE: This blacklist does not list items filtered by 'blacklist' type filters.")
-    -- EasyDestroy:CreateBG(rightframe, 0, 0, 1)
 
     local itemsInBags = CreateFrame("Frame", "EDBLBagItems", leftframe, "EasyDestroyItemScrollTemplate")
     itemsInBags:Show()
-    itemsInBags:Initialize(GetItemsInBags, 10, 24, OnClickBagItem)
+    itemsInBags:Initialize(protected.GetItemsInBags, 10, 24, protected.OnClickBagItem)
     frame.itemsInBags = itemsInBags
 
     local itemsInBlacklist = CreateFrame("Frame", "EDBLBlacklistItems", rightframe, "EasyDestroyItemScrollTemplate")
     itemsInBlacklist:Show()
-    itemsInBlacklist:Initialize(GetItemsInBlacklist, 10, 24, OnClickBlacklistItem)
+    itemsInBlacklist:Initialize(protected.GetItemsInBlacklist, 10, 24, protected.OnClickBlacklistItem)
     frame.itemsInBlacklist = itemsInBlacklist
 
     itemsInBags.ScrollFrame:SetScript("OnVerticalScroll", function(self, offset)
@@ -138,45 +158,29 @@ local function OnFrameShow()
         itemsInBlacklist:OnVerticalScroll(offset)
     end)
 
-    itemsInBags:ScrollUpdate()
-    itemsInBlacklist:ScrollUpdate()
+    -- Update everything the first time we open the window
+    protected.OnBlacklistUpdate()
 
-    frame:SetScript("OnUpdate", function()
-        if needsUpdate == true then 
-            -- itemsInBags.UpdateItemList = true
-            -- itemsInBags:ScrollUpdate()
 
-            -- itemsInBlacklist.UpdateItemList = true
-            -- itemsInBlacklist:ScrollUpdate()
-            EasyDestroy.UI.UpdateBlacklistWindow()
-            needsUpdate = false
-        end
-    end)
+    EasyDestroy.RegisterCallback(frame, "ED_BLACKLIST_UPDATED", protected.OnBlacklistUpdate)
+    EasyDestroy.RegisterCallback(frame, "ED_INVENTORY_UPDATED_DELAYED", protected.OnInventoryUpdate)
 
     -- Only run this code the very first time we show the frame
-    frame:SetScript("OnShow", nil)
+    frame:SetScript("OnShow", function()
+        
+        EasyDestroy.RegisterCallback(frame, "ED_BLACKLIST_UPDATED", protected.OnBlacklistUpdate)
+        EasyDestroy.RegisterCallback(frame, "ED_INVENTORY_UPDATED_DELAYED", protected.OnInventoryUpdate)
+        
+        -- Update everything on subsequence openings of the window. This makes sure we catch up to any updates made 
+        -- when the window is closed
+        protected.OnBlacklistUpdate()
+    end)
+
+    frame:SetScript("OnHide", function()
+
+        EasyDestroy.UnregisterCallback(frame, "ED_BLACKLIST_UPDATED")
+        EasyDestroy.UnregisterCallback(frame, "ED_INVENTORY_UPDATED_DELAYED")
+
+    end)
+
 end
-
-function EasyDestroy.UI.UpdateBlacklistWindow()
-    local itemsInBags = _G['EDBLBagItems']
-    if itemsInBags then
-        itemsInBags.UpdateItemList = true
-        itemsInBags:ScrollUpdate()
-    end
-
-    local itemsInBlacklist = _G['EDBLBlacklistItems']
-    if itemsInBlacklist then
-        itemsInBlacklist.UpdateItemList = true
-        itemsInBlacklist:ScrollUpdate()
-    end
-
-end
-
-frame:SetScript("OnShow", OnFrameShow)
-
-InterfaceOptions_AddCategory(frame)
-
-EasyDestroy_OpenBlacklist:SetScript("OnClick", function()
-    InterfaceOptionsFrame_OpenToCategory(frame)
-    InterfaceOptionsFrame_OpenToCategory(frame)
-end)

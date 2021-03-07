@@ -5,7 +5,6 @@ function filter:Initialize()
     self.checkbox = filter.checkbox or CreateFrame("CheckButton", "EDFilterItemInSetCheck", self.frame, "EasyDestroyCheckboxTemplate")
     self.checkbox:SetPoint("LEFT")
     self.checkbox:SetLabel(filter.name)
-    self.checkbox:SetScript("OnClick", EasyDestroy_Refresh)
     
     self.frame:Hide()
 
@@ -19,7 +18,8 @@ function filter:GetItemInfo(itemlink, bag, slot)
 		local items = C_EquipmentSet.GetItemLocations(setid)
 		if items then
 			for _, locid in pairs(items) do
-				local equipped, bank, bags, void, slotnum, bagnum = EquipmentManager_UnpackLocation(locid);
+                -- probably should just change this to a select(5, func...)
+				local _, _, _, _, slotnum, bagnum = EquipmentManager_UnpackLocation(locid);
 				if bagnum==bag and slotnum==slot then
 					return true
 				end
@@ -76,4 +76,4 @@ function filter:Clear()
     end
 end
 
-EasyDestroy:RegisterCriterion(filter)
+EasyDestroy.Filters.RegisterCriteria(filter)

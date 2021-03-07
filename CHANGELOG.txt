@@ -1,3 +1,13 @@
+20210306 - 3.0.5
+- code cleanup and change to event/callback based system
+- separated out UI and API type functionality
+- Added option to turn off minimap icon
+- Added button for clearing the session item ignore cache (temporary blacklist)
+- Removed a number of tables and objects from the global namespace
+
+TODO - fix counts for stackable items as they are destroyed 
+What is ButtonWasClicked and is it still necessary?
+
 20210304 - 3.0.4
 - bug fix, item window not refreshing when opening
 
