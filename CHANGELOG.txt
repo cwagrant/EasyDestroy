@@ -1,3 +1,6 @@
+20210309 - 3.0.6
+- Updated TOC file
+
 20210306 - 3.0.5
 - code cleanup and change to event/callback based system
 - separated out UI and API type functionality
