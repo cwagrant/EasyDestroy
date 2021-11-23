@@ -284,6 +284,8 @@ function SlashCmdList.EASYDESTROY(msg)
 	elseif msg=="opt" or msg=="option" or msg=="options" then 
 		InterfaceOptionsFrame_OpenToCategory("EasyDestroy")
     	InterfaceOptionsFrame_OpenToCategory("EasyDestroy")
+	elseif msg=="dump" then
+		ImportExportDialog(false, EasyDestroy:Dump())
 	else
 		if EasyDestroyFrame:IsVisible() then
 			EasyDestroyFrame:Hide()

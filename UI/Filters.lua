@@ -22,6 +22,8 @@ FiltersFrame.Buttons.NewFilter = EasyDestroyFilters_New
 FiltersFrame.Buttons.SaveFilterAs = EasyDestroyFilters_NewFromFilter
 FiltersFrame.Buttons.DeleteFilter = EasyDestroyFilters_Delete
 FiltersFrame.Buttons.SaveFilter = EasyDestroyFilters_Save
+FiltersFrame.Buttons.ExportFilter = EasyDestroyFilters_Export
+FiltersFrame.Buttons.ImportFilter = EasyDestroyFilters_Import
 
 function FiltersFrame.__init()
 
@@ -83,6 +85,8 @@ function FiltersFrame.__init()
 		dialog.source = FiltersFrame
 	end)
 	FiltersFrame.Buttons.SaveFilter:SetScript("OnClick", protected.SaveFilterOnClick)
+	FiltersFrame.Buttons.ExportFilter:SetScript("OnClick", protected.ExportFilterOnClick)
+	FiltersFrame.Buttons.ImportFilter:SetScript("OnClick", protected.ImportFilterOnClick)
 
 	FiltersFrame.Favorite:SetScript("OnClick", protected.FavoriteIconOnClick)
 
@@ -710,5 +714,70 @@ function protected.DeleteFilterOnClick()
 		FiltersFrame.Clear()
 	end
 
+end
+
+function protected.LoadFilterFromTable(filter)
+	-- functionally we are creating a new filter
+	protected.NewOnClick()
+
+	if filter.filterType == ED_FILTER_TYPE_BLACKLIST then
+		FiltersFrame.FilterType:SetChecked(true)
+		FiltersFrame.Favorite:Disable()
+	else
+		FiltersFrame.FilterType:SetChecked(false)
+		FiltersFrame.Favorite:Enable()
+	end
+
+	for key, registeredFilter in pairs(EasyDestroy.CriteriaRegistry) do
+		registeredFilter:Clear()
+		if key and filter.criteria and filter.criteria[key] then 
+			tinsert(EasyDestroy.CriteriaStack, registeredFilter)
+			registeredFilter:SetValues(filter.criteria[key] or "")
+		end
+	end
+
+	FiltersFrame.PlaceCriteria()
+
+	EasyDestroy.Events:Call("ED_FILTER_CRITERIA_CHANGED", filter)
+
+end
+
+function protected.ExportFilterOnClick()
+	ImportExportDialog(false, protected.GetEncodedFilter())
+end
+
+function protected.ImportFilterOnClick()
+	ImportExportDialog(true, nil, protected.LoadEncodedFilter)
+end
+
+function protected.GetEncodedFilter()
+	local libs = LibStub("LibSerialize")
+	local libd = LibStub("LibDeflate")
+	if not libs or not libd then return end
+
+	local filter = {}
+	filter.criteria = FiltersFrame.GetCriteria()
+	filter.filterType = FiltersFrame.GetFilterType()
+
+	local serialized = libs:Serialize(filter)
+	local compressed = libd:CompressDeflate(serialized)
+	return libd:EncodeForPrint(compressed)
+end
+
+function protected.LoadEncodedFilter(encoded_filter)
+	local libs = LibStub("LibSerialize")
+	local libd = LibStub("LibDeflate")
+	if not libs or not libd then return end
+
+	local from_print = libd:DecodeForPrint(encoded_filter)
+	local decompressed = libd:DecompressDeflate(from_print)
+	local success, deserialized = libs:Deserialize(decompressed)
+
+	if not success then
+		error("EasyDestroy: Error, invalid filter.")
+		return
+	end
+
+	protected.LoadFilterFromTable(deserialized)
 end
 
