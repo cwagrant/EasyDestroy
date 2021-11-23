@@ -129,6 +129,17 @@ function EasyDestroy.Keys(tbl)
 	return rtn
 end
 
+function EasyDestroy:Dump()
+	local libs = LibStub("LibSerialize")
+	local libd = LibStub("LibDeflate")
+	if not libs or not libd then return end
+
+
+	local serialized = libs:Serialize(EasyDestroy.Data.Filters)
+	local compressed = libd:CompressDeflate(serialized)
+	return libd:EncodeForPrint(compressed)
+end
+
 function EasyDestroy:UpdateDBFormat(data)
 	local version, subversion, patch = strsplit(".", EasyDestroy.Version)
 	version, subversion, patch = tonumber(version), tonumber(subversion), tonumber(patch)

@@ -4,7 +4,7 @@
  
 <Frame name="EasyDestroyFrame" inherits="UIPanelDialogTemplate" hidden="false" movable="true" parent="UIParent">
 	<Size>
-		<AbsDimension x="580" y ="580"/>
+		<AbsDimension x="580" y ="600"/>
 	</Size>
 	<Anchors>
 		<Anchor point="CENTER"/>
@@ -13,7 +13,7 @@
 		<Layer level="OVERLAY">
 			<FontString name="$parent_FoundItemsCount" parentKey="FoundItemsCount" inherits="GameFontHighlight">
 				<Anchors>
-					<Anchor point="BOTTOM" x="0" y="24"/>
+					<Anchor point="BOTTOM" x="0" y="8"/>
 				</Anchors>
 			</FontString>
 		</Layer>
@@ -229,6 +229,25 @@
 								<Anchor point="TOPLEFT" relativeTo="EasyDestroyFilters_New" relativePoint="BOTTOMLEFT" x="0" y="-4"/>
 							</Anchors>
 						</Button>
+
+						<Button name="EasyDestroyFilters_Export" inherits="UIPanelButtonTemplate" text="Export Filter">
+							<Size>
+								<AbsDimension x="100" y="22"/>
+							</Size>
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeTo="EasyDestroyFilters_Delete" relativePoint="BOTTOMLEFT" x="0" y="-20"/>
+							</Anchors>
+						</Button>
+
+						<Button name="EasyDestroyFilters_Import" inherits="UIPanelButtonTemplate" text="Import Filter">
+							<Size>
+								<AbsDimension x="100" y="22"/>
+							</Size>
+							<Anchors>
+								<Anchor point="TOPRIGHT" relativeTo="EasyDestroyFilters_Save" relativePoint="BOTTOMRIGHT" x="0" y="-20"/>
+							</Anchors>
+						</Button>
+
 					</Frames>
 				</Frame>
 			</Frames>
@@ -239,7 +258,7 @@
 				<AbsDimension x="100" y="22"/>
 			</Size>
 			<Anchors>
-				<Anchor point="BOTTOMLEFT" relativeTo="$parentDialogBG" x="10" y="10"/>
+				<Anchor point="BOTTOMLEFT" relativeTo="$parentDialogBG" x="10" y="16"/>
 			</Anchors>
 		</Button>
 
@@ -248,13 +267,13 @@
 				<AbsDimension x="100" y="22"/>
 			</Size>
 			<Anchors>
-				<Anchor point="BOTTOMRIGHT" relativeTo="$parentDialogBG" x="-10" y="10"/>
+				<Anchor point="BOTTOMRIGHT" relativeTo="$parentDialogBG" x="-10" y="16"/>
 			</Anchors>
 		</Button>
 
 		<Button name="EasyDestroy_ToggleConfigurator" inherits="UIPanelButtonTemplate" text="Hide Configurator">
 			<Size>
-				<AbsDimension x="100" y="22"/>
+				<AbsDimension x="125" y="22"/>
 			</Size>
 			<Anchors>
 				<Anchor point="BOTTOMRIGHT" relativeTo="EasyDestroy_OpenBlacklist" relativePoint="BOTTOMLEFT" x="-10"/>
