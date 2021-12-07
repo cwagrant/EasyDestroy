@@ -1,5 +1,5 @@
 ## Interface: 90105
-## Version: 3.1.0
+## Version: 3.1.1
 ## Title: EasyDestroy
 ## Notes: Makes disenchanting easy!
 ## Author: Deeproot-Dalaran (C.W.A.Grant)
@@ -44,6 +44,7 @@ filters\iteminset.lua
 filters\soulbound.lua
 filters\itemtype.lua
 filters\count.lua
+filters\bind.lua
 
 # AddOnSkin supports
 UI\AddOnSkin.lua

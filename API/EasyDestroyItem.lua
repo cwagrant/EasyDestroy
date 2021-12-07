@@ -55,6 +55,8 @@ function EasyDestroyItem:New(bag, slot, link)
         return nil
     end
 
+    local itemLoc = ItemLocation:CreateFromBagAndSlot(self.bag, self.slot)
+
     self.itemLink = self:GetItemLink()
     self.itemID = self:GetItemID()
     self.level = self:GetCurrentItemLevel()
@@ -62,6 +64,7 @@ function EasyDestroyItem:New(bag, slot, link)
     self.isKeystone = C_Item.IsItemKeystoneByID(self.itemID or self.itemLink)
     self.classID, self.subclassID, self.bindtype, self.expansion = select(12, GetItemInfo(self:GetItemLink()))
     self.name = self:GetItemName()
+    self.soulbound = C_Item.IsBound(itemLoc)
     self.count = 1
 
     self.maxStackSize  = select(8, GetItemInfo(self:GetItemLink()))
