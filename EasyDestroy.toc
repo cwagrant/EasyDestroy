@@ -1,14 +1,15 @@
-## Interface: 90105
-## Version: 3.1.0
+## Interface: 90200
+## Version: 3.1.2
 ## Title: EasyDestroy
 ## Notes: Makes disenchanting easy!
-## Author: Deeproot-Dalaran (C.W.A.Grant)
+## Author: CWAGrant
 ## X-License: MIT License
 ## X-Category: Professions
 ## SavedVariables: EasyDestroyData
 ## SavedVariablesPerCharacter: EasyDestroyCharacter
 ## OptionalDeps: AddOnSkins
 
+## X-Wago-ID: J96E9a6g
 ## X-Curse-Project-ID: 414637
 ## X-Website: https://github.com/cwagrant/EasyDestroy
 
@@ -44,7 +45,7 @@ filters\iteminset.lua
 filters\soulbound.lua
 filters\itemtype.lua
 filters\count.lua
+filters\bind.lua
 
 # AddOnSkin supports
 UI\AddOnSkin.lua
-
