@@ -11,7 +11,7 @@ function filter:Initialize()
     -- We create the frame here, we'll leave the details on size/anchors to the Filters window.
     self.frame = self.frame or CreateFrame("Frame", nil, self.parent)
 
-    self.label = self.frame:CreateFontString(self.frame, "OVERLAY", "GameFontNormalSmall")
+    self.label = self.frame:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
     self.label:SetPoint("CENTER", self.frame, "TOP", 0, -10)
     self.label:SetText(self.name)
     

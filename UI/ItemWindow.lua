@@ -65,7 +65,7 @@ function protected.FindWhitelistItems(activeFilter)
 			--[[ a way to get "continue" statement functionality from break statements. ]]
 			while (true) do
 
-				if item.classID ~= LE_ITEM_CLASS_ARMOR and item.classID ~= LE_ITEM_CLASS_WEAPON and item.count and item.count <= 0 then
+				if item.classID ~= Enum.ItemClass.Armor and item.classID ~= Enum.ItemClass.Weapon and item.count and item.count <= 0 then
 					matchfound = false
 					break
 				end
@@ -78,7 +78,7 @@ function protected.FindWhitelistItems(activeFilter)
 
 				-- can't typically disenchant cosmetic items. This filters them out (hopefully)
 				-- Not sure about cosmetic weapons...
-				if item.classID==LE_ITEM_CLASS_ARMOR and item.subclassID == LE_ITEM_ARMOR_COSMETIC then
+				if item.classID==Enum.ItemClass.Armor and item.subclassID == Enum.ItemArmorSubclass.Cosmetic then
 					matchfound = false
 					break
 				end

@@ -6,6 +6,8 @@
 
 EasyDestroyItem = {}
 EasyDestroyItem.__index = EasyDestroyItem
+local GetContainerItemInfo = C_Container.GetContainerItemInfo
+
 function EasyDestroyItem:_NewFromLink(link)
 
     -- private function to handle caching of new items from links
@@ -24,8 +26,8 @@ function EasyDestroyItem:_NewFromBagAndSlot(bag, slot)
 
     -- private function to handle caching of new items from bags/slots
 
-    local ilink = select(7, GetContainerItemInfo(bag, slot))
-    local cache = EasyDestroyItem.EasyDestroyCacheID(bag, slot, ilink)
+    local itemInfo = GetContainerItemInfo(bag, slot)
+    local cache = EasyDestroyItem.EasyDestroyCacheID(bag, slot, itemInfo.hyperlink)
 
     if cache and EasyDestroy.Cache.ItemCache[cache] then
         return EasyDestroy.Cache.ItemCache[cache]
@@ -64,7 +66,7 @@ function EasyDestroyItem:New(bag, slot, link)
     self.isKeystone = C_Item.IsItemKeystoneByID(self.itemID or self.itemLink)
     self.classID, self.subclassID, self.bindtype, self.expansion = select(12, GetItemInfo(self:GetItemLink()))
     self.name = self:GetItemName()
-    self.soulbound = C_Item.IsBound(itemLoc)
+    self.soulbound = self:HasItemLocation() and C_Item.IsBound(itemLoc) or false
     self.count = 1
 
     self.maxStackSize  = select(8, GetItemInfo(self:GetItemLink()))

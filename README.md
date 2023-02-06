@@ -2,6 +2,11 @@ Originally this was a relatively simple addon I made to make it easier to mass d
 
 Can be found at https://github.com/cwagrant/EasyDestroy
 
+### Known Issues:
+	- (v3.2.0)
+		- The EasyDestroy Macro does not currently work. You have to manually click the "Destroy" button. This appears to likely be based on changes to the /click command by Blizzard and I may not be able to re-enable the feature. Time will tell.
+		- Does not show or work for prospecting or milling Dragonflight ores and herbs.
+
  
 ### Commands: 
 
