@@ -221,7 +221,7 @@ function EasyDestroy_OnOptionsShow()
     addonOptions:SetBackdropBorderColor(0,0,0,1)
     addonOptions:Show()
 
-    addonOptions.label = addonOptions:CreateFontString(addonOptions, "OVERLAY", "GameTooltipText")
+    addonOptions.label = addonOptions:CreateFontString(nil, "OVERLAY", "GameTooltipText")
     addonOptions.label:SetPoint("BOTTOMLEFT", addonOptions, "TOPLEFT", 4 , 2)
     addonOptions.label:SetText("EasyDestroy Options")
     optionsFrame.addonOptions = addonOptions
@@ -244,7 +244,7 @@ function EasyDestroy_OnOptionsShow()
     destroyOptions:SetBackdropBorderColor(0,0,0,1)
     destroyOptions:Show()
 
-    destroyOptions.label = destroyOptions:CreateFontString(destroyOptions, "OVERLAY", "GameTooltipText")
+    destroyOptions.label = destroyOptions:CreateFontString(nil, "OVERLAY", "GameTooltipText")
     destroyOptions.label:SetPoint("BOTTOMLEFT", destroyOptions, "TOPLEFT", 4, 2)
     destroyOptions.label:SetText("Search & Destroy Options")
     optionsFrame.destroyOptions = destroyOptions

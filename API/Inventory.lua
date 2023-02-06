@@ -13,6 +13,8 @@ protected.playerInventory = {}
 protected.toCombine = {}
 protected.toCombineQueue = {}
 protected.ProcessingItemCombine = false
+local GetContainerNumSlots = C_Container.GetContainerNumSlots
+local GetContainerItemInfo = C_Container.GetContainerItemInfo
 
 local function FindTradegoods(dict, addToTable)
 
@@ -56,19 +58,21 @@ local function GetBagItems(itemList)
 	for bag = 0, NUM_BAG_SLOTS do
 		for slot=1, GetContainerNumSlots(bag) do
 			local item
-			local itemlink = select(7, GetContainerItemInfo(bag, slot))
+			local itemInfo = GetContainerItemInfo(bag, slot)	
 			
 			while (true) do 
-
-				if itemlink then 
+			
+				if itemInfo ~= nil then 
+					EasyDestroy.Debug("Found item", itemInfo.hyperlink)
 					item = EasyDestroyItem:New(bag, slot)
 				else 
 					break
 				end
 			
+				EasyDestroy.Debug('NilCheck')
 				if item == nil then break end
 
-				if item.classID ~= LE_ITEM_CLASS_ARMOR and item.classID ~= LE_ITEM_CLASS_WEAPON then break end 
+				if item.classID ~= Enum.ItemClass.Armor and item.classID ~= Enum.ItemClass.Weapon then break end 
 				
 				if item:GetItemID() and C_Item.IsItemKeystoneByID(item:GetItemID()) then break end
 
@@ -87,6 +91,7 @@ local function GetBagItems(itemList)
 		end
 	end
 
+	EasyDestroy.Debug('ItemCount', EasyDestroy.GetTableSize(itemList))
 	FindTradegoods(EasyDestroy.Dict.Herbs, itemList)
 	FindTradegoods(EasyDestroy.Dict.Ores, itemList)
 
@@ -102,11 +107,11 @@ local function GetItemsToCombine(item)
 
 		for slot=1, GetContainerNumSlots(bag) do
 
-			local _, count, _, _, _, _, _, _, _, itemID = GetContainerItemInfo(bag, slot)
+			local itemInfo = GetContainerItemInfo(bag, slot)
 
-			if itemID == item.itemID then 
+			if itemInfo.itemID == item.itemID then 
 
-				if count < item.maxStackSize then 
+				if itemInfo.stackCount < item.maxStackSize then 
 					tinsert(protected.toCombine, {bag=bag, slot=slot})
 				end
 			end
@@ -150,13 +155,13 @@ local function CombineStacks()
 		
 		while true do
 
-			local _, count1, locked1 = GetContainerItemInfo(sourceItem.bag, sourceItem.slot)
-			local _, count2, locked2 = GetContainerItemInfo(destItem.bag, destItem.slot)
+			local sourceItem = GetContainerItemInfo(sourceItem.bag, sourceItem.slot)
+			local destItem = GetContainerItemInfo(destItem.bag, destItem.slot)
 
-			sourceCount = count1
-			destCount = count2
+			sourceCount = sourceItem.stackCount
+			destCount = destItem.stackCount
 			-- suspend if either item is locked
-			if locked1 or locked2 then
+			if sourceItem.isLocked or destItem.isLocked then
 				coroutine.yield()
 			else
 				break
@@ -174,13 +179,13 @@ local function CombineStacks()
 		EasyDestroy.Debug("EasyDestroy.API.CombineStacks", "Recount Items")
 		local finalCount1, finalCount2
 		while true do 
-			local _, count1, locked1 = GetContainerItemInfo(sourceItem.bag, sourceItem.slot)
-			local _, count2, locked2 = GetContainerItemInfo(destItem.bag, destItem.slot)
+			local sourceItem = GetContainerItemInfo(sourceItem.bag, sourceItem.slot)
+			local destItem = GetContainerItemInfo(destItem.bag, destItem.slot)
 
-			finalCount1 = count1
-			finalCount2 = count2
+			finalCount1 = sourceItem.stackCount
+			finalCount2 = destItem.stackCount
 
-			if not locked2 and (locked1 == nil or locked1 == false) then 
+			if not destItem.isLocked and (sourcedItem.isLocked == nil or sourcedItem.isLocked == false) then 
 				break
 			else
 				coroutine.yield()
@@ -242,6 +247,8 @@ end
 function EasyDestroy.Inventory.GetInventory()
 
     if not initialized then EasyDestroy.Inventory.Initialize() end
+	
+	EasyDestroy.Debug("EasyDestroy.Inventory.GetInventory()", EasyDestroy.GetTableSize(protected.playerInventory))
 
     return protected.playerInventory
 end
@@ -280,9 +287,9 @@ function EasyDestroy.Inventory.ItemNeedsRestacked(item)
 		for bag = 0, NUM_BAG_SLOTS do
 			for slot=1, GetContainerNumSlots(bag) do
 	
-				local _, count, _, _, _, _, _, _, _, itemID = GetContainerItemInfo(bag, slot)
+				local itemInfo = GetContainerItemInfo(bag, slot)
 
-				if item:GetItemID() == itemID and count < item.maxStackSize then
+				if itemInfo == not nil and item:GetItemID() == itemInfo.itemID and itemInfo.stackCount < item.maxStackSize then
 					
                     -- if we already found one partial stack then we've found all we need
 					if incompleteStack then
@@ -311,11 +318,10 @@ function EasyDestroy.Inventory.FindTradegoodInBags(item)
 
 	for bag = 0, NUM_BAG_SLOTS do
 		for slot=1, GetContainerNumSlots(bag) do
+			local itemInfo = GetContainerItemInfo(bag, slot)
 
-			local itemID = select(10, GetContainerItemInfo(bag, slot))
-
-			if item:GetItemID() == itemID then
-				return bag, slot, GetItemCount(itemID, false)
+			if itemInfo and item:GetItemID() == itemInfo.itemID then
+				return bag, slot, GetItemCount(itemInfo.itemID, false)
 			end
 		end
 

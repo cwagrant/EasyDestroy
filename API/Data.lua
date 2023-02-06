@@ -48,18 +48,18 @@ EasyDestroy.Dict.Actions = {}
 
 EasyDestroy.Dict.Actions[1] = {
 	spellID = 13262,
-	itemTypes = {{itype=LE_ITEM_CLASS_WEAPON, stype=nil}, {itype=LE_ITEM_CLASS_ARMOR, stype=nil}},
+	itemTypes = {{itype=Enum.ItemClass.Weapon, stype=nil}, {itype=Enum.ItemClass.Armor, stype=nil}},
 }
 
 EasyDestroy.Dict.Actions[2] = {
 	spellID = 51005,
-	itemTypes = {{itype=LE_ITEM_CLASS_TRADEGOODS, stype=9}},
+	itemTypes = {{itype=Enum.ItemClass.Tradegoods, stype=9}},
 	tradeskill = 773,
 }
 
 EasyDestroy.Dict.Actions[4] = {
 	spellID = 31252,
-	itemTypes = {{itype=LE_ITEM_CLASS_TRADEGOODS, stype=7}},
+	itemTypes = {{itype=Enum.ItemClass.Tradegoods, stype=7}},
 	tradeskill = 755,
 	
 }

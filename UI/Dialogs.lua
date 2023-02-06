@@ -70,7 +70,7 @@ StaticPopupDialogs["ED_RELOAD_CURRENT_FILTER"] = {
     button2 = "Cancel",
     OnAccept = function(self) 
         EasyDestroy.Data.Options.CharacterFavorites = not EasyDestroy.Data.Options.CharacterFavorites 
-        EasyDestroy.UI.ReloadCurrentFilter()
+        EasyDestroy.UI.Filters.ReloadCurrentFilter()
     end, 
     OnCancel = function(self, data) data:SetChecked(EasyDestroy.Data.Options.CharacterFavorites) end,
     timeout = 30,

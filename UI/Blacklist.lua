@@ -55,7 +55,7 @@ function protected.GetItemsInBags()
 
                 if not typematch then
                     break
-                elseif item.classID == LE_ITEM_CLASS_ARMOR and item.subclassID == LE_ITEM_ARMOR_COSMETIC then
+                elseif item.classID == Enum.ItemClass.Armor and item.subclassID == Enum.ItemArmorSubclass.Cosmetic then
                     break
                 elseif EasyDestroy.Blacklist.HasItem(item) then
                     break
@@ -119,10 +119,10 @@ function protected.OnFrameShow()
     leftframe:SetPoint("RIGHT", frame, -24, 0)
     leftframe:SetPoint("TOP", frame, 0, -46)
     leftframe:SetPoint("BOTTOM", frame, "CENTER", 0, 16)
-    local bagitems = leftframe:CreateFontString(leftframe, "OVERLAY", "GameFontHighlight")
+    local bagitems = leftframe:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     bagitems:SetPoint("BOTTOMLEFT", leftframe, "TOPLEFT", -4, 20)
     bagitems:SetText("Items in Bag:")
-    local bihelp = leftframe:CreateFontString(leftframe, "OVERLAY", "GameFontHighlight")
+    local bihelp = leftframe:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     bihelp:SetPoint("TOPLEFT", bagitems, "BOTTOMLEFT", 0, 0)
     bihelp:SetText("To add/remove items from the Items Backlist, just click the item in the windows below.")
     -- EasyDestroy:CreateBG(leftframe, 0, 1, 0)
@@ -133,10 +133,10 @@ function protected.OnFrameShow()
     rightframe:SetPoint("RIGHT", frame, -24, 0)
     rightframe:SetPoint("TOP", frame, "CENTER", 0, -32)
     rightframe:SetPoint("BOTTOM", frame, 0, 20)
-    local blitems = rightframe:CreateFontString(rightframe, "OVERLAY", "GameFontHighlight")
+    local blitems = rightframe:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     blitems:SetPoint("BOTTOMLEFT", rightframe, "TOPLEFT", -4, 20)
     blitems:SetText("Items in Blacklist:")
-    local blwarn = rightframe:CreateFontString(rightframe, "OVERLAY", "GameFontHighlight")
+    local blwarn = rightframe:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     blwarn:SetPoint("TOPLEFT", blitems, "BOTTOMLEFT", 0, 0)
     blwarn:SetText("NOTE: This blacklist does not list items filtered by 'blacklist' type filters.")
 

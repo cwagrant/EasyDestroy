@@ -5,11 +5,11 @@ EasyDestroy.Destroy.name = "EasyDestroy.Destroy"
 function EasyDestroy.Destroy.GetDestroyActionForItem(item)
 
     if item then 
-        if item.classID == LE_ITEM_CLASS_ARMOR or item.classID == LE_ITEM_CLASS_WEAPON then
+        if item.classID == Enum.ItemClass.Armor or item.classID == Enum.ItemClass.Weapon then
             return EasyDestroy.Enum.Actions.Disenchant
-        elseif item.classID == LE_ITEM_CLASS_TRADEGOODS and item.subclassID == 7 then
+        elseif item.classID == Enum.ItemClass.Tradegoods and item.subclassID == 7 then
             return EasyDestroy.Enum.Actions.Prospect
-        elseif item.classID == LE_ITEM_CLASS_TRADEGOODS and item.subclassID == 9 then
+        elseif item.classID == Enum.ItemClass.Tradegoods and item.subclassID == 9 then
             return EasyDestroy.Enum.Actions.Mill
         end
     end
@@ -21,6 +21,7 @@ end
 function EasyDestroy.Destroy.DestroyItem(item)
 
 	local action = EasyDestroy.Destroy.GetDestroyActionForItem(item)
+	EasyDestroy.Debug("Destroy Action", action)
 
 	if action then
 
@@ -28,9 +29,13 @@ function EasyDestroy.Destroy.DestroyItem(item)
 		local spellname = GetSpellInfo(ActionDict.spellID)
 
 		local bag, slot = EasyDestroy.Inventory.FindTradegoodInBags(item)
+		
+		EasyDestroy.Debug(spellname, bag, slot)
 
 		EasyDestroyButton:SetAttribute("*type1", "macro")
 		EasyDestroyButton:SetAttribute("macrotext", string.format(EasyDestroy.Dict.Strings.DestroyMacro, spellname, bag, slot))
+		
+		EasyDestroy.Debug(EasyDestroyButton:GetAttribute("macrotext"))
 
 	end
 

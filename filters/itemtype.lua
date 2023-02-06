@@ -9,7 +9,7 @@ function filter:Initialize()
     -- We create the frame here, we'll leave the details on size/anchors to the Filters window.
     self.frame = self.frame or CreateFrame("Frame", nil, self.parent)
 
-    self.label = self.frame:CreateFontString(self.frame, "OVERLAY", "GameFontNormalSmall")
+    self.label = self.frame:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
     self.label:SetPoint("CENTER", self.frame, "TOP", 0, -10)
     self.label:SetText(self.name)
 
@@ -36,9 +36,9 @@ end
 function filter:Check(input, item)
 
     if self.frame then
-        if item.classID == LE_ITEM_CLASS_ARMOR or item.classID == LE_ITEM_CLASS_WEAPON then 
+        if item.classID == Enum.ItemClass.Armor or item.classID == Enum.ItemClass.Weapon then 
             return (bit.band(input, GEAR) > 0)
-        elseif item.classID == LE_ITEM_CLASS_TRADEGOODS then
+        elseif item.classID == Enum.ItemClass.Tradegoods then
             if item.subclassID == 7 then
                 return (bit.band(input, ORE) > 0)
             elseif item.subclassID == 9 then

@@ -40,7 +40,7 @@ end
 
 function filter:Clear()
     if self.frame then
-        self.frame.input:SetNumber("")
+        self.frame.input:SetNumber(0)
     end
 end
 

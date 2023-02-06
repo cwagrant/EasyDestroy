@@ -280,10 +280,12 @@
 		In order to get around this I had to use an InsecureActionButtonTemplate. Couldn't find any good documentation
 		of this functionality or limits on the SecureActionButtonTemplate so this is sort of bestguess as to why it didn't work. -->
 	</Frames>
+	<!--- gone in DF, need to find replacement?
 	<Backdrop edgeFile="Interface\Buttons\WHITE8x8" tile="true">			
 		<EdgeSize val="2"/>
 		<BorderColor a="1" r="0.99" g="0.81" b="0"/>
 	</Backdrop>
+	-->
 </Frame>
 <Frame name="EasyDestroyItemScrollTemplate" inherits="BackdropTemplate" virtual="true" mixin="EasyDestroyScrollMixin">
 	<Anchors>

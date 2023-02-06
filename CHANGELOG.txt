@@ -1,3 +1,8 @@
+20230206 - 3.2.0
+- Updated TOC file
+- changes to access updated Blizzard container API
+- changes from LE lua enums to Enum.* enums
+
 20220519 - 3.1.2
 - Updated TOC file
 

@@ -87,6 +87,7 @@ function EasyDestroyFrame.__init()
     EasyDestroyFrame:SetScript("OnShow", protected.RegisterEvents)
     EasyDestroyFrame:SetScript("OnHide", protected.UnregisterEvents)
 
+	EasyDestroyButton:RegisterForClicks("AnyDown")
     EasyDestroyButton:SetScript("PreClick", protected.DestroyPreClick)
     EasyDestroyButton:SetScript("PostClick", 
 	function(self)
