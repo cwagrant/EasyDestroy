@@ -265,7 +265,7 @@ function SlashCmdList.EASYDESTROY(msg)
 		-- reset position to center of screen
 		EasyDestroyFrame:SetPoint("RIGHT", UIParent, "CENTER", 0, 0)
 	elseif msg=="macro" then
-		CreateMacro("ED_Disenchant", 236557, "/click EasyDestroyButton", nil)
+		CreateMacro("ED_Disenchant", 236557, "/click EasyDestroyButton LeftButton t", nil)
 	elseif msg=="reset" then
 		EasyDestroyButton:Enable()
 	elseif msg:find("characterfavorites ") or msg:find("cf ") then
