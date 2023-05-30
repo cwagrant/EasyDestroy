@@ -1,5 +1,5 @@
-## Interface: 100005
-## Version: 3.2.1
+## Interface: 100100
+## Version: 3.2.2
 ## Title: EasyDestroy
 ## Notes: Makes disenchanting easy!
 ## Author: CWAGrant
