@@ -1,3 +1,5 @@
+20261104 - 3.3.0
+- Update to work in Midnight
 20230206 - 3.2.1
 - Update macro to work with DF macro changes for /click
 20230206 - 3.2.0
