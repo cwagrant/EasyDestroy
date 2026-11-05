@@ -8,7 +8,7 @@
 
 local AS = nil
 
-if not IsAddOnLoaded("AddOnSkins") then return end
+if not C_AddOns.IsAddOnLoaded("AddOnSkins") then return end
 
 if AddOnSkins then
     AS = unpack(AddOnSkins)

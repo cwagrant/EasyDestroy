@@ -69,7 +69,6 @@ function EasyDestroyFrame.__init()
 	--[[ Filter View Area ]]--
 	UIDropDownMenu_SetWidth(EasyDestroyDropDown, EasyDestroyDropDown:GetWidth()-40)
 
-	EasyDestroy.ContextMenu = CreateFrame("Frame", "EDTestFrame", EasyDestroyFrame, "UIDropDownMenuTemplate")
 	
 	EasyDestroyItemsFrame.ScrollFrame:SetScript("OnVerticalScroll", function(self, offset)
         EasyDestroyItemsFrame:OnVerticalScroll(offset)
@@ -91,7 +90,9 @@ function EasyDestroyFrame.__init()
     EasyDestroyButton:SetScript("PreClick", protected.DestroyPreClick)
     EasyDestroyButton:SetScript("PostClick", 
 	function(self)
-		EasyDestroyButton:SetAttribute("macrotext", "")	
+		EasyDestroyButton:SetAttribute("spell", nil)
+		EasyDestroyButton:SetAttribute("target-bag", nil)
+		EasyDestroyButton:SetAttribute("target-slot", nil)
 		EasyDestroy.ButtonWasClicked = true
 	end)
 
@@ -125,7 +126,6 @@ function protected.RegisterEvents()
 	-- re-register events 
 
 	EasyDestroyFrame:RegisterEvent("BAG_UPDATE_DELAYED")
-	EasyDestroyFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 	
 	-- lets refresh things now that we're opening the window
 	EasyDestroy.Events:Call("ED_INVENTORY_UPDATED")
@@ -138,7 +138,6 @@ function protected.UnregisterEvents()
 	-- un-register events.
 
 	EasyDestroyFrame:UnregisterEvent("BAG_UPDATE_DELAYED")
-	EasyDestroyFrame:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 
 end
 
@@ -160,13 +159,13 @@ function protected.DestroyPreClick(self)
 	local action = EasyDestroy.Destroy.GetDestroyActionForItem(iteminfo)
 	local actionDict = EasyDestroy.Dict.Actions[action]
 	
-	if not IsSpellKnown(actionDict.spellID) then
-		print ("EasyDestroy: You must have " .. GetSpellLink(actionDict.spellID) .. " to destroy this item.")
+	if not IsPlayerSpell(actionDict.spellID) then
+		print ("EasyDestroy: You must have " .. C_Spell.GetSpellLink(actionDict.spellID) .. " to destroy this item.")
 		return
 	elseif EasyDestroyFilterSettings.Blacklist:GetChecked() then
 		StaticPopup_Show("ED_CANT_DISENCHANT_BLACKLIST")
 		return
-	elseif not IsUsableSpell(actionDict.spellID) then
+	elseif not C_Spell.IsSpellUsable(actionDict.spellID) then
 		print("EasyDestroy: You cannot destroy that item right now.")
 		return
 	elseif #GetLootInfo() > 0 then
@@ -180,7 +179,7 @@ function protected.DestroyPreClick(self)
 			)
 		end
 		return
-	elseif IsCurrentSpell(actionDict.spellID) then
+	elseif C_Spell.IsCurrentSpell(actionDict.spellID) then
 		-- fail quietly as they are already casting
 		return
 	elseif iteminfo == nil then

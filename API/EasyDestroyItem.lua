@@ -8,6 +8,12 @@ EasyDestroyItem = {}
 EasyDestroyItem.__index = EasyDestroyItem
 local GetContainerItemInfo = C_Container.GetContainerItemInfo
 
+local WARBOUND_BINDTYPES = {
+    [Enum.ItemBind.ToWoWAccount] = true,
+    [Enum.ItemBind.ToBnetAccount] = true,
+    [Enum.ItemBind.ToBnetAccountUntilEquipped] = true,
+}
+
 function EasyDestroyItem:_NewFromLink(link)
 
     -- private function to handle caching of new items from links
@@ -64,12 +70,14 @@ function EasyDestroyItem:New(bag, slot, link)
     self.level = self:GetCurrentItemLevel()
     self.quality = self:GetItemQuality()
     self.isKeystone = C_Item.IsItemKeystoneByID(self.itemID or self.itemLink)
-    self.classID, self.subclassID, self.bindtype, self.expansion = select(12, GetItemInfo(self:GetItemLink()))
+    self.classID, self.subclassID, self.bindtype, self.expansion = select(12, C_Item.GetItemInfo(self:GetItemLink()))
     self.name = self:GetItemName()
     self.soulbound = self:HasItemLocation() and C_Item.IsBound(itemLoc) or false
+    -- Many "warbound until equipped" items report a plain bind-on-equip bindType, so ask about the specific item too.
+    self.warbound = WARBOUND_BINDTYPES[self.bindtype] or (self:HasItemLocation() and C_Item.IsBoundToAccountUntilEquip(itemLoc)) or false
     self.count = 1
 
-    self.maxStackSize  = select(8, GetItemInfo(self:GetItemLink()))
+    self.maxStackSize  = select(8, C_Item.GetItemInfo(self:GetItemLink()))
 
     EasyDestroy.Cache.ItemCache[EasyDestroyItem.EasyDestroyCacheID(self.bag, self.slot, self.itemLink)] = self
     return self

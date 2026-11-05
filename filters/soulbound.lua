@@ -32,7 +32,7 @@ function filter:Check(inputquality, item)
         local itembound = item.boequality
         local bindtype = item.bindtype
         
-        if bindtype == LE_ITEM_BIND_ON_EQUIP then
+        if bindtype == Enum.ItemBind.OnEquip then
             if tContains(inputquality, itemquality) and not(itembound) then
                 return false
             end
@@ -48,7 +48,7 @@ function filter:Blacklist(inputquality, item)
         local itembound = item.boequality
         local bindtype = item.bindtype
 
-        if bindtype == LE_ITEM_BIND_ON_EQUIP then
+        if bindtype == Enum.ItemBind.OnEquip then
             if tContains(inputquality, itemquality) and not(itembound) then
                 return true
             end

@@ -6,7 +6,7 @@
 
 EasyDestroy = {}
 
-EasyDestroy.Version = GetAddOnMetadata("EasyDestroy", "version")
+EasyDestroy.Version = C_AddOns.GetAddOnMetadata("EasyDestroy", "version")
 EasyDestroy.Events = LibStub("CallbackHandler-1.0"):New(EasyDestroy)
 EasyDestroy.AddonName = "EasyDestroy"
 EasyDestroy.DebugActive = false
@@ -185,6 +185,20 @@ function EasyDestroy:UpdateDBFormat(data)
 		if data.Options and data.Options.Actions == nil then
 			data.Options.Actions = EasyDestroy.Enum.Actions.Disenchant
 		end
+	end
+
+	-- Warbound was added as its own Item Binding option. Account-bound items used to count as
+	-- soulbound, so filters that included soulbound items also include warbound to keep matching them.
+	data.Migrations = data.Migrations or {}
+	if not data.Migrations.WarboundBind then
+		if data.Filters ~= nil then
+			for k, v in pairs(data.Filters) do
+				if v.filter and type(v.filter.bind) == "number" and bit.band(v.filter.bind, 0x01) > 0 then
+					v.filter.bind = bit.bor(v.filter.bind, 0x04)
+				end
+			end
+		end
+		data.Migrations.WarboundBind = true
 	end
 
 	return data

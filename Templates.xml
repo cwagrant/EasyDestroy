@@ -134,7 +134,7 @@
 			local width = GetScreenWidth() or 0
 			local anchor = "ANCHOR_RIGHT"
 			if x > (width/2) then anchor="ANCHOR_LEFT" end
-			if self.item.itemLink then 
+			if self.item and self.item.itemLink then 
 				GameTooltip:SetOwner(self, anchor)
 				GameTooltip:SetHyperlink(self.item.itemLink)
 				GameTooltip:Show()

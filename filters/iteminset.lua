@@ -12,21 +12,8 @@ function filter:Initialize()
 end
 
 function filter:GetItemInfo(itemlink, bag, slot)
-	local sets = C_EquipmentSet.GetEquipmentSetIDs();
-	
-	for _, setid in pairs(sets) do
-		local items = C_EquipmentSet.GetItemLocations(setid)
-		if items then
-			for _, locid in pairs(items) do
-                -- probably should just change this to a select(5, func...)
-				local _, _, _, _, slotnum, bagnum = EquipmentManager_UnpackLocation(locid);
-				if bagnum==bag and slotnum==slot then
-					return true
-				end
-			end
-		end
-	end
-	return false
+	local isInSet = C_Container.GetContainerItemEquipmentSetInfo(bag, slot)
+	return isInSet or false
 end
 
 function filter:Check(excludeset, item)

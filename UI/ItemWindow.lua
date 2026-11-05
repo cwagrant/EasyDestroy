@@ -176,14 +176,13 @@ function protected.ItemOnClick(self, button)
 	if button == "RightButton" then 
 		
 
-		self.item.menu = {
-			{ text = self.item:GetItemName(), notCheckable = true, isTitle = true},
-			{ text = "Add Item to Blacklist", notCheckable = true, func = function() EasyDestroy.Blacklist.AddItem(self.item) end },
-			{ text = "Ignore Item for Session", notCheckable = true, func = function() EasyDestroy.Blacklist.AddSessionItem(self.item) end},
-		}
+		local item = self.item
 
-
-		EasyMenu(self.item.menu, EasyDestroy.ContextMenu, "cursor", 0, 0, "MENU")
+		MenuUtil.CreateContextMenu(self, function(owner, rootDescription)
+			rootDescription:CreateTitle(item:GetItemName())
+			rootDescription:CreateButton("Add Item to Blacklist", function() EasyDestroy.Blacklist.AddItem(item) end)
+			rootDescription:CreateButton("Ignore Item for Session", function() EasyDestroy.Blacklist.AddSessionItem(item) end)
+		end)
 	end
 	
 end

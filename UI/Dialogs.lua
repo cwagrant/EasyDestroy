@@ -90,8 +90,7 @@ StaticPopupDialogs["ED_3_0_FEATURE_ALERT"] = {
     button1 = "Okay",
     button2 = "Cancel",
     OnAccept = function(self) 
-        InterfaceOptionsFrame_OpenToCategory("EasyDestroy")
-        InterfaceOptionsFrame_OpenToCategory("EasyDestroy")
+        EasyDestroy.UI.Options.Open()
     end,
     OnCancel = function(self)
         EasyDestroy.Data.Alerts = EasyDestroy.Data.Alerts or {}

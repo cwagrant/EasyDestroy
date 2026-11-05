@@ -1,6 +1,6 @@
 EasyDestroy.UI.Blacklist = {}
 
-local frame = CreateFrame("Frame", "ED_Blacklist", InterfaceOptionsFramePanelContainer)
+local frame = CreateFrame("Frame", "ED_Blacklist")
 frame.name = "Blacklist"
 frame.parent = EasyDestroy.AddonName
 frame:Hide()
@@ -11,11 +11,11 @@ function EasyDestroy.UI.Blacklist.__init()
 
     frame:SetScript("OnShow", protected.OnFrameShow)
 
-    InterfaceOptions_AddCategory(frame)
+    local category = Settings.RegisterCanvasLayoutSubcategory(EasyDestroy.UI.Options.Category, frame, frame.name)
+    EasyDestroy.UI.Blacklist.Category = category
     
     EasyDestroy_OpenBlacklist:SetScript("OnClick", function()
-        InterfaceOptionsFrame_OpenToCategory(frame)
-        InterfaceOptionsFrame_OpenToCategory(frame)
+        EasyDestroy.UI.Options.Open(category)
     end)
 
 end

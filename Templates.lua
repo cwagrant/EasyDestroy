@@ -19,7 +19,7 @@ function EasyDestroyItemsMixin:UpdateItemFrame(item, onclick)
             end
         end
 
-        local r,g,b = GetItemQualityColor(item.quality)
+        local r,g,b = C_Item.GetItemQualityColor(item.quality)
         self:SetBackdrop({bgFile="Interface\\Tooltips\\UI-Tooltip-Background",})
         self:SetBackdropColor(r,g,b, 0.5)
 

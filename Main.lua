@@ -23,7 +23,9 @@ EasyDestroyFrame:RegisterEvent("PLAYER_REGEN_DISABLED")
 EasyDestroyFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
 EasyDestroyFrame:RegisterEvent("PLAYER_STARTED_MOVING")
 EasyDestroyFrame:RegisterEvent("PLAYER_STOPPED_MOVING")
-EasyDestroyFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+EasyDestroyFrame:RegisterEvent("UI_ERROR_MESSAGE")
+EasyDestroyFrame:RegisterUnitEvent("UNIT_SPELLCAST_INTERRUPTED", "player")
+EasyDestroyFrame:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
 
 local protected = {}
 
@@ -40,41 +42,46 @@ function EasyDestroy_EventHandler(self, event, ...)
 		EasyDestroy.Events:Call("ED_INVENTORY_UPDATED")
 
 
-	elseif event == "COMBAT_LOG_EVENT_UNFILTERED" then 
+	elseif event == "UI_ERROR_MESSAGE" then 
 
-		local subevent = {CombatLogGetCurrentEventInfo()}
-		local playerGUID = UnitGUID("player")
+		-- Combat log events are no longer available to addons, so watch for the spell failure error text instead.
+		local _, message = ...
 
-		if subevent[4] == playerGUID and tContains(EasyDestroy.Dict.ActionTable, subevent[12]) and EasyDestroy.ButtonWasClicked then 
+		if EasyDestroy.ButtonWasClicked and (message == SPELL_FAILED_CANT_BE_DISENCHANTED or message == SPELL_FAILED_CANT_BE_MILLED or message == SPELL_FAILED_CANT_BE_PROSPECTED) then
 
+			if EasyDestroy.Data.Options.AutoBlacklist then
 
-			if subevent[2] == "SPELL_CAST_FAILED" and subevent[15] == SPELL_FAILED_CANT_BE_DISENCHANTED or subevent[15] == SPELL_FAILED_CANT_BE_MILLED or subevent[15] == SPELL_FAILED_CANT_BE_PROSPECTED then
-
-				if EasyDestroy.Data.Options.AutoBlacklist then
-
-					if EasyDestroy.UI.GetCurrentItem() then 
-						EasyDestroy.Blacklist.AddItem(EasyDestroy.UI.GetCurrentItem())
-					end
-
+				if EasyDestroy.UI.GetCurrentItem() then 
+					EasyDestroy.Blacklist.AddItem(EasyDestroy.UI.GetCurrentItem())
 				end
-				EasyDestroy.ButtonWasClicked = false
-				EasyDestroyButton:Enable()
-			
-			elseif subevent[2] == "SPELL_CAST_FAILED" and subevent[15] == INTERRUPTED then
-
-				EasyDestroy.ButtonWasClicked = false
-
-				if not protected.PlayerMoving then 
-					EasyDestroyButton:Enable()
-				end
-
-			elseif subevent[2] == "SPELL_CAST_SUCCESS" then
-
-				EasyDestroy.ButtonWasClicked = false
 
 			end
+			EasyDestroy.ButtonWasClicked = false
+			EasyDestroyButton:Enable()
 
-		end	
+		end
+
+	elseif event == "UNIT_SPELLCAST_INTERRUPTED" then 
+
+		local _, _, spellID = ...
+
+		if EasyDestroy.ButtonWasClicked and tContains(EasyDestroy.Dict.ActionTable, spellID) then
+
+			EasyDestroy.ButtonWasClicked = false
+
+			if not protected.PlayerMoving then 
+				EasyDestroyButton:Enable()
+			end
+
+		end
+
+	elseif event == "UNIT_SPELLCAST_SUCCEEDED" then 
+
+		local _, _, spellID = ...
+
+		if EasyDestroy.ButtonWasClicked and tContains(EasyDestroy.Dict.ActionTable, spellID) then
+			EasyDestroy.ButtonWasClicked = false
+		end
 
 	elseif event=="PLAYER_REGEN_DISABLED" then
 
@@ -162,8 +169,7 @@ function EasyDestroy_EventHandler(self, event, ...)
 				icon = 132885,
 				OnClick = function(self, button) 
 					if button == "RightButton" then
-						InterfaceOptionsFrame_OpenToCategory("EasyDestroy")
-    					InterfaceOptionsFrame_OpenToCategory("EasyDestroy")
+						EasyDestroy.UI.Options.Open()
 					elseif EasyDestroyFrame:IsVisible() then
 						EasyDestroyFrame:Hide()
 					else
@@ -282,8 +288,7 @@ function SlashCmdList.EASYDESTROY(msg)
 	elseif msg=="debug" and EasyDestroy.DebugActive then
 		EasyDestroy:ShowDebugFrame()
 	elseif msg=="opt" or msg=="option" or msg=="options" then 
-		InterfaceOptionsFrame_OpenToCategory("EasyDestroy")
-    	InterfaceOptionsFrame_OpenToCategory("EasyDestroy")
+		EasyDestroy.UI.Options.Open()
 	elseif msg=="dump" then
 		ImportExportDialog(false, EasyDestroy:Dump())
 	else

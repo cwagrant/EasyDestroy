@@ -15,6 +15,7 @@ protected.toCombineQueue = {}
 protected.ProcessingItemCombine = false
 local GetContainerNumSlots = C_Container.GetContainerNumSlots
 local GetContainerItemInfo = C_Container.GetContainerItemInfo
+local PickupContainerItem = C_Container.PickupContainerItem
 
 local function FindTradegoods(dict, addToTable)
 
@@ -27,7 +28,7 @@ local function FindTradegoods(dict, addToTable)
 	for k, v in ipairs(dict) do
 		
 		if v.itemid then 
-			local _, reagent = GetItemInfo(v.itemid)
+			local _, reagent = C_Item.GetItemInfo(v.itemid)
 			if reagent then 
 				local EasyDestroyID = EasyDestroyItem.EasyDestroyCacheID(0, 0, reagent)
 
@@ -37,7 +38,7 @@ local function FindTradegoods(dict, addToTable)
 					item = EasyDestroyItem:New(nil, nil, reagent)
 				end
 
-				item.count = GetItemCount(item:GetItemLink(), false)
+				item.count = C_Item.GetItemCount(item:GetItemLink(), false)
 
 				if item.count > 4 then 
 					tinsert(addToTable, item)					
@@ -55,7 +56,7 @@ local function GetBagItems(itemList)
 
 	local filterRegistry = EasyDestroy.CriteriaRegistry
 
-	for bag = 0, NUM_BAG_SLOTS do
+	for bag = 0, NUM_TOTAL_EQUIPPED_BAG_SLOTS do
 		for slot=1, GetContainerNumSlots(bag) do
 			local item
 			local itemInfo = GetContainerItemInfo(bag, slot)	
@@ -103,7 +104,7 @@ local function GetItemsToCombine(item)
 
 	-- Get a list of bag/slot locations for a given item, that can be combined into stacks.
 
-	for bag = 0, NUM_BAG_SLOTS do
+	for bag = 0, NUM_TOTAL_EQUIPPED_BAG_SLOTS do
 
 		for slot=1, GetContainerNumSlots(bag) do
 
@@ -185,7 +186,7 @@ local function CombineStacks()
 			finalCount1 = sourceItem.stackCount
 			finalCount2 = destItem.stackCount
 
-			if not destItem.isLocked and (sourcedItem.isLocked == nil or sourcedItem.isLocked == false) then 
+			if not destItem.isLocked and (sourceItem.isLocked == nil or sourceItem.isLocked == false) then 
 				break
 			else
 				coroutine.yield()
@@ -284,7 +285,7 @@ function EasyDestroy.Inventory.ItemNeedsRestacked(item)
 
 	if item and item.maxStackSize then 
 
-		for bag = 0, NUM_BAG_SLOTS do
+		for bag = 0, NUM_TOTAL_EQUIPPED_BAG_SLOTS do
 			for slot=1, GetContainerNumSlots(bag) do
 	
 				local itemInfo = GetContainerItemInfo(bag, slot)
@@ -314,14 +315,15 @@ function EasyDestroy.Inventory.FindTradegoodInBags(item)
     if not initialized then EasyDestroy.Inventory.Initialize() end
 
     -- finds you the first instance of a tradegood in your bag
+    -- skips locked items (e.g. one that's still being destroyed)
     -- TODO: Probably need to make this ignore stacks < 5
 
-	for bag = 0, NUM_BAG_SLOTS do
+	for bag = 0, NUM_TOTAL_EQUIPPED_BAG_SLOTS do
 		for slot=1, GetContainerNumSlots(bag) do
 			local itemInfo = GetContainerItemInfo(bag, slot)
 
-			if itemInfo and item:GetItemID() == itemInfo.itemID then
-				return bag, slot, GetItemCount(itemInfo.itemID, false)
+			if itemInfo and not itemInfo.isLocked and item:GetItemID() == itemInfo.itemID then
+				return bag, slot, C_Item.GetItemCount(itemInfo.itemID, false)
 			end
 		end
 

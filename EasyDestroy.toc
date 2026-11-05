@@ -1,4 +1,4 @@
-## Interface: 100005
+## Interface: 120105
 ## Version: 3.2.1
 ## Title: EasyDestroy
 ## Notes: Makes disenchanting easy!
@@ -46,6 +46,7 @@ filters\soulbound.lua
 filters\itemtype.lua
 filters\count.lua
 filters\bind.lua
+filters\track.lua
 
 # AddOnSkin supports
 UI\AddOnSkin.lua

@@ -41,7 +41,6 @@ EasyDestroy.Dict.Strings.CriteriaSelectionDropdown = "Select filter criteria..."
 EasyDestroy.Dict.Strings.FilterSelectionDropdownNew = "New filter..."
 
 EasyDestroy.Dict.Strings.MassDestroyMacro = "/cast %1$s \n/run C_TradeSkillUI.CraftRecipe(%2$d, 1);\n/cast %1$s";
-EasyDestroy.Dict.Strings.DestroyMacro = "/cast %s\n/use %d %d"
 
 EasyDestroy.Dict.ActionTable = {13262, 51005, 31252}
 EasyDestroy.Dict.Actions = {}

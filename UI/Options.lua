@@ -1,4 +1,4 @@
-local optionsFrame = CreateFrame("Frame", 'EasyDesteroy_OptionsFrame', InterfaceOptionsFramePanelContainer)
+local optionsFrame = CreateFrame("Frame", 'EasyDesteroy_OptionsFrame')
 optionsFrame.name = EasyDestroy.AddonName
 
 EasyDestroy.UI.Options = optionsFrame
@@ -7,7 +7,18 @@ local protected  = {}
 function EasyDestroy.UI.Options.__init()
 
     optionsFrame:SetScript("OnShow", EasyDestroy_OnOptionsShow)
-    InterfaceOptions_AddCategory(optionsFrame)
+    local category = Settings.RegisterCanvasLayoutCategory(optionsFrame, optionsFrame.name)
+    Settings.RegisterAddOnCategory(category)
+    EasyDestroy.UI.Options.Category = category
+
+end
+
+function EasyDestroy.UI.Options.Open(category)
+
+    category = category or EasyDestroy.UI.Options.Category
+    if category then
+        Settings.OpenToCategory(category:GetID())
+    end
 
 end
 
